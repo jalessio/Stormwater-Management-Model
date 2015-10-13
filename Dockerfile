@@ -8,8 +8,8 @@ RUN apt-get update \
     	libtool \
     && rm -rf /var/lib/apt/lists/*
 
-COPY . /opt/epa-stormwater-management-model
+COPY . /opt/usepa-stormwater-management-model
 
-WORKDIR /opt/epa-stormwater-management-model
+WORKDIR /opt/usepa-stormwater-management-model
 
 RUN autoreconf --install && ./configure && make && make install
