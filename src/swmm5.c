@@ -29,9 +29,9 @@
 //  Leave only one of the following 3 lines un-commented,
 //  depending on the choice of compilation target
 //**********************************************************
-//#define CLE     /* Compile as a command line executable */
+#define CLE     /* Compile as a command line executable */
 //#define SOL     /* Compile as a shared object library */
-#define DLL     /* Compile as a Windows DLL */
+//#define DLL     /* Compile as a Windows DLL */
 
 // --- define WINDOWS
 #undef WINDOWS
@@ -56,13 +56,13 @@
 // --- include Windows & exception handling headers
 #ifdef WINDOWS
   #include <windows.h>
+  #include <direct.h>
 #endif
 #ifdef EXH
   #include <excpt.h>
 #endif
 ////
 
-#include <direct.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
