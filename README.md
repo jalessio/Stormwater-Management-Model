@@ -11,7 +11,8 @@ SWMM is a dynamic hydrology-hydraulic water quality simulation model. It is used
 
 Building With Docker
 -------------
-docker build -t usepa-stormwater-management-model .
+
+    docker build -t usepa-stormwater-management-model .
 
 Find Out More
 -------------
