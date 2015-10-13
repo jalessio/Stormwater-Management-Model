@@ -12,4 +12,4 @@ COPY . /opt/epa-stormwater-management-model
 
 WORKDIR /opt/epa-stormwater-management-model
 
-# RUN autoreconf --install && ./configure && make && make install
+RUN autoreconf --install && ./configure && make && make install
