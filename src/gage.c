@@ -43,6 +43,16 @@ static int    getFirstRainfall(int gage);
 static int    getNextRainfall(int gage);
 static double convertRainfall(int gage, double rain);
 
+// Wrappers
+int gage_readSeriesFormat(char* tok[], int ntoks, double x[])
+{
+	return readGageSeriesFormat(tok, ntoks, x);
+}
+
+int gage_readFileFormat(char* tok[], int ntoks, double x[])
+{
+	return readGageFileFormat(tok, ntoks, x);
+}
 
 //=============================================================================
 

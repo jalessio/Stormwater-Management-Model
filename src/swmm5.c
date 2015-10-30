@@ -56,13 +56,13 @@
 // --- include Windows & exception handling headers
 #ifdef WINDOWS
   #include <windows.h>
+  #include <direct.h>
 #endif
 #ifdef EXH
   #include <excpt.h>
 #endif
 ////
 
-#include <direct.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -107,7 +107,7 @@ const double Ucf[10][2] =
       {2.203e-6,  1.0e-6    },         // MASS (lb, kg --> mg)
       {43560.0,   3048.0    }          // GWFLOW (cfs/ac, cms/ha --> ft/sec)
       };
-const double Qcf[6] =                  // Flow Conversion Factors:
+double Qcf[6] =                  // Flow Conversion Factors:
       { 1.0,     448.831, 0.64632,     // cfs, gpm, mgd --> cfs
         0.02832, 28.317,  2.4466 };    // cms, lps, mld --> cfs
 

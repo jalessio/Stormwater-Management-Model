@@ -88,6 +88,27 @@ static void deleteObjects(void);
 static void createHashTables(void);
 static void deleteHashTables(void);
 
+//Wrappers
+void project_setDefaults(void)
+{
+	return setDefaults();
+}
+
+
+void project_createHashTables(void)
+{
+	return createHashTables();
+}
+
+void project_deleteHashTables(void)
+{
+	return deleteHashTables();
+}
+
+void project_createObjects(void)
+{
+	return createObjects();
+}
 
 //=============================================================================
 

@@ -46,6 +46,68 @@
 #include "infil.h"
 #include "exfil.h"                                                             //(5.1.007)
 
+
+// these were stored as external variables
+// initial values set by SetDefaults();
+// consider moving to objects
+typedef struct{
+	DateTime StartDate;                // Starting date
+	DateTime StartTime;                // Starting time
+	DateTime StartDateTime;            // Starting Date+Time
+	DateTime EndDate;                  // Ending date
+	DateTime EndTime;                  // Ending time
+	DateTime EndDateTime;              // Ending Date+Time
+	DateTime ReportStartDate;          // Report start date
+	DateTime ReportStartTime;          // Report start time
+	DateTime ReportStart;              // Report start Date+Time
+} TTimeList;
+
+
+// Analysis options
+typedef struct{
+	int UnitSystem;               // Unit system
+	int FlowUnits;                // Flow units
+	int InfilModel;               // Infiltration method
+	int RouteModel;               // Flow routing method
+	int ForceMainEqn;             // Flow equation for force mains
+	int LinkOffsets;              // Link offset convention
+	int AllowPonding;             // Allow water to pond at nodes
+	int InertDamping;             // Degree of inertial damping
+	int NormalFlowLtd;            // Normal flow limited
+	int SlopeWeighting;           // Use slope weighting
+	int Compatibility;            // SWMM 5/3/4 compatibility
+	int SkipSteadyState;          // Skip over steady state periods
+	int IgnoreRainfall;           // Ignore rainfall/runoff
+	int IgnoreRDII;               // Ignore RDII                     //(5.1.004)
+	int IgnoreSnowmelt;           // Ignore snowmelt
+	int IgnoreGwater;             // Ignore groundwater
+	int IgnoreRouting;            // Ignore flow routing
+	int IgnoreQuality;            // Ignore water quality
+	int ErrorCode;                // Error code number
+	int WarningCode;              // Warning code number
+	int WetStep;                  // Runoff wet time step (sec)
+	int DryStep;                  // Runoff dry time step (sec)
+	int ReportStep;               // Reporting time step (sec)
+	int SweepStart;               // Day of year when sweeping starts
+	int SweepEnd;                 // Day of year when sweeping ends
+	int MaxTrials;                // Max. trials for DW routing
+	int NumThreads;               // Number of parallel threads used //(5.1.008)
+
+	double LengtheningStep;       // Time step for lengthening (sec)
+	double StartDryDays;          // Antecedent dry days
+	double CourantFactor;         // Courant time step factor
+	double MinSurfArea;           // Minimum nodal surface area
+
+	double RouteStep;                // Routing time step (sec)
+	double MinRouteStep;             // Minimum variable time step (sec) //(5.1.008)
+
+	double HeadTol;                  // DW routing head tolerance (ft)
+	double SysFlowTol;               // Tolerance for steady system flow
+	double LatFlowTol;               // Tolerance for steady nodal inflow       
+
+} AnalysisOptions;
+
+
 //-----------------
 // FILE INFORMATION
 //-----------------

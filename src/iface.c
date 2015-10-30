@@ -17,7 +17,7 @@
 //-----------------------------------------------------------------------------
 //  Imported variables
 //-----------------------------------------------------------------------------
-extern double Qcf[];                   // flow units conversion factors
+extern double Qcf[6];           // flow units conversion factors
                                        // (see swmm5.c)
 //-----------------------------------------------------------------------------                  
 //  Shared variables
