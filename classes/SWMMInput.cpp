@@ -23,7 +23,7 @@ SWMMInput::SWMMInput()
 SWMMInput::~SWMMInput()
 {
 	ClearObjArrays();
-	project_deleteHashTables();
+	//project_deleteHashTables();
 }
 
  void SWMMInput::SetTimeDefaults(void)
@@ -114,7 +114,7 @@ void SWMMInput::SetNObjects(int ngage, int nsubcatch, int ntseries)
 	_Nobjects[TSERIES]	= ntseries;
 	
 	AllocObjArrays();
-	project_createHashTables();
+	//project_createHashTables();
 	SetTimeDefaults();
 //	SetAnalysisDefaults();
 }

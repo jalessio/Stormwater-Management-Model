@@ -15,8 +15,8 @@ Save objects in the class instead of as global variables
 
 #include <cstdio>
 
-extern void project_createHashTables(); 
-extern void project_deleteHashTables();
+//extern void project_createHashTables(); 
+//extern void project_deleteHashTables();
 
 // project_open() will need to be slightly modified so that it doesn't open an input file
 // project_open() calls setDefaults()
