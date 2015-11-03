@@ -113,7 +113,7 @@ protected:
 	void ClearObjArrays();
 	void AllocObjArrays();
 
-	int  addObject(int objType, char* id); // adds object to project (including hash table)
+	int  AddObject(int objType, char* id); // adds object to project (including hash table)
 	
 	void SetTimeDefaults(void);
 	void SetAnalysisDefaults(void);

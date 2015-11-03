@@ -3,5 +3,5 @@
 .metadata/
 .settings/
 
-VC2010-DLL/
+# Visual studio
 ConsoleApplication1/

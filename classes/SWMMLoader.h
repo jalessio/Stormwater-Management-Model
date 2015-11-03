@@ -80,7 +80,7 @@ class SWMMLoader
   int addObject(int objType, char* id);
 
   //utility functions - scraped from project.c
-  int ReadOption(char* s1, char* s2, AnalysisOptions *aoptions); 
+  int ProjectReadOption(char* s1, char* s2, AnalysisOptions *aoptions); 
 
   //utility functions - scraped from gage.c
   int ReadGageParams(int j, char* tok[], int ntoks);

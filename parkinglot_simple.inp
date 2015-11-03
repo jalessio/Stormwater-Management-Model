@@ -1,0 +1,14 @@
+[RAINGAGES]
+;;               Rain      Time   Snow   Data      
+;;Name           Type      Intrvl Catch  Source    
+;;-------------- --------- ------ ------ ----------
+1                INTENSITY 0:05   1.0    TIMESERIES Rain            
+
+[SUBCATCHMENTS]
+;;                                                 Total    Pcnt.             Pcnt.    Curb     Snow    
+;;Name           Raingage         Outlet           Area     Imperv   Width    Slope    Length   Pack    
+;;-------------- ---------------- ---------------- -------- -------- -------- -------- -------- --------
+1                1                2                8.264    100      600      2.0833   0                        
+
+      
+

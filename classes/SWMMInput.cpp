@@ -114,7 +114,7 @@ void SWMMInput::SetNObjects(int ngage, int nsubcatch, int ntseries)
 	_Nobjects[TSERIES]	= ntseries;
 	
 	AllocObjArrays();
-	//project_createHashTables();
+//	project_createHashTables();
 	SetTimeDefaults();
 //	SetAnalysisDefaults();
 }
@@ -249,7 +249,7 @@ int SWMMInput::SetGage(int index, char* rID, int rainfalltype, float raininterva
 
 	int		 err;
 
-	addObject(sect, id);
+//	addObject(sect, id);
 	
 	if (index < 0 || index >= _Nobjects[GAGE])
 		return 999; //TODO error
@@ -338,7 +338,7 @@ int SWMMInput::SetSubcatch(char* sID, int gIndex, int outIndex,
 	//id = project_findID(SUBCATCH, tok[0]); 
 	//if (id == NULL) return error_setInpError(ERR_NAME, tok[0]);
 	
-	addObject(sect, id);
+//	addObject(sect, id);
 
 	// --- check that rain gage exists
 	//k = project_findObject(GAGE, tok[1]);
@@ -389,7 +389,7 @@ int SWMMInput::SetSubcatch(char* sID, int gIndex, int outIndex,
 	return 0;
 }
 
-int  SWMMInput::addObject(int objType, char* id)
+int  SWMMInput::AddObject(int objType, char* id)
 //
 //  Input:   objType = object type index
 //           id = object's ID string
@@ -444,7 +444,7 @@ int SWMMInput::SetTSeries(char* tsID, DateTime times[], double rainseries[], int
 	int sect = s_TIMESERIES;
 	char* id = tsID;
 
-	addObject(sect, id);
+//	addObject(sect, id);
 
 
 	while (k < nitems)

@@ -40,7 +40,7 @@ SWMMLoader::SWMMLoader()
   :_inFile(NULL),_gages(NULL),_subcatches(NULL)
 {
   ClearErr();
-  //ClearCounts();
+  ClearCounts();
 }
 
 SWMMLoader::SWMMLoader(const char* path)
@@ -64,14 +64,14 @@ bool SWMMLoader::OpenFile(const char* path)
       return false;
     }
 
-  if(!CountObjects())
+  if(CountObjects() != ERR_NONE)
     return false;
 
   AllocObjArrays();
 
   ReadData();
 
-  return _errCode==0;
+  return _errCode == ERR_NONE;
   
 }
 
@@ -146,53 +146,53 @@ void SWMMLoader::SetError(const int & errcode, const char* s)
 
 int SWMMLoader::CountObjects()
 {
-    char  line[MAXLINE+1];             // line from input data file     
-    char  wLine[MAXLINE+1];            // working copy of input line   
-    char  *tok;                        // first string token of line          
-    int   sect = -1, newsect;          // input data sections          
-    int   errcode = 0;                 // error code
-    int   errsum = 0;                  // number of errors found                   
-    int   i;
-    long  lineCount = 0;
+	char  line[MAXLINE + 1];             // line from input data file     
+	char  wLine[MAXLINE + 1];            // working copy of input line   
+	char  *tok;                        // first string token of line          
+	int   sect = -1, newsect;          // input data sections          
+	int   errcode = 0;                 // error code
+	int   errsum = 0;                  // number of errors found                   
+//	int   i;
+	long  lineCount = 0;
 
-    // --- initialize number of objects & set default values
-    ClearCounts();
+	// --- initialize number of objects & set default values
+	ClearCounts();
 
-    // --- make pass through data file counting number of each object
-    while ( fgets(line, MAXLINE, _inFile) != NULL )
-    {
-        // --- skip blank lines & those beginning with a comment
-        lineCount++;
-        strcpy(wLine, line);           // make working copy of line
-        tok = strtok(wLine, SEPSTR);   // get first text token on line
-        if ( tok == NULL ) continue;
-        if ( *tok == ';' ) continue;
+	// --- make pass through data file counting number of each object
+	while (fgets(line, MAXLINE, _inFile) != NULL)
+	{
+		// --- skip blank lines & those beginning with a comment
+		lineCount++;
+		strcpy(wLine, line);           // make working copy of line
+		tok = strtok(wLine, SEPSTR);   // get first text token on line
+		if (tok == NULL) continue;
+		if (*tok == ';') continue;
 
-        // --- check if line begins with a new section heading
-        if ( *tok == '[' )
-        {
-            // --- look for heading in list of section keywords
-            newsect = findmatch(tok, SectWords);
-            if ( newsect >= 0 )
-            {
-                sect = newsect;
-                continue;
-            }
-            else
-            {
-                sect = -1;
-                errcode = ERR_KEYWORD;
-            }
-        }
-
-	//.... continue here ....
-
-        // --- if in OPTIONS section then read the option setting
-        //     otherwise add object and its ID name (tok) to project
-        if ( sect == s_OPTION ) errcode = ReadOption(line);
-        else if ( sect >= 0 )
+		// --- check if line begins with a new section heading
+		if (*tok == '[')
 		{
-		switch( sect )
+			// --- look for heading in list of section keywords
+			newsect = findmatch(tok, SectWords);
+			if (newsect >= 0)
+			{
+				sect = newsect;
+				continue;
+			}
+			else
+			{
+				sect = -1;
+				errcode = ERR_KEYWORD;
+			}
+		}
+
+		//.... continue here ....
+
+		// --- if in OPTIONS section then read the option setting
+		//     otherwise add object and its ID name (tok) to project
+		if (sect == s_OPTION) errcode = ReadOption(line); // ProjectReadOption
+		else if (sect >= 0)
+		{
+			switch (sect)
 			{
 			case s_RAINGAGE:
 				_Nobjects[GAGE]++;
@@ -202,26 +202,26 @@ int SWMMLoader::CountObjects()
 				_Nobjects[SUBCATCH]++;
 				break;
 
-		//add more cases as needed
-	      }
-	  }
+				//add more cases as needed
+			}
+		}
 
-	// can be expanded for more detailed error reporting
-        // --- report any error found
-        // if ( errcode )
-        // {
-        //     report_writeInputErrorMsg(errcode, sect, line, lineCount);
-        //     errsum++;
-        //     if (errsum >= MAXERRS ) break;
-        // }
-    }
+		// can be expanded for more detailed error reporting
+		// --- report any error found
+		// if ( errcode )
+		// {
+		//     report_writeInputErrorMsg(errcode, sect, line, lineCount);
+		//     errsum++;
+		//     if (errsum >= MAXERRS ) break;
+		// }
+	}
 
-    // --- set global error code if input errors were found
-    if ( errsum > 0 ) _errCode = ERR_INPUT;
-    return _errCode!=0;
-}
+	// --- set global error code if input errors were found
+	if (errsum > 0) _errCode = ERR_INPUT;
+	return _errCode;
+}    
 
-
+//
 int SWMMLoader::ReadOption(char* line)
 {
   //_Ntokens = input_getTokens(line);
@@ -231,7 +231,7 @@ int SWMMLoader::ReadOption(char* line)
 	return 0;
 }
 
-int SWMMLoader::ReadOption(char* s1, char* s2, AnalysisOptions *aoptions)
+int SWMMLoader::ProjectReadOption(char* s1, char* s2, AnalysisOptions *aoptions)
 {
 	int      k, m, h, s;
 	double   tStep;
@@ -467,12 +467,12 @@ int SWMMLoader::ReadOption(char* s1, char* s2, AnalysisOptions *aoptions)
 	//		return error_setInpError(ERR_NUMBER, s2);
 	//	break;
 
-	//case NUM_THREADS:
-	//	m = atoi(s2);
-	//	if (m < 0) return error_setInpError(ERR_NUMBER, s2);
-	//	NumThreads = m;
-	//	break;
-	//	////
+	case NUM_THREADS:
+		m = atoi(s2);
+		if (m < 0) return error_setInpError(ERR_NUMBER, s2);
+		aoptions->NumThreads = m;
+		break;
+		////
 
 	//	// --- safety factor applied to variable time step estimates under
 	//	//     dynamic wave flow routing (value of 0 indicates that variable
@@ -532,9 +532,9 @@ int SWMMLoader::ReadOption(char* s1, char* s2, AnalysisOptions *aoptions)
 		aoptions->LatFlowTol /= 100.0;
 		break;
 
-	case TEMPDIR: // Temporary Directory
-		sstrncpy(TempDir, s2, MAXFNAME);
-		break;
+	//case TEMPDIR: // Temporary Directory
+	//	sstrncpy(TempDir, s2, MAXFNAME);
+	//	break;
 
 	}
 	return 0;
@@ -544,9 +544,11 @@ void SWMMLoader::ClearObjArrays()
 {
   delete[] _gages;
   delete[] _subcatches;
+  delete[] _aoptions;
 
-  _gages=NULL;
-  _subcatches=NULL;
+  _gages = NULL;
+  _subcatches = NULL;
+  _aoptions = NULL;
 }
 
 void SWMMLoader::AllocObjArrays()
@@ -557,6 +559,7 @@ void SWMMLoader::AllocObjArrays()
   //() sets all space to zero
   _gages=new TGage[_Nobjects[GAGE]]();
   _subcatches=new TSubcatch[_Nobjects[SUBCATCH]]();
+  _aoptions = new AnalysisOptions[sizeof(AnalysisOptions)]();
 
   //add more as needed
 
