@@ -9,13 +9,13 @@ int main()
 	int nsubcatch;
 
 	SWMMLoader swmmLoader(path);
-		
+
 	nsubcatch = swmmLoader.GetSubcatchCount();
 
 	//subcatch = swmmLoader.GetSubcatch(0);
-	
+
 	return 0;
-	
+
 	// SWMMInput.c test stuff
 
 	//	int Nsubcatch = 2;
