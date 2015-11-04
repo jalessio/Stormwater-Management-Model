@@ -7,6 +7,7 @@ int main()
 	const char* path = "C:\\Users\\cbarr02\\Desktop\\GitHub\\Storm-Water-Plugin\\inputAPI\\parkinglot_simple.inp";
 	TSubcatch* subcatch;
 	int nsubcatch;
+	int dummyvariable;
 
 	SWMMLoader swmmLoader(path);
 
