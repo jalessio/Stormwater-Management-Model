@@ -4,10 +4,9 @@
 int main()
 {
 	// SWMMLoader.c test stuff
-	const char* path = "C:\\Users\\cbarr02\\Desktop\\GitHub\\Storm-Water-Plugin\\inputAPI\\parkinglot_simple.inp";
+	const char* path = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.inp";
 	TSubcatch* subcatch;
 	int nsubcatch;
-	int dummyvariable;
 
 	SWMMLoader swmmLoader(path);
 

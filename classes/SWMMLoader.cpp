@@ -2,99 +2,102 @@
 #include <cstring>
 #include <stdlib.h>
 
-  /*
-    The following function definitions need to be added to gage.c
-    In order for us to be able to add linkages to the called functions.
-    Functions and variables declared static are typically only available
-    within the scope of the c file, and cannot be directly extern'd.
-    Therefore, we need the wrappers below.
+/*
+The following function definitions need to be added to gage.c
+In order for us to be able to add linkages to the called functions.
+Functions and variables declared static are typically only available
+within the scope of the c file, and cannot be directly extern'd.
+Therefore, we need the wrappers below.
 
-  int gage_readSeriesFormat(char* tok[], int ntoks, double x[])
-  {
-    return readGageSeriesFormat(tok,ntoks,x);
-  }
-  
-  int gage_readFileFormat(char* tok[], int ntoks, double x[])
-  {
-    return readGageFileFormat(tok,ntoks,x);
-  }
+int gage_readSeriesFormat(char* tok[], int ntoks, double x[])
+{
+return readGageSeriesFormat(tok,ntoks,x);
+}
 
-  */
+int gage_readFileFormat(char* tok[], int ntoks, double x[])
+{
+return readGageFileFormat(tok,ntoks,x);
+}
 
-  //for findmatch(),getTokens()
-  //#include "input.c"
-  /*
-    The following wrapper needs to be inserted into input.c; see
-    previous comment for explanation.
+*/
 
-    int input_getTokens(char *s)
-    {
-    return input_getTokens(s);
-    }
-   */
+//for findmatch(),getTokens()
+//#include "input.c"
+/*
+The following wrapper needs to be inserted into input.c; see
+previous comment for explanation.
+
+int input_getTokens(char *s)
+{
+return input_getTokens(s);
+}
+*/
 
 
 const int SWMMLoader::MAXERRS = 100;        // Max. input errors reported
 
 SWMMLoader::SWMMLoader()
-  :_inFile(NULL),_gages(NULL),_subcatches(NULL)
+:_inFile(NULL), _gages(NULL), _subcatches(NULL)
 {
-  ClearErr();
-  ClearCounts();
+	ClearErr();
+	ClearCounts();
 }
 
 SWMMLoader::SWMMLoader(const char* path)
-  :_gages(NULL),_subcatches(NULL)
+:_gages(NULL), _subcatches(NULL)
 {
-  ClearErr();
-  OpenFile(path);
+	ClearErr();
+	OpenFile(path);
 }
 
 SWMMLoader::~SWMMLoader()
 {
-  ClearObjArrays();
+	ClearObjArrays();
 }
 
 bool SWMMLoader::OpenFile(const char* path)
 {
-  _inFile=fopen(path,"rt");
-  if(!_inFile)
-    {
-      _errCode=ERR_INP_FILE;
-      return false;
-    }
+	_inFile = fopen(path, "rt");
+	if (!_inFile)
+	{
+		_errCode = ERR_INP_FILE;
+		return false;
+	}
 
-  if(CountObjects() != ERR_NONE)
-    return false;
+	CreateHashTables();
 
-  AllocObjArrays();
+	if (CountObjects() != ERR_NONE)
+		return false;
 
-  ReadData();
 
-  return _errCode == ERR_NONE;
-  
+	AllocObjArrays();
+
+	ReadData();
+
+	return _errCode == ERR_NONE;
+
 }
 
 void SWMMLoader::ClearErr()
 {
-  _errCode=0;
+	_errCode = 0;
 
-  //set all chars to null character so any inserted char sequence will be valid
-  for (int i = 0; i < 512; ++i)
-    _errString[i]='\0';
+	//set all chars to null character so any inserted char sequence will be valid
+	for (int i = 0; i < 512; ++i)
+		_errString[i] = '\0';
 }
 
 TGage* SWMMLoader::GetGages()
 {
-  return _gages;
+	return _gages;
 }
 
 TGage* SWMMLoader::GetGage(const int & i)
 {
-  if(i<0 || i>=_Nobjects[GAGE])
-    return NULL;
+	if (i<0 || i >= _Nobjects[GAGE])
+		return NULL;
 
-  return &_gages[i];
+	return &_gages[i];
 }
 
 int SWMMLoader::GetGageCount() const
@@ -104,45 +107,117 @@ int SWMMLoader::GetGageCount() const
 
 TSubcatch* SWMMLoader::GetSubcatches()
 {
-  return _subcatches;
+	return _subcatches;
 }
 
 TSubcatch* SWMMLoader::GetSubcatch(const int & i)
 {
-  if(i<0 || i>=_Nobjects[SUBCATCH])
-    return NULL;
+	if (i<0 || i >= _Nobjects[SUBCATCH])
+		return NULL;
 
-  return &_subcatches[i];
+	return &_subcatches[i];
 }
 
 int SWMMLoader::GetSubcatchCount() const
 {
-  return _Nobjects[SUBCATCH];
+	return _Nobjects[SUBCATCH];
 }
 
 int* SWMMLoader::GetAllCounts()
 {
-  return _Nobjects;
+	return _Nobjects;
 }
 
 
 void SWMMLoader::ClearCounts()
 {
-  //set all counts to zero (could also possibly initialize with {})
-  int i=0;  
-  for(i=0; i<MAX_OBJ_TYPES;++i)
-    {
-    _Nobjects[i]=0;
-    _Mobjects[i]=0;
-    }
+	//set all counts to zero (could also possibly initialize with {})
+	int i = 0;
+	for (i = 0; i<MAX_OBJ_TYPES; ++i)
+	{
+		_Nobjects[i] = 0;
+		_Mobjects[i] = 0;
+	}
 }
 
 void SWMMLoader::SetError(const int & errcode, const char* s)
 {
-  strncpy(_errString, s, 512-1);
-  _errCode=errcode;
+	strncpy(_errString, s, 512 - 1);
+	_errCode = errcode;
 }
 
+// from project.c
+void SWMMLoader::CreateHashTables()
+{
+	int j;
+	_MemPoolAllocated = FALSE;
+	for (j = 0; j < MAX_OBJ_TYPES; j++)
+	{
+		_Htable[j] = HTcreate();
+		if (_Htable[j] == NULL) report_writeErrorMsg(ERR_MEMORY, "");
+	}
+
+	// --- initialize memory pool used to store object ID's
+	if (AllocInit() == NULL) report_writeErrorMsg(ERR_MEMORY, "");
+	else _MemPoolAllocated = TRUE;
+}
+
+// from project.c
+void SWMMLoader::DeleteHashTables()
+{
+	int j;
+	for (j = 0; j < MAX_OBJ_TYPES; j++)
+	{
+		if (_Htable[j] != NULL) HTfree(_Htable[j]);
+	}
+
+	// --- free object ID memory pool
+	if (_MemPoolAllocated) AllocFreePool();
+}
+
+int SWMMLoader::ProjectAddObject(int type, char *id, int n)
+//
+//  Input:   type = object type
+//           id   = object ID string
+//           n    = object index
+//  Output:  returns 0 if object already added, 1 if not, -1 if hashing fails
+//  Purpose: adds an object ID to a hash table
+//
+{
+	int  result;
+	int  len;
+	char *newID;
+
+	// --- do nothing if object already placed in hash table
+	if (ProjectFindObject(type, id) >= 0) return 0;
+
+	// --- use memory from the hash tables' common memory pool to store
+	//     a copy of the object's ID string
+	len = strlen(id) + 1;
+	newID = (char *)Alloc(len*sizeof(char));
+	strcpy(newID, id);
+
+	// --- insert object's ID into the hash table for that type of object
+	result = HTinsert(_Htable[type], newID, n);
+	if (result == 0) result = -1;
+	return result;
+}
+
+int SWMMLoader::ProjectFindObject(int type, char *id)
+{
+	return HTfind(_Htable[type], id);
+}
+
+char *SWMMLoader::ProjectFindID(int type, char *id)
+//
+//  Input:   type = object type
+//           id   = ID name being sought
+//  Output:  returns pointer to location where object's ID string is stored
+//  Purpose: uses hash table to find address of given string entry.
+//
+{
+	return HTfindKey(_Htable[type], id);
+}
 
 int SWMMLoader::CountObjects()
 {
@@ -152,7 +227,7 @@ int SWMMLoader::CountObjects()
 	int   sect = -1, newsect;          // input data sections          
 	int   errcode = 0;                 // error code
 	int   errsum = 0;                  // number of errors found                   
-//	int   i;
+	//	int   i;
 	long  lineCount = 0;
 
 	// --- initialize number of objects & set default values
@@ -195,13 +270,25 @@ int SWMMLoader::CountObjects()
 			switch (sect)
 			{
 			case s_RAINGAGE:
+				// add object to hashtable
+				ProjectAddObject(GAGE, tok, _Nobjects[GAGE]);
 				_Nobjects[GAGE]++;
 				break;
 
 			case s_SUBCATCH:
+				ProjectAddObject(SUBCATCH, tok, _Nobjects[SUBCATCH]);
 				_Nobjects[SUBCATCH]++;
 				break;
 
+			case s_TIMESERIES:
+				// --- a Time Series can span several lines
+				if (ProjectFindObject(TSERIES, tok) < 0)
+				{
+					if (!ProjectAddObject(TSERIES, tok, _Nobjects[TSERIES]))
+						errcode = error_setInpError(ERR_DUP_NAME, tok);
+					_Nobjects[TSERIES]++;
+				}
+				break;
 				//add more cases as needed
 			}
 		}
@@ -219,15 +306,15 @@ int SWMMLoader::CountObjects()
 	// --- set global error code if input errors were found
 	if (errsum > 0) _errCode = ERR_INPUT;
 	return _errCode;
-}    
+}
 
 //
 int SWMMLoader::ReadOption(char* line)
 {
-  //_Ntokens = input_getTokens(line);
-  //if ( _Ntokens < 2 ) return 0;
+	//_Ntokens = input_getTokens(line);
+	//if ( _Ntokens < 2 ) return 0;
 
-  //return ReadOption(Tok[0], Tok[1]);
+	//return ReadOption(Tok[0], Tok[1]);
 	return 0;
 }
 
@@ -239,8 +326,8 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2, AnalysisOptions *aoptions)
 	DateTime aTime;
 	DateTime aDate;
 
-  //stub for handling options.
-  //when ready, look at project_readOptions() in project.c
+	//stub for handling options.
+	//when ready, look at project_readOptions() in project.c
 
 
 
@@ -275,54 +362,54 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2, AnalysisOptions *aoptions)
 		if (RouteModel == EKW) aoptions->RouteModel = KW;
 		break;
 
-// these are stored in TTimeList
+		// these are stored in TTimeList
 		// --- simulation start date
-	//case START_DATE:
-	//	if (!datetime_strToDate(s2, &StartDate))
-	//	{
-	//		return error_setInpError(ERR_DATETIME, s2);
-	//	}
-	//	break;
+		//case START_DATE:
+		//	if (!datetime_strToDate(s2, &StartDate))
+		//	{
+		//		return error_setInpError(ERR_DATETIME, s2);
+		//	}
+		//	break;
 
-	//	// --- simulation start time of day
-	//case START_TIME:
-	//	if (!datetime_strToTime(s2, &StartTime))
-	//	{
-	//		return error_setInpError(ERR_DATETIME, s2);
-	//	}
-	//	break;
+		//	// --- simulation start time of day
+		//case START_TIME:
+		//	if (!datetime_strToTime(s2, &StartTime))
+		//	{
+		//		return error_setInpError(ERR_DATETIME, s2);
+		//	}
+		//	break;
 
-	//	// --- simulation ending date
-	//case END_DATE:
-	//	if (!datetime_strToDate(s2, &EndDate))
-	//	{
-	//		return error_setInpError(ERR_DATETIME, s2);
-	//	}
-	//	break;
+		//	// --- simulation ending date
+		//case END_DATE:
+		//	if (!datetime_strToDate(s2, &EndDate))
+		//	{
+		//		return error_setInpError(ERR_DATETIME, s2);
+		//	}
+		//	break;
 
-	//	// --- simulation ending time of day
-	//case END_TIME:
-	//	if (!datetime_strToTime(s2, &EndTime))
-	//	{
-	//		return error_setInpError(ERR_DATETIME, s2);
-	//	}
-	//	break;
+		//	// --- simulation ending time of day
+		//case END_TIME:
+		//	if (!datetime_strToTime(s2, &EndTime))
+		//	{
+		//		return error_setInpError(ERR_DATETIME, s2);
+		//	}
+		//	break;
 
-	//	// --- reporting start date
-	//case REPORT_START_DATE:
-	//	if (!datetime_strToDate(s2, &ReportStartDate))
-	//	{
-	//		return error_setInpError(ERR_DATETIME, s2);
-	//	}
-	//	break;
+		//	// --- reporting start date
+		//case REPORT_START_DATE:
+		//	if (!datetime_strToDate(s2, &ReportStartDate))
+		//	{
+		//		return error_setInpError(ERR_DATETIME, s2);
+		//	}
+		//	break;
 
-	//	// --- reporting start time of day
-	//case REPORT_START_TIME:
-	//	if (!datetime_strToTime(s2, &ReportStartTime))
-	//	{
-	//		return error_setInpError(ERR_DATETIME, s2);
-	//	}
-	//	break;
+		//	// --- reporting start time of day
+		//case REPORT_START_TIME:
+		//	if (!datetime_strToTime(s2, &ReportStartTime))
+		//	{
+		//		return error_setInpError(ERR_DATETIME, s2);
+		//	}
+		//	break;
 
 		// --- day of year when street sweeping begins or when it ends
 		//     (year is arbitrarily set to 1947 so that the dayOfYear
@@ -462,10 +549,10 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2, AnalysisOptions *aoptions)
 		////  Following code section added to release 5.1.008.  ////                   //(5.1.008)
 
 		// --- minimum variable time step for dynamic wave routing
-	//case MIN_ROUTE_STEP:
-	//	if (!getDouble(s2, &MinRouteStep) || MinRouteStep < 0.0)
-	//		return error_setInpError(ERR_NUMBER, s2);
-	//	break;
+		//case MIN_ROUTE_STEP:
+		//	if (!getDouble(s2, &MinRouteStep) || MinRouteStep < 0.0)
+		//		return error_setInpError(ERR_NUMBER, s2);
+		//	break;
 
 	case NUM_THREADS:
 		m = atoi(s2);
@@ -474,15 +561,15 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2, AnalysisOptions *aoptions)
 		break;
 		////
 
-	//	// --- safety factor applied to variable time step estimates under
-	//	//     dynamic wave flow routing (value of 0 indicates that variable
-	//	//     time step option not used)
-	//case VARIABLE_STEP:
-	//	if (!getDouble(s2, &CourantFactor))
-	//		return error_setInpError(ERR_NUMBER, s2);
-	//	if (CourantFactor < 0.0 || CourantFactor > 2.0)
-	//		return error_setInpError(ERR_NUMBER, s2);
-	//	break;
+		//	// --- safety factor applied to variable time step estimates under
+		//	//     dynamic wave flow routing (value of 0 indicates that variable
+		//	//     time step option not used)
+		//case VARIABLE_STEP:
+		//	if (!getDouble(s2, &CourantFactor))
+		//		return error_setInpError(ERR_NUMBER, s2);
+		//	if (CourantFactor < 0.0 || CourantFactor > 2.0)
+		//		return error_setInpError(ERR_NUMBER, s2);
+		//	break;
 
 		// --- minimum surface area (ft2 or sq. meters) associated with nodes
 		//     under dynamic wave flow routing 
@@ -532,9 +619,9 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2, AnalysisOptions *aoptions)
 		aoptions->LatFlowTol /= 100.0;
 		break;
 
-	//case TEMPDIR: // Temporary Directory
-	//	sstrncpy(TempDir, s2, MAXFNAME);
-	//	break;
+		//case TEMPDIR: // Temporary Directory
+		//	sstrncpy(TempDir, s2, MAXFNAME);
+		//	break;
 
 	}
 	return 0;
@@ -542,249 +629,319 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2, AnalysisOptions *aoptions)
 
 void SWMMLoader::ClearObjArrays()
 {
-  delete[] _gages;
-  delete[] _subcatches;
-  delete[] _aoptions;
+	delete[] _gages;
+	delete[] _subcatches;
+	delete[] _aoptions;
 
-  _gages = NULL;
-  _subcatches = NULL;
-  _aoptions = NULL;
+	_gages = NULL;
+	_subcatches = NULL;
+	_aoptions = NULL;
 }
 
 void SWMMLoader::AllocObjArrays()
 {
-  //make sure any previous values are disposed of 
-  ClearObjArrays();
+	//make sure any previous values are disposed of 
+	ClearObjArrays();
 
-  //() sets all space to zero
-  _gages=new TGage[_Nobjects[GAGE]]();
-  _subcatches=new TSubcatch[_Nobjects[SUBCATCH]]();
-  _aoptions = new AnalysisOptions[sizeof(AnalysisOptions)]();
+	//() sets all space to zero
+	_gages = new TGage[_Nobjects[GAGE]]();
+	_subcatches = new TSubcatch[_Nobjects[SUBCATCH]]();
+	_aoptions = new AnalysisOptions[sizeof(AnalysisOptions)]();
 
-  //add more as needed
+	//add more as needed
 
 }
 
 int SWMMLoader::ReadData()
 {
-    char  line[MAXLINE+1];        // line from input data file
-    char  wLine[MAXLINE+1];       // working copy of input line
-    char* comment;                // ptr. to start of comment in input line
-    int   sect, newsect;          // data sections
-    int   inperr, errsum;         // error code & total error count
-    int   lineLength;             // number of characters in input line
-    int   i;
-    long  lineCount = 0;
+	char  line[MAXLINE + 1];        // line from input data file
+	char  wLine[MAXLINE + 1];       // working copy of input line
+	char* comment;                // ptr. to start of comment in input line
+	int   sect, newsect;          // data sections
+	int   inperr, errsum;         // error code & total error count
+	int   lineLength;             // number of characters in input line
+	int   i;
+	long  lineCount = 0;
 
-    // --- read each line from input file
-    rewind(_inFile);
-    sect = 0;
-    errsum = 0;
+	// --- read each line from input file
+	rewind(_inFile);
+	sect = 0;
+	errsum = 0;
 
-    while ( fgets(line, MAXLINE, _inFile) != NULL )
-    {
-        // --- make copy of line and scan for tokens
-        lineCount++;
-        strcpy(wLine, line);
-        _Ntokens = getTokens(wLine);
+	while (fgets(line, MAXLINE, _inFile) != NULL)
+	{
+		// --- make copy of line and scan for tokens
+		lineCount++;
+		strcpy(wLine, line);
+		_Ntokens = getTokens(wLine);
 
-        // --- skip blank lines and comments
-        if ( _Ntokens == 0 ) continue;
-        if ( *_Tok[0] == ';' ) continue;
+		// --- skip blank lines and comments
+		if (_Ntokens == 0) continue;
+		if (*_Tok[0] == ';') continue;
 
-        // --- check if max. line length exceeded
-        lineLength = strlen(line);
-        if ( lineLength >= MAXLINE )
-        {
-            // --- don't count comment if present
-            comment = strchr(line, ';');
-            if ( comment ) lineLength = comment - line;    // Pointer math here
-            if ( lineLength >= MAXLINE )
-            {
-                inperr = ERR_LINE_LENGTH;
-                // report_writeInputErrorMsg(inperr, sect, line, lineCount);
-                errsum++;
-            }
-        }
+		// --- check if max. line length exceeded
+		lineLength = strlen(line);
+		if (lineLength >= MAXLINE)
+		{
+			// --- don't count comment if present
+			comment = strchr(line, ';');
+			if (comment) lineLength = comment - line;    // Pointer math here
+			if (lineLength >= MAXLINE)
+			{
+				inperr = ERR_LINE_LENGTH;
+				// report_writeInputErrorMsg(inperr, sect, line, lineCount);
+				errsum++;
+			}
+		}
 
-        // --- check if at start of a new input section
-        if (*_Tok[0] == '[')
-        {
-            // --- match token against list of section keywords
-            newsect = findmatch(_Tok[0], SectWords);
-            if (newsect >= 0)
-            {
-                // // --- SPECIAL CASE FOR TRANSECTS
-                // //     finish processing the last set of transect data
-                // if ( sect == s_TRANSECT )
-                //     transect_validate(Nobjects[TRANSECT]-1);
+		// --- check if at start of a new input section
+		if (*_Tok[0] == '[')
+		{
+			// --- match token against list of section keywords
+			newsect = findmatch(_Tok[0], SectWords);
+			if (newsect >= 0)
+			{
+				// // --- SPECIAL CASE FOR TRANSECTS
+				// //     finish processing the last set of transect data
+				// if ( sect == s_TRANSECT )
+				//     transect_validate(Nobjects[TRANSECT]-1);
 
-                // --- begin a new input section
-                sect = newsect;
-                continue;
-            }
-            else
-            {
-                SetError(ERR_KEYWORD, _Tok[0]);
-                //report_writeInputErrorMsg(inperr, sect, line, lineCount);
-                errsum++;
-                break;
-            }
-        }
+				// --- begin a new input section
+				sect = newsect;
+				continue;
+			}
+			else
+			{
+				SetError(ERR_KEYWORD, _Tok[0]);
+				//report_writeInputErrorMsg(inperr, sect, line, lineCount);
+				errsum++;
+				break;
+			}
+		}
 
-        // --- otherwise parse tokens from input line
-        else
-        {
-            inperr = ParseLine(sect, line);
-            if ( inperr > 0 )
-            {
-	      //errsum++;
-                //if ( errsum > MAXERRS ) report_writeLine(FMT19);
-                //else report_writeInputErrorMsg(inperr, sect, line, lineCount);
-            }
-        }
+		// --- otherwise parse tokens from input line
+		else
+		{
+			inperr = ParseLine(sect, line);
+			if (inperr > 0)
+			{
+				//errsum++;
+				//if ( errsum > MAXERRS ) report_writeLine(FMT19);
+				//else report_writeInputErrorMsg(inperr, sect, line, lineCount);
+			}
+		}
 
-        // --- stop if reach end of file or max. error count
-        if (errsum > MAXERRS) break;
-    }   /* End of while */
+		// --- stop if reach end of file or max. error count
+		if (errsum > MAXERRS) break;
+	}   /* End of while */
 
-    // --- check for errors
-    if (errsum > 0)  _errCode = ERR_INPUT;
-    return _errCode;
+	// --- check for errors
+	if (errsum > 0)  _errCode = ERR_INPUT;
+	return _errCode;
 
 }
 
 int  SWMMLoader::ParseLine(int sect, char *line)
 {
-    int j, err;
-    switch (sect)
-    {
-    //presently only subcatch and gage captured;
-    //add more as needed.
-    //see parseLine() in input.c
+	int j, err;
+	switch (sect)
+	{
+		//presently only subcatch and gage captured;
+		//add more as needed.
+		//see parseLine() in input.c
 
-    case s_RAINGAGE:
-        j = _Mobjects[GAGE];
-        err = ReadGageParams(j, _Tok, _Ntokens);
-        _Mobjects[GAGE]++;
-        return err;
+	case s_RAINGAGE:
+		j = _Mobjects[GAGE];
+		err = ReadGageParams(j, _Tok, _Ntokens);
+		_Mobjects[GAGE]++;
+		return err;
 
-    case s_SUBCATCH:
-        j = _Mobjects[SUBCATCH];
+	case s_SUBCATCH:
+		j = _Mobjects[SUBCATCH];
 		err = ReadSubcatchParams(j, _Tok, _Ntokens);
-        _Mobjects[SUBCATCH]++;
-        return err;
+		_Mobjects[SUBCATCH]++;
+		return err;
 
-      default: return 0;
-    }
+	default: return 0;
+	}
 }
 
 int SWMMLoader::ReadGageParams(int j, char* tok[], int ntoks)
 {
-    int      k, err;
-    char     *id;
-    char     fname[MAXFNAME+1];
-    char     staID[MAXMSG+1];
-    double   x[7];
+	int      k, err;
+	char     *id;
+	char     fname[MAXFNAME + 1];
+	char     staID[MAXMSG + 1];
+	double   x[7];
 
-    //gage id check skipped
+	// --- check that gage exists
+	if (ntoks < 2) return error_setInpError(ERR_ITEMS, "");
+	id = ProjectFindID(GAGE, tok[0]);
+	if (id == NULL) return error_setInpError(ERR_NAME, tok[0]);
 
-    // --- assign default parameter values
-    x[0] = -1.0;         // No time series index
-    x[1] = 1.0;          // Rain type is volume
-    x[2] = 3600.0;       // Recording freq. is 3600 sec
-    x[3] = 1.0;          // Snow catch deficiency factor
-    x[4] = NO_DATE;      // Default is no start/end date
-    x[5] = NO_DATE;
-    x[6] = 0.0;          // US units
-    strcpy(fname, "");
-    strcpy(staID, "");
+	// --- assign default parameter values
+	x[0] = -1.0;         // No time series index
+	x[1] = 1.0;          // Rain type is volume
+	x[2] = 3600.0;       // Recording freq. is 3600 sec
+	x[3] = 1.0;          // Snow catch deficiency factor
+	x[4] = NO_DATE;      // Default is no start/end date
+	x[5] = NO_DATE;
+	x[6] = 0.0;          // US units
+	strcpy(fname, "");
+	strcpy(staID, "");
 
-    if ( ntoks < 5 )
-      {
-	SetError(ERR_ITEMS,"");
-	return _errCode;
-      }
+	if (ntoks < 5)
+	{
+		SetError(ERR_ITEMS, "");
+		return _errCode;
+	}
 
-    k = findmatch(tok[4], GageDataWords);
-    if      ( k == RAIN_TSERIES )
-    {
-      //called directly from gage.c
-        err = gage_readSeriesFormat(tok, ntoks, x);
-    }
-    else if ( k == RAIN_FILE    )
-    {
-        if ( ntoks < 8 )
-	  {
-	    SetError(ERR_ITEMS, "");
-	    return _errCode;
-	  }
-        strncpy(fname, tok[5], MAXFNAME);
-        strncpy(staID, tok[6], MAXMSG);
-      //called directly from gage.c
-        err = gage_readFileFormat(tok, ntoks, x);
-    }
-    else 
-      {
-	SetError(ERR_KEYWORD, tok[4]);
-	return _errCode;
-      }
+	k = findmatch(tok[4], GageDataWords);
+	if (k == RAIN_TSERIES)
+	{
+		err = GageReadSeriesFormat(tok, ntoks, x);
+	}
+	else if (k == RAIN_FILE)
+	{
+		if (ntoks < 8)
+		{
+			SetError(ERR_ITEMS, "");
+			return _errCode;
+		}
+		strncpy(fname, tok[5], MAXFNAME);
+		strncpy(staID, tok[6], MAXMSG);
+		//called directly from gage.c
+		//  err = gage_readFileFormat(tok, ntoks, x);
+	}
+	else
+	{
+		SetError(ERR_KEYWORD, tok[4]);
+		return _errCode;
+	}
 
-    // --- save parameters to rain gage object
-    if ( err > 0 ) return err;
- //   _gages[j].ID		   = id;
-    _gages[j].tSeries      = (int)x[0];
-    _gages[j].rainType     = (int)x[1];
-    _gages[j].rainInterval = (int)x[2];
-    _gages[j].snowFactor   = x[3];
-    _gages[j].rainUnits    = (int)x[6];
-    if ( _gages[j].tSeries >= 0 ) _gages[j].dataSource = RAIN_TSERIES;
-    else                        _gages[j].dataSource = RAIN_FILE;
-    if ( _gages[j].dataSource == RAIN_FILE )
-    {
-        strncpy(_gages[j].fname, fname, MAXFNAME);
-        strncpy(_gages[j].staID, staID, MAXMSG);
-        _gages[j].startFileDate = x[4];
-        _gages[j].endFileDate = x[5];
-    }
-    _gages[j].unitsFactor = 1.0;
-    _gages[j].coGage = -1;
-    _gages[j].isUsed = FALSE;
-    return 0;
+	// --- save parameters to rain gage object
+	if (err > 0) return err;
+	_gages[j].ID = id;
+	_gages[j].tSeries = (int)x[0];
+	_gages[j].rainType = (int)x[1];
+	_gages[j].rainInterval = (int)x[2];
+	_gages[j].snowFactor = x[3];
+	_gages[j].rainUnits = (int)x[6];
+	if (_gages[j].tSeries >= 0) _gages[j].dataSource = RAIN_TSERIES;
+	else                        _gages[j].dataSource = RAIN_FILE;
+	if (_gages[j].dataSource == RAIN_FILE)
+	{
+		strncpy(_gages[j].fname, fname, MAXFNAME);
+		strncpy(_gages[j].staID, staID, MAXMSG);
+		_gages[j].startFileDate = x[4];
+		_gages[j].endFileDate = x[5];
+	}
+	_gages[j].unitsFactor = 1.0;
+	_gages[j].coGage = -1;
+	_gages[j].isUsed = FALSE;
+	return 0;
 }
+
+int SWMMLoader::GageReadSeriesFormat(char* tok[], int ntoks, double x[])
+{
+	int m, ts;
+	DateTime aTime;
+
+	if (ntoks < 6) return error_setInpError(ERR_ITEMS, "");
+
+	// --- determine type of rain data
+	m = findmatch(tok[1], RainTypeWords);
+	if (m < 0) return error_setInpError(ERR_KEYWORD, tok[1]);
+	x[1] = (double)m;
+
+	// --- get data time interval & convert to seconds
+	if (getDouble(tok[2], &x[2])) x[2] = floor(x[2] * 3600 + 0.5);
+	else if (datetime_strToTime(tok[2], &aTime))
+	{
+		x[2] = floor(aTime*SECperDAY + 0.5);
+	}
+	else return error_setInpError(ERR_DATETIME, tok[2]);
+	if (x[2] <= 0.0) return error_setInpError(ERR_DATETIME, tok[2]);
+
+	// --- get snow catch deficiency factor
+	if (!getDouble(tok[3], &x[3]))
+		return error_setInpError(ERR_DATETIME, tok[3]);;
+
+	// --- get time series index
+	ts = ProjectFindObject(TSERIES, tok[5]);
+	if (ts < 0) return error_setInpError(ERR_NAME, tok[5]);
+	x[0] = (double)ts;
+	strcpy(tok[2], "");
+	return 0;
+}
+
 
 int  SWMMLoader::ReadSubcatchParams(int j, char* tok[], int ntoks)
 {
-    int    i, k, m;
-    char*  id;
-    double x[9];
+	int    i, k, m;
+	char*  id;
+	double x[9];
 
-    // --- check for enough tokens
-    if ( ntoks < 8 ) 
-      {
-	SetError(ERR_ITEMS, "");
-	return _errCode;
-      }
-    //skip all other checks
+	// --- check for enough tokens
+	if (ntoks < 8)
+	{
+		SetError(ERR_ITEMS, "");
+		return _errCode;
+	}
 
-    // --- assign input values to subcatch's properties
- //   _subcatches[j].ID = id;
-    _subcatches[j].gage        = (int)x[0];
-    _subcatches[j].outNode     = (int)x[1];
-    _subcatches[j].outSubcatch = (int)x[2];
-    _subcatches[j].area        = x[3] / UCF(LANDAREA);
-    _subcatches[j].fracImperv  = x[4] / 100.0;
-    _subcatches[j].width       = x[5] / UCF(LENGTH);
-    _subcatches[j].slope       = x[6] / 100.0;
-    _subcatches[j].curbLength  = x[7];
+	// --- check that named subcatch exists
+	id = ProjectFindID(SUBCATCH, tok[0]);
+	if (id == NULL) return error_setInpError(ERR_NAME, tok[0]);
 
-    // --- create the snow pack object if it hasn't already been created
-    // if ( x[8] >= 0 )
-    // {
-    //     if ( !snow_createSnowpack(j, (int)x[8]) )
-    //         return error_setInpError(ERR_MEMORY, "");
-    // }
-    return 0;
+	// --- check that rain gage exists
+	k = ProjectFindObject(GAGE, tok[1]);
+	if (k < 0) return error_setInpError(ERR_NAME, tok[1]);
+	x[0] = k;
+
+	// don't have a node object yet
+	//// --- check that outlet node or subcatch exists
+	//m = project_findObject(NODE, tok[2]);
+	//x[1] = m;
+	//m = project_findObject(SUBCATCH, tok[2]);
+	//x[2] = m;
+	//if (x[1] < 0.0 && x[2] < 0.0)
+	//	return error_setInpError(ERR_NAME, tok[2]);
+
+	// --- read area, %imperv, width, slope, & curb length
+	for (i = 3; i < 8; i++)
+	{
+		if (!getDouble(tok[i], &x[i]) || x[i] < 0.0)
+			return error_setInpError(ERR_NUMBER, tok[i]);
+	}
+
+	// --- if snowmelt object named, check that it exists
+	x[8] = -1;
+	if (ntoks > 8)
+	{
+		k = ProjectFindObject(SNOWMELT, tok[8]);
+		if (k < 0) return error_setInpError(ERR_NAME, tok[8]);
+		x[8] = k;
+	}
+
+
+	// --- assign input values to subcatch's properties
+	_subcatches[j].ID = id;
+	_subcatches[j].gage = (int)x[0];
+	//_subcatches[j].outNode     = (int)x[1]; -- don't have nodes yet
+	//_subcatches[j].outSubcatch = (int)x[2]; 
+	_subcatches[j].area = x[3] / UCF(LANDAREA);
+	_subcatches[j].fracImperv = x[4] / 100.0;
+	_subcatches[j].width = x[5] / UCF(LENGTH);
+	_subcatches[j].slope = x[6] / 100.0;
+	_subcatches[j].curbLength = x[7];
+
+	// --- create the snow pack object if it hasn't already been created
+	// if ( x[8] >= 0 )
+	// {
+	//     if ( !snow_createSnowpack(j, (int)x[8]) )
+	//         return error_setInpError(ERR_MEMORY, "");
+	// }
+	return 0;
 }
 
 int  SWMMLoader::getTokens(char *s)
