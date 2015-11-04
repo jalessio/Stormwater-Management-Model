@@ -42,15 +42,22 @@ public:
 	TSubcatch* GetSubcatch(const int & i);
 	int GetSubcatchCount() const;
 
+	//access node info
+	TNode* SWMMLoader::GetNodes();
+	TNode* SWMMLoader::GetNode(const int & i);
+	int SWMMLoader::GetNodeCount() const;
+		
 	//GetCounts for all types
 	int* GetAllCounts();
 
 
 protected:
 
-	int _Nobjects[MAX_OBJ_TYPES];  // Number of each object type
+	int _Nobjects[MAX_OBJ_TYPES];    // Number of each object type
 	int _Mobjects[MAX_OBJ_TYPES];	 // working array
-	/* int _Nnodes[MAX_NODE_TYPES];   // Number of each node sub-type */
+	int _Nnodes[MAX_NODE_TYPES];     // Number of each node sub-type 
+	int _Mnodes[MAX_NODE_TYPES];	 // working array
+
 	/* int _Nlinks[MAX_LINK_TYPES]; */
 	int _errCode;
 	char _errString[512];
@@ -69,6 +76,7 @@ protected:
 	//containers for objects; add more as needed
 	TGage* _gages;
 	TSubcatch* _subcatches;
+	TNode* _nodes;
 	AnalysisOptions* _aoptions; // struct to store analysis options, defined in objects.c
 
 	//utility functions
@@ -80,16 +88,17 @@ protected:
 	//utility functions - scraped from input.c
 	//bool CountObjects();
 	int CountObjects();
-	int ReadOption(char* line);
+	//int ReadOption(char* line);
 	int ReadData();
 	int ParseLine(int sect, char *line);
 	int getTokens(char *s);
 	int addObject(int objType, char* id);
+	int ReadNode(int type);
 
 	//utility functions - scraped from project.c
 	void CreateHashTables();
 	void DeleteHashTables();
-	int ProjectReadOption(char* s1, char* s2, AnalysisOptions *aoptions);
+	//int ProjectReadOption(char* s1, char* s2, AnalysisOptions _aoptions);
 	int ProjectFindObject(int type, char *id);
 	int ProjectAddObject(int type, char *id, int n);
 	char  *ProjectFindID(int type, char *id);
@@ -101,6 +110,11 @@ protected:
 
 	//utility functions - scraped from subcatch.c
 	int ReadSubcatchParams(int j, char* tok[], int ntoks);
+	
+	//utility functions - scraped from node.c
+	int ReadNodeParams(int j, int type, int k, char* tok[], int ntoks);
+	int JuncReadParams(int j, int k, char* tok[], int ntoks);
+	void NodeSetParams(int j, int type, int k, double x[]);
 
 };
 

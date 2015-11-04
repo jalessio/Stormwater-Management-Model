@@ -2,13 +2,13 @@
 ;;               Rain      Time   Snow   Data      
 ;;Name           Type      Intrvl Catch  Source    
 ;;-------------- --------- ------ ------ ----------
-1                INTENSITY 0:05   1.0    TIMESERIES Rain            
+R1                INTENSITY 0:05   1.0    TIMESERIES Rain            
 
 [SUBCATCHMENTS]
 ;;                                                 Total    Pcnt.             Pcnt.    Curb     Snow    
 ;;Name           Raingage         Outlet           Area     Imperv   Width    Slope    Length   Pack    
 ;;-------------- ---------------- ---------------- -------- -------- -------- -------- -------- --------
-1                1                2                8.264    100      600      2.0833   0                        
+S1                1                2                8.264    100      600      2.0833   0                        
 
 [TIMESERIES]
 ;;Name           Date       Time       Value     
@@ -22,3 +22,37 @@ Rain                        0:20       2
 Rain                        0:25       2         
 Rain                        0:30       2         
 
+[JUNCTIONS]
+;;               Invert     Max.       Init.      Surcharge  Ponded    
+;;Name           Elev.      Depth      Depth      Depth      Area      
+;;-------------- ---------- ---------- ---------- ---------- ----------
+J1                0          0          0          0          0         
+
+
+[OPTIONS]
+FLOW_UNITS           CFS
+INFILTRATION         HORTON
+FLOW_ROUTING         KINWAVE
+START_DATE           05/10/2013
+START_TIME           00:00:00
+REPORT_START_DATE    05/10/2013
+REPORT_START_TIME    00:00:00
+END_DATE             06/24/2013
+END_TIME             12:00:00
+SWEEP_START          01/01
+SWEEP_END            12/31
+DRY_DAYS             0
+REPORT_STEP          00:00:30
+WET_STEP             00:05:00
+DRY_STEP             01:00:00
+ROUTING_STEP         0:00:30 
+ALLOW_PONDING        NO
+INERTIAL_DAMPING     PARTIAL
+VARIABLE_STEP        0.75
+LENGTHENING_STEP     0
+MIN_SURFAREA         0
+NORMAL_FLOW_LIMITED  BOTH
+SKIP_STEADY_STATE    NO
+FORCE_MAIN_EQUATION  H-W
+LINK_OFFSETS         DEPTH
+MIN_SLOPE            0
