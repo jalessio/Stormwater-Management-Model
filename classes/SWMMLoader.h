@@ -77,7 +77,8 @@ protected:
 	TGage* _gages;
 	TSubcatch* _subcatches;
 	TNode* _nodes;
-	AnalysisOptions* _aoptions; // struct to store analysis options, defined in objects.c
+	TTable* _tseries; // for timeseries
+	AnalysisOptions _aoptions; // struct to store analysis options, defined in objects.c
 
 	//utility functions
 	void ClearCounts();
@@ -88,17 +89,17 @@ protected:
 	//utility functions - scraped from input.c
 	//bool CountObjects();
 	int CountObjects();
-	//int ReadOption(char* line);
+	int ReadOption(char* line);
 	int ReadData();
 	int ParseLine(int sect, char *line);
-	int getTokens(char *s);
+	int GetTokens(char *s);
 	int addObject(int objType, char* id);
 	int ReadNode(int type);
 
 	//utility functions - scraped from project.c
 	void CreateHashTables();
 	void DeleteHashTables();
-	//int ProjectReadOption(char* s1, char* s2, AnalysisOptions _aoptions);
+	int ProjectReadOption(char* s1, char* s2);
 	int ProjectFindObject(int type, char *id);
 	int ProjectAddObject(int type, char *id, int n);
 	char  *ProjectFindID(int type, char *id);

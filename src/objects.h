@@ -49,22 +49,22 @@
 
 // these were stored as external variables
 // initial values set by SetDefaults();
-// consider moving to objects
-typedef struct{
-	DateTime StartDate;                // Starting date
-	DateTime StartTime;                // Starting time
-	DateTime StartDateTime;            // Starting Date+Time
-	DateTime EndDate;                  // Ending date
-	DateTime EndTime;                  // Ending time
-	DateTime EndDateTime;              // Ending Date+Time
-	DateTime ReportStartDate;          // Report start date
-	DateTime ReportStartTime;          // Report start time
-	DateTime ReportStart;              // Report start Date+Time
-} TTimeList;
+
+//typedef struct{
+//	DateTime StartDate;                // Starting date
+//	DateTime StartTime;                // Starting time
+//	DateTime StartDateTime;            // Starting Date+Time
+//	DateTime EndDate;                  // Ending date
+//	DateTime EndTime;                  // Ending time
+//	DateTime EndDateTime;              // Ending Date+Time
+//	DateTime ReportStartDate;          // Report start date
+//	DateTime ReportStartTime;          // Report start time
+//	DateTime ReportStart;              // Report start Date+Time
+//} TTimeList;
 
 
 // Analysis options
-typedef struct{
+typedef struct {
 	int UnitSystem;               // Unit system
 	int FlowUnits;                // Flow units
 	int InfilModel;               // Infiltration method
