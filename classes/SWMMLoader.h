@@ -104,7 +104,6 @@ protected:
 	int ProjectAddObject(int type, char *id, int n);
 	char  *ProjectFindID(int type, char *id);
 
-
 	//utility functions - scraped from gage.c
 	int ReadGageParams(int j, char* tok[], int ntoks);
 	int GageReadSeriesFormat(char* tok[], int ntoks, double x[]);
@@ -116,6 +115,11 @@ protected:
 	int ReadNodeParams(int j, int type, int k, char* tok[], int ntoks);
 	int JuncReadParams(int j, int k, char* tok[], int ntoks);
 	void NodeSetParams(int j, int type, int k, double x[]);
+
+	//utility functions - scraped from table.c
+	int TableReadTimeseries(char* tok[], int ntoks);
+
+
 
 };
 

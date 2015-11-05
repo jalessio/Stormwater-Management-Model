@@ -37,14 +37,14 @@ return input_getTokens(s);
 const int SWMMLoader::MAXERRS = 100;        // Max. input errors reported
 
 SWMMLoader::SWMMLoader()
-:_inFile(NULL), _gages(NULL), _subcatches(NULL), _nodes(NULL)
+:_inFile(NULL), _gages(NULL), _subcatches(NULL), _nodes(NULL), _tseries(NULL)
 {
 	ClearErr();
 	ClearCounts();
 }
 
 SWMMLoader::SWMMLoader(const char* path)
-:_gages(NULL), _subcatches(NULL), _nodes(NULL)
+:_gages(NULL), _subcatches(NULL), _nodes(NULL), _tseries(NULL)
 {
 	ClearErr();
 	OpenFile(path);
@@ -179,7 +179,7 @@ void SWMMLoader::CreateHashTables()
 	}
 
 	// --- initialize memory pool used to store object ID's
-	if (AllocInit() == NULL) report_writeErrorMsg(ERR_MEMORY, "");
+	if (AllocInit() == NULL) report_writeErrorMsg(ERR_MEMORY, ""); // allocinit called directly from mempool.c
 	else _MemPoolAllocated = TRUE;
 }
 
@@ -653,15 +653,19 @@ void SWMMLoader::ClearObjArrays()
 	delete[] _gages;
 	delete[] _subcatches;
 	delete[] _nodes;
+	delete[] _tseries;
 
 	_gages = NULL;
 	_subcatches = NULL;
 	_nodes = NULL;
+	_tseries = NULL;
 }
 
 // look at createObjects() in project.c -- some values need to be set
 void SWMMLoader::AllocObjArrays()
 {
+	int j;
+
 	//make sure any previous values are disposed of 
 	ClearObjArrays();
 
@@ -672,6 +676,38 @@ void SWMMLoader::AllocObjArrays()
 	_tseries = new TTable[_Nobjects[TSERIES]]();
 
 	//add more as needed
+
+
+	// --- initialize rain gage properties
+	for (j = 0; j < _Nobjects[GAGE]; j++)
+	{
+		_gages[j].tSeries = -1;
+		strcpy(_gages[j].fname, "");
+	}
+
+	// --- initialize subcatchment properties
+	for (j = 0; j < _Nobjects[SUBCATCH]; j++)
+	{
+		_subcatches[j].outSubcatch = -1;
+		_subcatches[j].outNode = -1;
+		_subcatches[j].infil = -1;
+		_subcatches[j].groundwater = NULL;
+		_subcatches[j].gwLatFlowExpr = NULL;                                      //(5.1.007)
+		_subcatches[j].gwDeepFlowExpr = NULL;                                     //(5.1.007)
+		_subcatches[j].snowpack = NULL;
+		_subcatches[j].lidArea = 0.0;
+		//for (k = 0; k < _Nobjects[POLLUT]; k++)
+		//{
+		//	Subcatch[j].initBuildup[k] = 0.0;
+		//}
+	}
+
+	//  --- initialize curves, time series, and time patterns
+	//for (j = 0; j < Nobjects[CURVE]; j++)   table_init(&Curve[j]);
+	for (j = 0; j < _Nobjects[TSERIES]; j++) table_init(&_tseries[j]);
+	//for (j = 0; j < Nobjects[TIMEPATTERN]; j++) inflow_initDwfPattern(j);
+
+
 
 }
 
@@ -785,11 +821,105 @@ int  SWMMLoader::ParseLine(int sect, char *line)
 		_Mobjects[SUBCATCH]++;
 		return err;
 
+	case s_TIMESERIES:
+		return TableReadTimeseries(_Tok, _Ntokens);
+
 	case s_JUNCTION:
 		return ReadNode(JUNCTION);
 
 	default: return 0;
 	}
+}
+
+int SWMMLoader::TableReadTimeseries(char* tok[], int ntoks)
+//
+//  Input:   tok[] = array of string tokens
+//           ntoks = number of tokens
+//  Output:  returns an error code
+//  Purpose: reads a tokenized line of data for a time series table.
+//
+{
+	int    j;                          // time series index
+	int    k;                          // token index
+	int    state;                      // 1: next token should be a date
+	// 2: next token should be a time
+	// 3: next token should be a value 
+	double x, y;                       // time & value table entries
+	DateTime d;                        // day portion of date/time value
+	DateTime t;                        // time portion of date/time value
+
+	// --- check for minimum number of tokens
+	if (ntoks < 3) return error_setInpError(ERR_ITEMS, "");
+
+	// --- check that time series exists in database
+	j = ProjectFindObject(TSERIES, tok[0]);
+	if (j < 0) return error_setInpError(ERR_NAME, tok[0]);
+
+	// --- if first line of data, assign ID pointer
+	if (_tseries[j].ID == NULL)
+		_tseries[j].ID = ProjectFindID(TSERIES, tok[0]);
+
+	// --- check if time series data is in an external file
+	if (strcomp(tok[1], w_FILE))
+	{
+		sstrncpy(_tseries[j].file.name, tok[2], MAXFNAME);
+		_tseries[j].file.mode = USE_FILE;
+		return 0;
+	}
+
+	// --- parse each token of input line
+	x = 0.0;
+	k = 1;
+	state = 1;               // start off looking for a date
+	while (k < ntoks)
+	{
+		switch (state)
+		{
+		case 1:            // look for a date entry
+			if (datetime_strToDate(tok[k], &d))
+			{
+				_tseries[j].lastDate = d;
+				k++;
+			}
+
+			// --- next token must be a time
+			state = 2;
+			break;
+
+		case 2:            // look for a time entry
+			if (k >= ntoks) return error_setInpError(ERR_ITEMS, "");
+
+			// --- first check for decimal hours format
+			if (getDouble(tok[k], &t)) t /= 24.0;
+
+			// --- then for an hrs:min format
+			else if (!datetime_strToTime(tok[k], &t))
+				return error_setInpError(ERR_NUMBER, tok[k]);
+
+			// --- save date + time in x
+			x = _tseries[j].lastDate + t;
+
+			// --- next token must be a numeric value
+			k++;
+			state = 3;
+			break;
+
+		case 3:
+			// --- extract a numeric value from token
+			if (k >= ntoks) return error_setInpError(ERR_ITEMS, "");
+			if (!getDouble(tok[k], &y))
+				return error_setInpError(ERR_NUMBER, tok[k]);
+
+			// --- add date/time & value to time series -- called directly from table.c
+			table_addEntry(&_tseries[j], x, y);
+
+			// --- start over looking first for a date
+			k++;
+			state = 1;
+			break;
+		}
+	}
+	return 0;
 }
 
 // from input.c
