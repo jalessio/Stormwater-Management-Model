@@ -42,7 +42,7 @@ public:
 	TSubcatch* GetSubcatch(const int & i);
 	int GetSubcatchCount() const;
 
-	//access node info
+	//access node info -- should this reflect that there are different kind of nodes?
 	TNode* SWMMLoader::GetNodes();
 	TNode* SWMMLoader::GetNode(const int & i);
 	int SWMMLoader::GetNodeCount() const;
@@ -78,8 +78,10 @@ protected:
 	TSubcatch* _subcatches;
 	TNode* _nodes;
 	TTable* _tseries; // for timeseries
-	AnalysisOptions _aoptions; // struct to store analysis options, defined in objects.c
-
+	AnalysisOptions _aoptions; // struct to store analysis options, defined in objects.h
+	DateTimeList _datetimelist; // struct to store times, defined in objects.h
+	DoubleTimeList _doubletimelist;
+	
 	//utility functions
 	void ClearCounts();
 	void SetError(const int & errcode, const char* s);
@@ -118,8 +120,5 @@ protected:
 
 	//utility functions - scraped from table.c
 	int TableReadTimeseries(char* tok[], int ntoks);
-
-
-
 };
 

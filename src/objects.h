@@ -50,18 +50,27 @@
 // these were stored as external variables
 // initial values set by SetDefaults();
 
-//typedef struct{
-//	DateTime StartDate;                // Starting date
-//	DateTime StartTime;                // Starting time
-//	DateTime StartDateTime;            // Starting Date+Time
-//	DateTime EndDate;                  // Ending date
-//	DateTime EndTime;                  // Ending time
-//	DateTime EndDateTime;              // Ending Date+Time
-//	DateTime ReportStartDate;          // Report start date
-//	DateTime ReportStartTime;          // Report start time
-//	DateTime ReportStart;              // Report start Date+Time
-//} TTimeList;
+// Times
+typedef struct{
+	DateTime StartDate;                // Starting date
+	DateTime StartTime;                // Starting time
+	DateTime StartDateTime;            // Starting Date+Time
+	DateTime EndDate;                  // Ending date
+	DateTime EndTime;                  // Ending time
+	DateTime EndDateTime;              // Ending Date+Time
+	DateTime ReportStartDate;          // Report start date
+	DateTime ReportStartTime;          // Report start time
+	DateTime ReportStart;              // Report start Date+Time
+} DateTimeList;
 
+typedef struct{
+	double ReportTime;               // Current reporting time (msec)
+	double OldRunoffTime;            // Previous runoff time (msec)
+	double NewRunoffTime;            // Current runoff time (msec)
+	double OldRoutingTime;           // Previous routing time (msec)
+	double NewRoutingTime;           // Current routing time (msec)
+	double TotalDuration;            // Simulation duration (msec)
+} DoubleTimeList;
 
 // Analysis options
 typedef struct {
@@ -97,6 +106,7 @@ typedef struct {
 	double StartDryDays;          // Antecedent dry days
 	double CourantFactor;         // Courant time step factor
 	double MinSurfArea;           // Minimum nodal surface area
+	double MinSlope;              // Minimum conduit slope
 
 	double RouteStep;                // Routing time step (sec)
 	double MinRouteStep;             // Minimum variable time step (sec) //(5.1.008)
@@ -107,7 +117,20 @@ typedef struct {
 
 } AnalysisOptions;
 
-
+//RouteStep,                // Routing time step (sec)
+//MinRouteStep,             // Minimum variable time step (sec) //(5.1.008)
+//LengtheningStep,          // Time step for lengthening (sec)
+//StartDryDays,             // Antecedent dry days
+//CourantFactor,            // Courant time step factor
+//MinSurfArea,              // Minimum nodal surface area
+//
+//RunoffError,              // Runoff continuity error
+//GwaterError,              // Groundwater continuity error
+//FlowError,                // Flow routing error
+//QualError,                // Quality routing error
+//HeadTol,                  // DW routing head tolerance (ft)
+//SysFlowTol,               // Tolerance for steady system flow
+//LatFlowTol;               // Tolerance for steady nodal inflow     
 //-----------------
 // FILE INFORMATION
 //-----------------

@@ -64,6 +64,9 @@ bool SWMMLoader::OpenFile(const char* path)
 		return false;
 	}
 
+	// usually handled by swmm_open by here for now
+	datetime_setDateFormat(M_D_Y);
+
 	CreateHashTables();
 
 	if (CountObjects() != ERR_NONE)
@@ -72,6 +75,45 @@ bool SWMMLoader::OpenFile(const char* path)
 	AllocObjArrays();
 
 	ReadData();
+
+	// from project_readInput
+	// --- establish starting & ending date/time
+	_datetimelist.StartDateTime = _datetimelist.StartDate + _datetimelist.StartTime;
+	_datetimelist.EndDateTime = _datetimelist.EndDate + _datetimelist.EndTime;
+	_datetimelist.ReportStart = _datetimelist.ReportStartDate + _datetimelist.ReportStartTime;
+	_datetimelist.ReportStart = MAX(_datetimelist.ReportStart, _datetimelist.StartDateTime);
+
+	// --- check for valid starting & ending date/times
+	if (_datetimelist.EndDateTime <= _datetimelist.StartDateTime)
+	{
+		report_writeErrorMsg(ERR_START_DATE, "");
+	}
+	else if (_datetimelist.EndDateTime <= _datetimelist.ReportStart)
+	{
+		report_writeErrorMsg(ERR_REPORT_DATE, "");
+	}
+	else
+	{
+		////  Following code segment was modified for release 5.1.009.  ////           //(5.1.009)
+		////
+		// --- compute total duration of simulation in seconds
+		_doubletimelist.TotalDuration = floor((_datetimelist.EndDateTime - _datetimelist.StartDateTime) * SECperDAY);
+
+		// --- reporting step must be <= total duration
+		if ((double)_aoptions.ReportStep > _doubletimelist.TotalDuration)
+		{
+			_aoptions.ReportStep = (int)(_doubletimelist.TotalDuration);
+		}
+
+		// --- reporting step can't be < routing step
+		if ((double)_aoptions.ReportStep < _aoptions.RouteStep)
+		{
+			report_writeErrorMsg(ERR_REPORT_STEP, "");
+		}
+
+		// --- convert total duration to milliseconds
+		_doubletimelist.TotalDuration *= 1000.0;
+	}
 
 	return _errCode == ERR_NONE;
 
@@ -357,7 +399,7 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2)
 	if (k < 0) return error_setInpError(ERR_KEYWORD, s1);
 	switch (k)
 	{
-		// --- choice of flow units
+	// --- choice of flow units
 	case FLOW_UNITS:
 		m = findmatch(s2, FlowUnitWords);
 		if (m < 0) return error_setInpError(ERR_KEYWORD, s2);
@@ -366,14 +408,14 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2)
 		else                    UnitSystem = SI;
 		break;
 
-		// --- choice of infiltration modeling method
+	// --- choice of infiltration modeling method
 	case INFIL_MODEL:
 		m = findmatch(s2, InfilModelWords);
 		if (m < 0) return error_setInpError(ERR_KEYWORD, s2);
 		_aoptions.InfilModel = m;
 		break;
 
-		// --- choice of flow routing method
+	// --- choice of flow routing method
 	case ROUTE_MODEL:
 		m = findmatch(s2, RouteModelWords);
 		if (m < 0) m = findmatch(s2, OldRouteModelWords);
@@ -383,58 +425,58 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2)
 		if (RouteModel == EKW) _aoptions.RouteModel = KW;
 		break;
 
-		// these are stored in TTimeList
-		// --- simulation start date
-		//case START_DATE:
-		//	if (!datetime_strToDate(s2, &StartDate))
-		//	{
-		//		return error_setInpError(ERR_DATETIME, s2);
-		//	}
-		//	break;
+	// these are stored in TTimeList
+	// --- simulation start date
+	case START_DATE:
+		if (!datetime_strToDate(s2, &_datetimelist.StartDate))
+		{
+			return error_setInpError(ERR_DATETIME, s2);
+		}
+		break;
 
-		//	// --- simulation start time of day
-		//case START_TIME:
-		//	if (!datetime_strToTime(s2, &StartTime))
-		//	{
-		//		return error_setInpError(ERR_DATETIME, s2);
-		//	}
-		//	break;
+	// --- simulation start time of day
+	case START_TIME:
+		if (!datetime_strToTime(s2, &_datetimelist.StartTime))
+		{
+			return error_setInpError(ERR_DATETIME, s2);
+		}
+		break;
 
-		//	// --- simulation ending date
-		//case END_DATE:
-		//	if (!datetime_strToDate(s2, &EndDate))
-		//	{
-		//		return error_setInpError(ERR_DATETIME, s2);
-		//	}
-		//	break;
+	// --- simulation ending date
+	case END_DATE:
+		if (!datetime_strToDate(s2, &_datetimelist.EndDate))
+		{
+			return error_setInpError(ERR_DATETIME, s2);
+		}
+		break;
 
-		//	// --- simulation ending time of day
-		//case END_TIME:
-		//	if (!datetime_strToTime(s2, &EndTime))
-		//	{
-		//		return error_setInpError(ERR_DATETIME, s2);
-		//	}
-		//	break;
+	// --- simulation ending time of day
+	case END_TIME:
+		if (!datetime_strToTime(s2, &_datetimelist.EndTime))
+		{
+			return error_setInpError(ERR_DATETIME, s2);
+		}
+		break;
 
-		//	// --- reporting start date
-		//case REPORT_START_DATE:
-		//	if (!datetime_strToDate(s2, &ReportStartDate))
-		//	{
-		//		return error_setInpError(ERR_DATETIME, s2);
-		//	}
-		//	break;
+	// --- reporting start date
+	case REPORT_START_DATE:
+		if (!datetime_strToDate(s2, &_datetimelist.ReportStartDate))
+		{
+			return error_setInpError(ERR_DATETIME, s2);
+		}
+		break;
 
-		//	// --- reporting start time of day
-		//case REPORT_START_TIME:
-		//	if (!datetime_strToTime(s2, &ReportStartTime))
-		//	{
-		//		return error_setInpError(ERR_DATETIME, s2);
-		//	}
-		//	break;
+	// --- reporting start time of day
+	case REPORT_START_TIME:
+		if (!datetime_strToTime(s2, &_datetimelist.ReportStartTime))
+		{
+			return error_setInpError(ERR_DATETIME, s2);
+		}
+		break;
 
-		// --- day of year when street sweeping begins or when it ends
-		//     (year is arbitrarily set to 1947 so that the dayOfYear
-		//      function can be applied)
+	// --- day of year when street sweeping begins or when it ends
+	//     (year is arbitrarily set to 1947 so that the dayOfYear
+	//      function can be applied)
 	case SWEEP_START:
 	case SWEEP_END:
 		strcpy(strDate, s2);
@@ -448,7 +490,7 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2)
 		else _aoptions.SweepEnd = m;
 		break;
 
-		// --- number of antecedent dry days
+	// --- number of antecedent dry days
 	case START_DRY_DAYS:
 		_aoptions.StartDryDays = atof(s2);
 		if (StartDryDays < 0.0)
@@ -457,8 +499,8 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2)
 		}
 		break;
 
-		// --- runoff or reporting time steps
-		//     (input is in hrs:min:sec format, time step saved as seconds)
+	// --- runoff or reporting time steps
+	//     (input is in hrs:min:sec format, time step saved as seconds)
 	case WET_STEP:
 	case DRY_STEP:
 	case REPORT_STEP:
@@ -478,14 +520,14 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2)
 		}
 		break;
 
-		// --- type of damping applied to inertial terms of dynamic wave routing
+	// --- type of damping applied to inertial terms of dynamic wave routing
 	case INERT_DAMPING:
 		m = findmatch(s2, InertDampingWords);
 		if (m < 0) return error_setInpError(ERR_KEYWORD, s2);
 		else _aoptions.InertDamping = m;
 		break;
 
-		// --- Yes/No options (NO = 0, YES = 1)
+	// --- Yes/No options (NO = 0, YES = 1)
 	case ALLOW_PONDING:
 	case SLOPE_WEIGHTING:
 	case SKIP_STEADY_STATE:
@@ -530,19 +572,19 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2)
 		_aoptions.LinkOffsets = m;
 		break;
 
-		// --- compatibility option for selecting solution method for
-		//     dynamic wave flow routing (NOT CURRENTLY USED)
-	case COMPATIBILITY:
-		if (strcomp(s2, "3")) _aoptions.Compatibility = SWMM3;
-		else if (strcomp(s2, "4")) _aoptions.Compatibility = SWMM4;
-		else if (strcomp(s2, "5")) _aoptions.Compatibility = SWMM5;
-		else return error_setInpError(ERR_KEYWORD, s2);
-		break;
+	// --- compatibility option for selecting solution method for
+	//     dynamic wave flow routing (NOT CURRENTLY USED)
+	//case COMPATIBILITY:
+	//	if (strcomp(s2, "3")) _aoptions.Compatibility = SWMM3;
+	//	else if (strcomp(s2, "4")) _aoptions.Compatibility = SWMM4;
+	//	else if (strcomp(s2, "5")) _aoptions.Compatibility = SWMM5;
+	//	else return error_setInpError(ERR_KEYWORD, s2);
+	//	break;
 
-		// --- routing or lengthening time step (in decimal seconds)
-		//     (lengthening time step is used in Courant stability formula
-		//     to artificially lengthen conduits for dynamic wave flow routing
-		//     (a value of 0 means that no lengthening is used))
+	// --- routing or lengthening time step (in decimal seconds)
+	//     (lengthening time step is used in Courant stability formula
+	//     to artificially lengthen conduits for dynamic wave flow routing
+	//     (a value of 0 means that no lengthening is used))
 	case ROUTE_STEP:
 	case LENGTHENING_STEP:
 		if (!getDouble(s2, &tStep))
@@ -567,54 +609,53 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2)
 		else _aoptions.LengtheningStep = MAX(0.0, tStep);
 		break;
 
-		////  Following code section added to release 5.1.008.  ////                   //(5.1.008)
+	////  Following code section added to release 5.1.008.  ////                   //(5.1.008)
 
-		// --- minimum variable time step for dynamic wave routing
-		//case MIN_ROUTE_STEP:
-		//	if (!getDouble(s2, &MinRouteStep) || MinRouteStep < 0.0)
-		//		return error_setInpError(ERR_NUMBER, s2);
-		//	break;
+	// --- minimum variable time step for dynamic wave routing
+	//case MIN_ROUTE_STEP:
+	//	if (!getDouble(s2, &MinRouteStep) || MinRouteStep < 0.0)
+	//		return error_setInpError(ERR_NUMBER, s2);
+	//	break;
 
 	case NUM_THREADS:
 		m = atoi(s2);
 		if (m < 0) return error_setInpError(ERR_NUMBER, s2);
 		_aoptions.NumThreads = m;
 		break;
-		////
 
-		//	// --- safety factor applied to variable time step estimates under
-		//	//     dynamic wave flow routing (value of 0 indicates that variable
-		//	//     time step option not used)
-		//case VARIABLE_STEP:
-		//	if (!getDouble(s2, &CourantFactor))
-		//		return error_setInpError(ERR_NUMBER, s2);
-		//	if (CourantFactor < 0.0 || CourantFactor > 2.0)
-		//		return error_setInpError(ERR_NUMBER, s2);
-		//	break;
+	// --- safety factor applied to variable time step estimates under
+	//     dynamic wave flow routing (value of 0 indicates that variable
+	//     time step option not used)
+	//case VARIABLE_STEP:
+	//	if (!getDouble(s2, &CourantFactor))
+	//		return error_setInpError(ERR_NUMBER, s2);
+	//	if (CourantFactor < 0.0 || CourantFactor > 2.0)
+	//		return error_setInpError(ERR_NUMBER, s2);
+	//	break;
 
-		// --- minimum surface area (ft2 or sq. meters) associated with nodes
-		//     under dynamic wave flow routing 
+	// --- minimum surface area (ft2 or sq. meters) associated with nodes
+	//     under dynamic wave flow routing 
 	case MIN_SURFAREA:
 		_aoptions.MinSurfArea = atof(s2);
 		break;
 
-		// --- minimum conduit slope (%)
+	// --- minimum conduit slope (%)
 	case MIN_SLOPE:
-		if (!getDouble(s2, &MinSlope))
+		if (!getDouble(s2, &_aoptions.MinSlope))
 			return error_setInpError(ERR_NUMBER, s2);
-		if (MinSlope < 0.0 || MinSlope >= 100)
+		if (_aoptions.MinSlope < 0.0 || _aoptions.MinSlope >= 100)
 			return error_setInpError(ERR_NUMBER, s2);
-		MinSlope /= 100.0;
+		_aoptions.MinSlope /= 100.0;
 		break;
 
-		// --- maximum trials / time step for dynamic wave routing
+	// --- maximum trials / time step for dynamic wave routing
 	case MAX_TRIALS:
 		m = atoi(s2);
 		if (m < 0) return error_setInpError(ERR_NUMBER, s2);
 		_aoptions.MaxTrials = m;
 		break;
 
-		// --- head convergence tolerance for dynamic wave routing
+	// --- head convergence tolerance for dynamic wave routing
 	case HEAD_TOL:
 		if (!getDouble(s2, &HeadTol))
 		{
@@ -622,7 +663,7 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2)
 		}
 		break;
 
-		// --- steady state tolerance on system inflow - outflow
+	// --- steady state tolerance on system inflow - outflow
 	case SYS_FLOW_TOL:
 		if (!getDouble(s2, &SysFlowTol))
 		{
@@ -631,7 +672,7 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2)
 		_aoptions.SysFlowTol /= 100.0;
 		break;
 
-		// --- steady state tolerance on nodal lateral inflow
+	// --- steady state tolerance on nodal lateral inflow
 	case LAT_FLOW_TOL:
 		if (!getDouble(s2, &LatFlowTol))
 		{
@@ -831,6 +872,9 @@ int  SWMMLoader::ParseLine(int sect, char *line)
 	}
 }
 
+
+// if you move to reading from a separate file, you'll need to move the external variable Frain (type Tfile)
+// into the class
 int SWMMLoader::TableReadTimeseries(char* tok[], int ntoks)
 //
 //  Input:   tok[] = array of string tokens
@@ -1116,7 +1160,7 @@ int SWMMLoader::ReadGageParams(int j, char* tok[], int ntoks)
 		}
 		strncpy(fname, tok[5], MAXFNAME);
 		strncpy(staID, tok[6], MAXMSG);
-		//called directly from gage.c
+		// if you want to read from a file, scrape from gage.c and change to use correct hash table
 		//  err = gage_readFileFormat(tok, ntoks, x);
 	}
 	else
