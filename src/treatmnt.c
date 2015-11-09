@@ -45,7 +45,7 @@ static double* Cin;                    // node inflow concentrations
 //  External functions (declared in funcs.h)
 //-----------------------------------------------------------------------------
 //  treatmnt_open           (called from routing_open)
-//  treatment_close         (called from routing_close)
+//  treatmnt_close         (called from routing_close)
 //  treatmnt_readExpression (called from parseLine in input.c)
 //  treatmnt_delete         (called from deleteObjects in project.c)
 //  treatmnt_setInflow      (called from qualrout_execute)

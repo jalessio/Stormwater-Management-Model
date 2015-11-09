@@ -6,12 +6,13 @@ int main()
 	// SWMMLoader.c test stuff
 	const char* path = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.inp";
 	int nsubcatch;
+	TSubcatch* subcatch0;
+	TSubcatch* subcatch0mod;
 
 	SWMMLoader swmmLoader(path);
-
-	nsubcatch = swmmLoader.GetSubcatchCount();
-
-	//subcatch = swmmLoader.GetSubcatch(0);
+	subcatch0 = swmmLoader.GetSubcatch(0);
+	swmmLoader.SetSubcatch(0, 17);
+	subcatch0mod = swmmLoader.GetSubcatch(0);
 
 	return 0;
 

@@ -8,31 +8,7 @@ In order for us to be able to add linkages to the called functions.
 Functions and variables declared static are typically only available
 within the scope of the c file, and cannot be directly extern'd.
 Therefore, we need the wrappers below.
-
-int gage_readSeriesFormat(char* tok[], int ntoks, double x[])
-{
-return readGageSeriesFormat(tok,ntoks,x);
-}
-
-int gage_readFileFormat(char* tok[], int ntoks, double x[])
-{
-return readGageFileFormat(tok,ntoks,x);
-}
-
 */
-
-//for findmatch(),getTokens()
-//#include "input.c"
-/*
-The following wrapper needs to be inserted into input.c; see
-previous comment for explanation.
-
-int input_getTokens(char *s)
-{
-return input_getTokens(s);
-}
-*/
-
 
 const int SWMMLoader::MAXERRS = 100;        // Max. input errors reported
 
@@ -64,7 +40,7 @@ bool SWMMLoader::OpenFile(const char* path)
 		return false;
 	}
 
-	// usually handled by swmm_open by here for now
+	// usually handled by swmm_open but here for now
 	datetime_setDateFormat(M_D_Y);
 
 	CreateHashTables();
@@ -290,7 +266,6 @@ int SWMMLoader::CountObjects()
 	int   sect = -1, newsect;          // input data sections          
 	int   errcode = 0;                 // error code
 	int   errsum = 0;                  // number of errors found                   
-	//	int   i;
 	long  lineCount = 0;
 
 	// --- initialize number of objects & set default values
@@ -846,9 +821,9 @@ int  SWMMLoader::ParseLine(int sect, char *line)
 	int j, err;
 	switch (sect)
 	{
-		//presently only subcatch and gage captured;
-		//add more as needed.
-		//see parseLine() in input.c
+	//presently only subcatch and gage captured;
+	//add more as needed.
+	//see parseLine() in input.c
 
 	case s_RAINGAGE:
 		j = _Mobjects[GAGE];
@@ -863,10 +838,10 @@ int  SWMMLoader::ParseLine(int sect, char *line)
 		return err;
 
 	case s_TIMESERIES:
-		return TableReadTimeseries(_Tok, _Ntokens);
+		return TableReadTimeseries(_Tok, _Ntokens); // looks like swmm doesn't keep track of _Mobjects[TSERIES]?
 
 	case s_JUNCTION:
-		return ReadNode(JUNCTION);
+		return ReadNode(JUNCTION);					// _Mobjects in ReadNode
 
 	default: return 0;
 	}
@@ -1248,7 +1223,6 @@ int  SWMMLoader::ReadSubcatchParams(int j, char* tok[], int ntoks)
 	if (k < 0) return error_setInpError(ERR_NAME, tok[1]);
 	x[0] = k;
 
-	// don't have a node object yet
 	// --- check that outlet node or subcatch exists
 	m = ProjectFindObject(NODE, tok[2]);
 	x[1] = m;
@@ -1272,7 +1246,6 @@ int  SWMMLoader::ReadSubcatchParams(int j, char* tok[], int ntoks)
 		if (k < 0) return error_setInpError(ERR_NAME, tok[8]);
 		x[8] = k;
 	}
-
 
 	// --- assign input values to subcatch's properties
 	_subcatches[j].ID = id;
@@ -1343,3 +1316,28 @@ int  SWMMLoader::GetTokens(char *s)
 	return(n);
 }
 
+int SWMMLoader::SetSubcatch(int index, double fracimperv)
+//Format:
+//	[SUBCATCHMENTS]
+//	Name Rgage OutID Area %Imperv Width Slope Clength (Spack)
+
+//	Name	name assigned to subcatchment.
+//	Rgage	name of rain gage in[RAINGAGES] section assigned to subcatchment.
+//	OutID	name of node or subcatchment that receives runoff from subcatchment.
+//	Area	area of subcatchment(acres or hectares). 
+//	%Imperv percent imperviousness of subcatchment.
+//	Width	characteristic width of subcatchment(ft or meters).
+//	Slope	subcatchment slope(percent).
+//	Clength total curb length(any length units).
+//	Spack	name of snow pack object(from[SNOWPACKS] section) that
+//			characterizes snow accumulation and melting over the subcatchment.
+{
+	//-- check that subcatch exists
+	TSubcatch* subcatch = GetSubcatch(index);
+	
+	if (subcatch == NULL) return 444; // error -- add to table or find one that makes sense
+
+	_subcatches[index].fracImperv = fracimperv / 100.0;
+	
+	return 0;
+}

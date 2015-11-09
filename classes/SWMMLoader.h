@@ -49,7 +49,9 @@ public:
 		
 	//GetCounts for all types
 	int* GetAllCounts();
-
+	
+	//set subcatch info
+	int SetSubcatch(int index, double fracimperv);  // just impervious fraction for now
 
 protected:
 
