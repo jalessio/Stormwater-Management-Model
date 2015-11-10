@@ -13,14 +13,14 @@ Therefore, we need the wrappers below.
 const int SWMMLoader::MAXERRS = 100;        // Max. input errors reported
 
 SWMMLoader::SWMMLoader()
-:_inFile(NULL), _gages(NULL), _subcatches(NULL), _nodes(NULL), _tseries(NULL)
+:_inFile(NULL), _gages(NULL), _subcatches(NULL), _nodes(NULL), _tseries(NULL), _hortinfil(NULL)
 {
 	ClearErr();
 	ClearCounts();
 }
 
 SWMMLoader::SWMMLoader(const char* path)
-:_gages(NULL), _subcatches(NULL), _nodes(NULL), _tseries(NULL)
+:_gages(NULL), _subcatches(NULL), _nodes(NULL), _tseries(NULL), _hortinfil(NULL)
 {
 	ClearErr();
 	OpenFile(path);
@@ -815,11 +815,13 @@ void SWMMLoader::ClearObjArrays()
 	delete[] _subcatches;
 	delete[] _nodes;
 	delete[] _tseries;
+	delete[] _hortinfil;
 
 	_gages = NULL;
 	_subcatches = NULL;
 	_nodes = NULL;
 	_tseries = NULL;
+	_hortinfil = NULL;
 }
 
 // look at createObjects() in project.c -- some values need to be set
@@ -837,7 +839,7 @@ void SWMMLoader::AllocObjArrays()
 	_tseries = new TTable[_Nobjects[TSERIES]]();
 
 	// --- allocate memory for infiltration data
-	InfilCreate(_Nobjects[SUBCATCH], InfilModel);
+	InfilCreate(_Nobjects[SUBCATCH], _aoptions.InfilModel); // this uses calloc -- probably need to be consistent
 
 	//add more as needed
 
@@ -999,8 +1001,6 @@ int  SWMMLoader::ParseLine(int sect, char *line)
 }
 
 
-// if you move to reading from a separate file, you'll need to move the external variable Frain (type Tfile)
-// into the class
 int SWMMLoader::TableReadTimeseries(char* tok[], int ntoks)
 //
 //  Input:   tok[] = array of string tokens
@@ -1430,8 +1430,9 @@ void SWMMLoader::InfilCreate(int subcatchCount, int model)
 	{
 	case HORTON:
 	case MOD_HORTON:
-		_HortInfil = (THorton *)calloc(subcatchCount, sizeof(THorton));
-		if (_HortInfil == NULL) ErrorCode = ERR_MEMORY;
+		//_HortInfil = (THorton *)calloc(subcatchCount, sizeof(THorton));
+		_hortinfil = new THorton[_Nobjects[SUBCATCH]]();
+		if (_hortinfil == NULL) ErrorCode = ERR_MEMORY;
 		break;
 	//case GREEN_AMPT:
 	//case MOD_GREEN_AMPT:                                                       //(5.1.010)
@@ -1493,7 +1494,7 @@ int SWMMLoader::InfilReadParams(int m, char* tok[], int ntoks)
 	switch (m)
 	{
 	case HORTON:
-	case MOD_HORTON:   status = HortonSetParams(&_HortInfil[j], x);
+	case MOD_HORTON:   status = HortonSetParams(&_hortinfil[j], x);
 		break;
 	//case GREEN_AMPT:
 	//case MOD_GREEN_AMPT:                                                     //(5.1.010)
