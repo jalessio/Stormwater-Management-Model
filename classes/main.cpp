@@ -5,7 +5,7 @@ int main()
 {
 	// SWMMLoader.c test stuff
 	const char* path = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.inp";
-	int nsubcatch;
+	//int nsubcatch;
 	TSubcatch* subcatch0;
 	TSubcatch* subcatch0mod;
 

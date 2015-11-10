@@ -363,7 +363,7 @@ void SWMMLoader::SetDefaults()
 //  Purpose: assigns default values to project variables.
 //
 {
-	int i, j;
+	//int i, j;
 
 	//// Project title & temp. file path
 	//for (i = 0; i < MAXTITLE; i++) strcpy(Title[i], "");
@@ -836,6 +836,9 @@ void SWMMLoader::AllocObjArrays()
 	_nodes = new TNode[_Nobjects[NODE]]();
 	_tseries = new TTable[_Nobjects[TSERIES]]();
 
+	// --- allocate memory for infiltration data
+	InfilCreate(_Nobjects[SUBCATCH], InfilModel);
+
 	//add more as needed
 
 
@@ -880,7 +883,7 @@ int SWMMLoader::ReadData()
 	int   sect, newsect;          // data sections
 	int   inperr, errsum;         // error code & total error count
 	int   lineLength;             // number of characters in input line
-	int   i;
+	//int   i;
 	long  lineCount = 0;
 
 	// --- read each line from input file
@@ -987,6 +990,9 @@ int  SWMMLoader::ParseLine(int sect, char *line)
 
 	case s_JUNCTION:
 		return ReadNode(JUNCTION);					// _Mobjects in ReadNode
+
+	case s_INFIL:
+		return InfilReadParams(InfilModel, _Tok, _Ntokens);
 
 	default: return 0;
 	}
@@ -1410,6 +1416,125 @@ int  SWMMLoader::ReadSubcatchParams(int j, char* tok[], int ntoks)
 	//         return error_setInpError(ERR_MEMORY, "");
 	// }
 	return 0;
+}
+
+void SWMMLoader::InfilCreate(int subcatchCount, int model)
+//
+//  Purpose: creates an array of infiltration objects.
+//  Input:   n = number of subcatchments
+//           m = infiltration method code
+//  Output:  none
+//
+{
+	switch (model)
+	{
+	case HORTON:
+	case MOD_HORTON:
+		_HortInfil = (THorton *)calloc(subcatchCount, sizeof(THorton));
+		if (_HortInfil == NULL) ErrorCode = ERR_MEMORY;
+		break;
+	//case GREEN_AMPT:
+	//case MOD_GREEN_AMPT:                                                       //(5.1.010)
+	//	GAInfil = (TGrnAmpt *)calloc(subcatchCount, sizeof(TGrnAmpt));
+	//	if (GAInfil == NULL) ErrorCode = ERR_MEMORY;
+	//	break;
+	//case CURVE_NUMBER:
+	//	CNInfil = (TCurveNum *)calloc(subcatchCount, sizeof(TCurveNum));
+	//	if (CNInfil == NULL) ErrorCode = ERR_MEMORY;
+	//	break;
+	default: ErrorCode = ERR_MEMORY;
+	}
+}
+
+int SWMMLoader::InfilReadParams(int m, char* tok[], int ntoks)
+//
+//  Input:   m = infiltration method code
+//           tok[] = array of string tokens
+//           ntoks = number of tokens
+//  Output:  returns an error code
+//  Purpose: sets infiltration parameters from a line of input data.
+//
+//  Format of data line is:
+//     subcatch  p1  p2 ...
+{
+	int   i, j, n, status;
+	double x[5];
+
+	// --- check that subcatchment exists
+	j = ProjectFindObject(SUBCATCH, tok[0]);
+	if (j < 0) return error_setInpError(ERR_NAME, tok[0]);
+
+	// --- number of input tokens depends on infiltration model m
+	if (m == HORTON)       n = 5;
+	//else if (m == MOD_HORTON)   n = 5;
+	//else if (m == GREEN_AMPT)   n = 4;
+	//else if (m == MOD_GREEN_AMPT)   n = 4;                                   //(5.1.010)
+	//else if (m == CURVE_NUMBER) n = 4;
+	else return 0;
+	if (ntoks < n) return error_setInpError(ERR_ITEMS, "");
+
+	// --- parse numerical values from tokens
+	for (i = 0; i < 5; i++) x[i] = 0.0;
+	for (i = 1; i < n; i++)
+	{
+		if (!getDouble(tok[i], &x[i - 1]))
+			return error_setInpError(ERR_NUMBER, tok[i]);
+	}
+
+	// --- special case for Horton infil. - last parameter is optional
+	if ((m == HORTON || m == MOD_HORTON) && ntoks > n)
+	{
+		if (!getDouble(tok[n], &x[n - 1]))
+			return error_setInpError(ERR_NUMBER, tok[n]);
+	}
+
+	// --- assign parameter values to infil. object
+	_subcatches[j].infil = j;
+	switch (m)
+	{
+	case HORTON:
+	case MOD_HORTON:   status = HortonSetParams(&_HortInfil[j], x);
+		break;
+	//case GREEN_AMPT:
+	//case MOD_GREEN_AMPT:                                                     //(5.1.010)
+	//	status = grnampt_setParams(&GAInfil[j], x);
+	//	break;
+	//case CURVE_NUMBER: status = curvenum_setParams(&CNInfil[j], x);
+	//	break;
+	default:           status = TRUE;
+	}
+	if (!status) return error_setInpError(ERR_NUMBER, "");
+	return 0;
+}
+
+int SWMMLoader::HortonSetParams(THorton *infil, double p[])
+//
+//  Input:   infil = ptr. to Horton infiltration object
+//           p[] = array of parameter values
+//  Output:  returns TRUE if parameters are valid, FALSE otherwise
+//  Purpose: assigns Horton infiltration parameters to a subcatchment.
+//
+{
+	int k;
+	for (k = 0; k<5; k++) if (p[k] < 0.0) return FALSE;
+
+	// --- max. & min. infil rates (ft/sec)
+	infil->f0 = p[0] / UCF(RAINFALL);
+	infil->fmin = p[1] / UCF(RAINFALL);
+
+	// --- convert decay const. to 1/sec
+	infil->decay = p[2] / 3600.;
+
+	// --- convert drying time (days) to a regeneration const. (1/sec)
+	//     assuming that former is time to reach 98% dry along an
+	//     exponential drying curve
+	if (p[3] == 0.0) p[3] = TINY;
+	infil->regen = -log(1.0 - 0.98) / p[3] / SECperDAY;
+
+	// --- optional max. infil. capacity (ft) (p[4] = 0 if no value supplied)
+	infil->Fmax = p[4] / UCF(RAINDEPTH);
+	if (infil->f0 < infil->fmin) return FALSE;
+	return TRUE;
 }
 
 int  SWMMLoader::GetTokens(char *s)

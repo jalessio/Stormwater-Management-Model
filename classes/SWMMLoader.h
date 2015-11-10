@@ -83,6 +83,7 @@ protected:
 	AnalysisOptions _aoptions; // struct to store analysis options, defined in objects.h
 	DateTimeList _datetimelist; // struct to store times, defined in objects.h
 	DoubleTimeList _doubletimelist;
+	THorton* _HortInfil; // infiltration object, local to infil.c
 	
 	//utility functions
 	void ClearCounts();
@@ -123,5 +124,11 @@ protected:
 
 	//utility functions - scraped from table.c
 	int TableReadTimeseries(char* tok[], int ntoks);
+
+	//utility functions - scraped from infil.c
+	void InfilCreate(int subcatchCount, int model);
+	int InfilReadParams(int m, char* tok[], int ntoks);
+	int HortonSetParams(THorton *infil, double p[]);
+
 };
 
