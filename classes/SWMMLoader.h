@@ -106,7 +106,8 @@ protected:
 	int ProjectReadOption(char* s1, char* s2);
 	int ProjectFindObject(int type, char *id);
 	int ProjectAddObject(int type, char *id, int n);
-	char  *ProjectFindID(int type, char *id);
+	char *ProjectFindID(int type, char *id);
+	void SetDefaults();
 
 	//utility functions - scraped from gage.c
 	int ReadGageParams(int j, char* tok[], int ntoks);
