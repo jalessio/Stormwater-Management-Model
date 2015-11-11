@@ -14,6 +14,11 @@ Building With Docker
 
     docker build -t usepa-stormwater-management-model .
 
+Running Supplied Example With Docker
+-------------
+
+    docker run --rm -it usepa-stormwater-management-model swmm5 example/parkinglot.inp example/parkinglot.rpt example/parkinglot.out; cat example/parkinglot.rpt
+
 Find Out More
 -------------
 The source code distributed here is identical to the code found at the official [SWMM Website](http://www2.epa.gov/water-research/storm-water-management-model-swmm). 
