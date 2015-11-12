@@ -9,7 +9,6 @@ R1                INTENSITY 0:05   1.0    TIMESERIES Rain
 ;;Name           Raingage         Outlet           Area     Imperv   Width    Slope    Length   Pack    
 ;;-------------- ---------------- ---------------- -------- -------- -------- -------- -------- --------
 S1                R1                J1                8.264    100      600      2.0833   0                 
-S2		  R1	            J1		      7.5      75	400	 1	  0
       
 [TIMESERIES]
 ;;Name           Date       Time       Value     

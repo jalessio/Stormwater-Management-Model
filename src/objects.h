@@ -61,16 +61,14 @@ typedef struct{
 	DateTime ReportStartDate;          // Report start date
 	DateTime ReportStartTime;          // Report start time
 	DateTime ReportStart;              // Report start Date+Time
-} DateTimeList;
 
-typedef struct{
 	double ReportTime;               // Current reporting time (msec)
 	double OldRunoffTime;            // Previous runoff time (msec)
 	double NewRunoffTime;            // Current runoff time (msec)
 	double OldRoutingTime;           // Previous routing time (msec)
 	double NewRoutingTime;           // Current routing time (msec)
 	double TotalDuration;            // Simulation duration (msec)
-} DoubleTimeList;
+} TimeList;
 
 // Analysis options
 typedef struct {

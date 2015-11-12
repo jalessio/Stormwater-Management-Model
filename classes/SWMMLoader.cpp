@@ -56,41 +56,41 @@ bool SWMMLoader::OpenFile(const char* path)
 
 	// from project_readInput
 	// --- establish starting & ending date/time
-	_datetimelist.StartDateTime = _datetimelist.StartDate + _datetimelist.StartTime;
-	_datetimelist.EndDateTime = _datetimelist.EndDate + _datetimelist.EndTime;
-	_datetimelist.ReportStart = _datetimelist.ReportStartDate + _datetimelist.ReportStartTime;
-	_datetimelist.ReportStart = MAX(_datetimelist.ReportStart, _datetimelist.StartDateTime);
+	_timelist.StartDateTime = _timelist.StartDate + _timelist.StartTime;
+	_timelist.EndDateTime = _timelist.EndDate + _timelist.EndTime;
+	_timelist.ReportStart = _timelist.ReportStartDate + _timelist.ReportStartTime;
+	_timelist.ReportStart = MAX(_timelist.ReportStart, _timelist.StartDateTime);
 
 	// --- check for valid starting & ending date/times
-	if (_datetimelist.EndDateTime <= _datetimelist.StartDateTime)
+	if (_timelist.EndDateTime <= _timelist.StartDateTime)
 	{
-		report_writeErrorMsg(ERR_START_DATE, "");
+		SetError(ERR_START_DATE, "");
 	}
-	else if (_datetimelist.EndDateTime <= _datetimelist.ReportStart)
+	else if (_timelist.EndDateTime <= _timelist.ReportStart)
 	{
-		report_writeErrorMsg(ERR_REPORT_DATE, "");
+		SetError(ERR_REPORT_DATE, "");
 	}
 	else
 	{
 		////  Following code segment was modified for release 5.1.009.  ////           //(5.1.009)
 		////
 		// --- compute total duration of simulation in seconds
-		_doubletimelist.TotalDuration = floor((_datetimelist.EndDateTime - _datetimelist.StartDateTime) * SECperDAY);
+		_timelist.TotalDuration = floor((_timelist.EndDateTime - _timelist.StartDateTime) * SECperDAY);
 
 		// --- reporting step must be <= total duration
-		if ((double)_aoptions.ReportStep > _doubletimelist.TotalDuration)
+		if ((double)_aoptions.ReportStep > _timelist.TotalDuration)
 		{
-			_aoptions.ReportStep = (int)(_doubletimelist.TotalDuration);
+			_aoptions.ReportStep = (int)(_timelist.TotalDuration);
 		}
 
 		// --- reporting step can't be < routing step
 		if ((double)_aoptions.ReportStep < _aoptions.RouteStep)
 		{
-			report_writeErrorMsg(ERR_REPORT_STEP, "");
+			SetError(ERR_REPORT_STEP, "");
 		}
 
 		// --- convert total duration to milliseconds
-		_doubletimelist.TotalDuration *= 1000.0;
+		_timelist.TotalDuration *= 1000.0;
 	}
 
 	return _errCode == ERR_NONE;
@@ -159,7 +159,15 @@ int SWMMLoader::GetNodeCount() const
 	return _Nobjects[NODE];
 }
 
+AnalysisOptions SWMMLoader::GetAnalysisOptions()
+{
+	return _aoptions;
+}
 
+TimeList SWMMLoader::GetTimeList()
+{
+	return _timelist;
+}
 
 int* SWMMLoader::GetAllCounts()
 {
@@ -194,11 +202,11 @@ void SWMMLoader::CreateHashTables()
 	for (j = 0; j < MAX_OBJ_TYPES; j++)
 	{
 		_Htable[j] = HTcreate();
-		if (_Htable[j] == NULL) report_writeErrorMsg(ERR_MEMORY, "");
+		if (_Htable[j] == NULL) SetError(ERR_MEMORY, "");
 	}
 
 	// --- initialize memory pool used to store object ID's
-	if (AllocInit() == NULL) report_writeErrorMsg(ERR_MEMORY, ""); // allocinit called directly from mempool.c
+	if (AllocInit() == NULL) SetError(ERR_MEMORY, ""); // allocinit called directly from mempool.c
 	else _MemPoolAllocated = TRUE;
 }
 
@@ -330,7 +338,7 @@ int SWMMLoader::CountObjects()
 				if (ProjectFindObject(TSERIES, tok) < 0)
 				{
 					if (!ProjectAddObject(TSERIES, tok, _Nobjects[TSERIES]))
-						errcode = error_setInpError(ERR_DUP_NAME, tok);
+						//errcode = error_setInpError(ERR_DUP_NAME, tok);
 					_Nobjects[TSERIES]++;
 				}
 				break;
@@ -424,13 +432,13 @@ void SWMMLoader::SetDefaults()
 	//Compatibility = SWMM4;            // Use SWMM 4 up/dn weighting method
 
 	// Starting & ending date/time
-	_datetimelist.StartDate = datetime_encodeDate(2004, 1, 1);
-	_datetimelist.StartTime = datetime_encodeTime(0, 0, 0);
-	_datetimelist.StartDateTime = _datetimelist.StartDate + _datetimelist.StartTime;
-	_datetimelist.EndDate = _datetimelist.StartDate;
-	_datetimelist.EndTime = 0.0;
-	_datetimelist.ReportStartDate = NO_DATE;
-	_datetimelist.ReportStartTime = NO_DATE;
+	_timelist.StartDate = datetime_encodeDate(2004, 1, 1);
+	_timelist.StartTime = datetime_encodeTime(0, 0, 0);
+	_timelist.StartDateTime = _timelist.StartDate + _timelist.StartTime;
+	_timelist.EndDate = _timelist.StartDate;
+	_timelist.EndTime = 0.0;
+	_timelist.ReportStartDate = NO_DATE;
+	_timelist.ReportStartTime = NO_DATE;
 	_aoptions.SweepStart = 1;
 	_aoptions.SweepEnd = 365;
 
@@ -546,7 +554,7 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2)
 	// these are stored in TTimeList
 	// --- simulation start date
 	case START_DATE:
-		if (!datetime_strToDate(s2, &_datetimelist.StartDate))
+		if (!datetime_strToDate(s2, &_timelist.StartDate))
 		{
 			return error_setInpError(ERR_DATETIME, s2);
 		}
@@ -554,7 +562,7 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2)
 
 	// --- simulation start time of day
 	case START_TIME:
-		if (!datetime_strToTime(s2, &_datetimelist.StartTime))
+		if (!datetime_strToTime(s2, &_timelist.StartTime))
 		{
 			return error_setInpError(ERR_DATETIME, s2);
 		}
@@ -562,7 +570,7 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2)
 
 	// --- simulation ending date
 	case END_DATE:
-		if (!datetime_strToDate(s2, &_datetimelist.EndDate))
+		if (!datetime_strToDate(s2, &_timelist.EndDate))
 		{
 			return error_setInpError(ERR_DATETIME, s2);
 		}
@@ -570,7 +578,7 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2)
 
 	// --- simulation ending time of day
 	case END_TIME:
-		if (!datetime_strToTime(s2, &_datetimelist.EndTime))
+		if (!datetime_strToTime(s2, &_timelist.EndTime))
 		{
 			return error_setInpError(ERR_DATETIME, s2);
 		}
@@ -578,7 +586,7 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2)
 
 	// --- reporting start date
 	case REPORT_START_DATE:
-		if (!datetime_strToDate(s2, &_datetimelist.ReportStartDate))
+		if (!datetime_strToDate(s2, &_timelist.ReportStartDate))
 		{
 			return error_setInpError(ERR_DATETIME, s2);
 		}
@@ -586,7 +594,7 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2)
 
 	// --- reporting start time of day
 	case REPORT_START_TIME:
-		if (!datetime_strToTime(s2, &_datetimelist.ReportStartTime))
+		if (!datetime_strToTime(s2, &_timelist.ReportStartTime))
 		{
 			return error_setInpError(ERR_DATETIME, s2);
 		}

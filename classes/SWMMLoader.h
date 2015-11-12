@@ -56,13 +56,19 @@ public:
 	int GetSubcatchCount() const;
 
 	//access node info -- should this reflect that there are different kind of nodes?
-	TNode* SWMMLoader::GetNodes();
-	TNode* SWMMLoader::GetNode(const int & i);
-	int SWMMLoader::GetNodeCount() const;
+	TNode* GetNodes();
+	TNode* GetNode(const int & i);
+	int GetNodeCount() const;
 		
+	//access analysis options info
+	AnalysisOptions GetAnalysisOptions();
+	
+	// access timelist info
+	TimeList GetTimeList();
+
 	//GetCounts for all types
 	int* GetAllCounts();
-	
+
 	//set subcatch info
 	int SetSubcatch(int index, double fracimperv);  // just impervious fraction for now
 
@@ -94,8 +100,7 @@ protected:
 	TNode* _nodes;
 	TTable* _tseries; // for timeseries
 	AnalysisOptions _aoptions; // struct to store analysis options, defined in objects.h
-	DateTimeList _datetimelist; // struct to store times, defined in objects.h
-	DoubleTimeList _doubletimelist;
+	TimeList _timelist; // struct to store times, defined in objects.h
 	THorton* _hortinfil; // infiltration object
 	
 	//utility functions
