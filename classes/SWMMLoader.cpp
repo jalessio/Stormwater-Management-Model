@@ -93,8 +93,6 @@ bool SWMMLoader::OpenFile(const char* path)
 		_doubletimelist.TotalDuration *= 1000.0;
 	}
 
-	DeleteHashTables();
-
 	return _errCode == ERR_NONE;
 }
 
@@ -342,12 +340,12 @@ int SWMMLoader::CountObjects()
 
 		// can be expanded for more detailed error reporting
 		// --- report any error found
-		// if ( errcode )
-		// {
-		//     report_writeInputErrorMsg(errcode, sect, line, lineCount);
-		//     errsum++;
-		//     if (errsum >= MAXERRS ) break;
-		// }
+		 if ( errcode )
+		 {
+		      //report_writeInputErrorMsg(errcode, sect, line, lineCount);
+		     errsum++;
+		     if (errsum >= MAXERRS ) break;
+		 }
 	}
 
 	// --- set global error code if input errors were found
@@ -355,7 +353,7 @@ int SWMMLoader::CountObjects()
 	return _errCode;
 }
 
-// from project.c
+// from project.c -- not sure if we want to do this here, or just do inside SWMM (was done in project_open())
 void SWMMLoader::SetDefaults()
 //
 //  Input:   none
@@ -428,8 +426,8 @@ void SWMMLoader::SetDefaults()
 	// Starting & ending date/time
 	_datetimelist.StartDate = datetime_encodeDate(2004, 1, 1);
 	_datetimelist.StartTime = datetime_encodeTime(0, 0, 0);
-	_datetimelist.StartDateTime = StartDate + StartTime;
-	_datetimelist.EndDate = StartDate;
+	_datetimelist.StartDateTime = _datetimelist.StartDate + _datetimelist.StartTime;
+	_datetimelist.EndDate = _datetimelist.StartDate;
 	_datetimelist.EndTime = 0.0;
 	_datetimelist.ReportStartDate = NO_DATE;
 	_datetimelist.ReportStartTime = NO_DATE;
@@ -524,8 +522,8 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2)
 		m = findmatch(s2, FlowUnitWords);
 		if (m < 0) return error_setInpError(ERR_KEYWORD, s2);
 		_aoptions.FlowUnits = m;
-		if (_aoptions.FlowUnits <= MGD) UnitSystem = US;
-		else                    UnitSystem = SI;
+		if (_aoptions.FlowUnits <= MGD) _aoptions.UnitSystem = US;
+		else                    _aoptions.UnitSystem = SI;
 		break;
 
 	// --- choice of infiltration modeling method
@@ -541,8 +539,8 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2)
 		if (m < 0) m = findmatch(s2, OldRouteModelWords);
 		if (m < 0) return error_setInpError(ERR_KEYWORD, s2);
 		if (m == NO_ROUTING) _aoptions.IgnoreRouting = TRUE;
-		else RouteModel = m;
-		if (RouteModel == EKW) _aoptions.RouteModel = KW;
+		else _aoptions.RouteModel = m;
+		if (_aoptions.RouteModel == EKW) _aoptions.RouteModel = KW;
 		break;
 
 	// these are stored in TTimeList
@@ -613,7 +611,7 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2)
 	// --- number of antecedent dry days
 	case START_DRY_DAYS:
 		_aoptions.StartDryDays = atof(s2);
-		if (StartDryDays < 0.0)
+		if (_aoptions.StartDryDays < 0.0)
 		{
 			return error_setInpError(ERR_NUMBER, s2);
 		}
@@ -777,7 +775,7 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2)
 
 	// --- head convergence tolerance for dynamic wave routing
 	case HEAD_TOL:
-		if (!getDouble(s2, &HeadTol))
+		if (!getDouble(s2, &_aoptions.HeadTol))
 		{
 			return error_setInpError(ERR_NUMBER, s2);
 		}
@@ -785,7 +783,7 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2)
 
 	// --- steady state tolerance on system inflow - outflow
 	case SYS_FLOW_TOL:
-		if (!getDouble(s2, &SysFlowTol))
+		if (!getDouble(s2, &_aoptions.SysFlowTol))
 		{
 			return error_setInpError(ERR_NUMBER, s2);
 		}
@@ -794,7 +792,7 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2)
 
 	// --- steady state tolerance on nodal lateral inflow
 	case LAT_FLOW_TOL:
-		if (!getDouble(s2, &LatFlowTol))
+		if (!getDouble(s2, &_aoptions.LatFlowTol))
 		{
 			return error_setInpError(ERR_NUMBER, s2);
 		}
@@ -994,13 +992,15 @@ int  SWMMLoader::ParseLine(int sect, char *line)
 		return ReadNode(JUNCTION);					// _Mobjects in ReadNode
 
 	case s_INFIL:
-		return InfilReadParams(InfilModel, _Tok, _Ntokens);
+		return InfilReadParams(_aoptions.InfilModel, _Tok, _Ntokens);
 
 	default: return 0;
 	}
 }
 
 
+// if you move to reading from a separate file, you'll need to move the external variable Frain (type Tfile)
+// into the class
 int SWMMLoader::TableReadTimeseries(char* tok[], int ntoks)
 //
 //  Input:   tok[] = array of string tokens
@@ -1432,7 +1432,7 @@ void SWMMLoader::InfilCreate(int subcatchCount, int model)
 	case MOD_HORTON:
 		//_HortInfil = (THorton *)calloc(subcatchCount, sizeof(THorton));
 		_hortinfil = new THorton[_Nobjects[SUBCATCH]]();
-		if (_hortinfil == NULL) ErrorCode = ERR_MEMORY;
+		if (_hortinfil == NULL) _errCode = ERR_MEMORY;
 		break;
 	//case GREEN_AMPT:
 	//case MOD_GREEN_AMPT:                                                       //(5.1.010)
@@ -1443,7 +1443,7 @@ void SWMMLoader::InfilCreate(int subcatchCount, int model)
 	//	CNInfil = (TCurveNum *)calloc(subcatchCount, sizeof(TCurveNum));
 	//	if (CNInfil == NULL) ErrorCode = ERR_MEMORY;
 	//	break;
-	default: ErrorCode = ERR_MEMORY;
+	default: _errCode = ERR_MEMORY;
 	}
 }
 

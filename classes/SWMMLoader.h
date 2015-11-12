@@ -1,5 +1,9 @@
 /*
 Working input API -- set up to load from input file
+Next step: write function that sends data from class to SWMM globals
+
+If loading is happening in this file, some changes also need to be made to project_open() -> openFiles()
+
 */
 
 #pragma once
@@ -11,9 +15,18 @@ Working input API -- set up to load from input file
 
 extern int findmatch(char *s, char *keyword[]);
 
-extern double UCF(int u);
+extern double UCF(int u); 
 
-#include "headers.h"
+#include <stdio.h>
+#include "consts.h"
+#include "macros.h"
+#include "enums.h"
+#include "error.h"
+#include "datetime.h"
+#include "objects.h"
+#include "funcs.h"
+#include "text.h"
+#include "keywords.h"
 #include "hash.h"
 #include "mempool.h"
 #include <math.h>
@@ -83,7 +96,7 @@ protected:
 	AnalysisOptions _aoptions; // struct to store analysis options, defined in objects.h
 	DateTimeList _datetimelist; // struct to store times, defined in objects.h
 	DoubleTimeList _doubletimelist;
-	THorton* _hortinfil; // infiltration object, local to infil.c
+	THorton* _hortinfil; // infiltration object
 	
 	//utility functions
 	void ClearCounts();
