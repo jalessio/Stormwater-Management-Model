@@ -90,6 +90,17 @@ static void deleteHashTables(void);
 
 //=============================================================================
 
+// Wrappers
+void InitPointers(void)
+{
+	initPointers();
+}
+
+void SetDefaults(void)
+{
+	setDefaults();
+}
+
 void project_open(char *f1, char *f2, char *f3)
 //
 //  Input:   f1 = pointer to name of input file

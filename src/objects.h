@@ -115,20 +115,6 @@ typedef struct {
 
 } AnalysisOptions;
 
-//RouteStep,                // Routing time step (sec)
-//MinRouteStep,             // Minimum variable time step (sec) //(5.1.008)
-//LengtheningStep,          // Time step for lengthening (sec)
-//StartDryDays,             // Antecedent dry days
-//CourantFactor,            // Courant time step factor
-//MinSurfArea,              // Minimum nodal surface area
-//
-//RunoffError,              // Runoff continuity error
-//GwaterError,              // Groundwater continuity error
-//FlowError,                // Flow routing error
-//QualError,                // Quality routing error
-//HeadTol,                  // DW routing head tolerance (ft)
-//SysFlowTol,               // Tolerance for steady system flow
-//LatFlowTol;               // Tolerance for steady nodal inflow     
 //-----------------
 // FILE INFORMATION
 //-----------------

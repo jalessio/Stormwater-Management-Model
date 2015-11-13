@@ -17,30 +17,6 @@ void projectload_readinput()
 	
 	SWMMLoader swmmloader(path);
 
-	// gages
-	Nobjects[GAGE] = swmmloader.GetGageCount();
-	Gage = (TGage *)calloc(Nobjects[GAGE], sizeof(TGage));
-	TGage* _gages = swmmloader.GetGages();
-	memcpy(Gage, _gages, sizeof(Gage));
-
-	// subcatchments
-	Nobjects[SUBCATCH] = swmmloader.GetSubcatchCount();
-	Subcatch = (TSubcatch *)calloc(Nobjects[SUBCATCH], sizeof(TSubcatch));
-	TSubcatch* _subcatches = swmmloader.GetSubcatches();
-	memcpy(Subcatch, _subcatches, sizeof(Subcatch));
-
-	// nodes
-	Nobjects[NODE] = swmmloader.GetNodeCount();
-	Node = (TNode *)calloc(Nobjects[NODE], sizeof(TNode));
-	TNode* _node = swmmloader.GetNodes();
-	memcpy(Node, _subcatches, sizeof(Subcatch));
-
-	// timeseries
-	// need getter -- want to do all ttables?  will we need other ttables?  
-
-	// infiltration
-	// need getter
-	
 	// analysis options
 	AnalysisOptions _aoptions = swmmloader.GetAnalysisOptions();
 
@@ -91,30 +67,82 @@ void projectload_readinput()
 	OldRoutingTime = _timelist.OldRoutingTime;      // Previous routing time (msec)
 	NewRoutingTime = _timelist.NewRoutingTime;      // Current routing time (msec)
 	TotalDuration = _timelist.TotalDuration;        // Simulation duration (msec)
+
+
+	// gages
+	Nobjects[GAGE] = swmmloader.GetGageCount();
+	Gage = (TGage *)calloc(Nobjects[GAGE], sizeof(TGage));
+	TGage* _gages = swmmloader.GetGages();
+	memcpy(Gage, _gages, sizeof(Gage));
+
+	// subcatchments
+	Nobjects[SUBCATCH] = swmmloader.GetSubcatchCount();
+	Subcatch = (TSubcatch *)calloc(Nobjects[SUBCATCH], sizeof(TSubcatch));
+	TSubcatch* _subcatches = swmmloader.GetSubcatches();
+	memcpy(Subcatch, _subcatches, sizeof(Subcatch));
+
+	// nodes
+	Nobjects[NODE] = swmmloader.GetNodeCount();
+	Node = (TNode *)calloc(Nobjects[NODE], sizeof(TNode));
+	TNode* _node = swmmloader.GetNodes();
+	memcpy(Node, _subcatches, sizeof(Subcatch));
+
+	// timeseries
+	Nobjects[TSERIES] = swmmloader.GetTSeriesCount();
+	Tseries = (TTable *)calloc(Nobjects[TSERIES], sizeof(TTable));
+	TTable* _tseries = swmmloader.GetTSeries();
+	memcpy(Tseries, _tseries, sizeof(Tseries));
+
+	// infiltration
+	infil_create(Nobjects[SUBCATCH], InfilModel); // we know InfilModel because it was in aoptions
+	switch (InfilModel)
+	{
+	case HORTON:
+		THorton* _hortinfil = swmmloader.GetInfiltration();
+		memcpy(HortInfil, _hortinfil, sizeof(HortInfil));
+	}
+
+	// 2 options -- either allocate memory as above or call createObjects()
+	// that would need a wrapper in project
+
 }
 
 
-// okay to initPointers()?
+// initPointers() is wrapped by InitPointers()
 // decide where to setDefaults() -- in project_open or in SWMMLoader?
-// change openFiles() to only open the report and binary files -- look at EPANET input API
+// setDefaults() is wrapped by SetDefaults()
+// change openFiles() to only open the report and binary files
 
 void projectload_open(char *f2, char* f3)
 {
-	//initPointers();
-	//setDefaults();
-	//openFiles(f2, f3);
-}
+	InitPointers();
+	SetDefaults();
 
-//void project_open(char *f1, char *f2, char *f3)
-////
-////  Input:   f1 = pointer to name of input file
-////           f2 = pointer to name of report file
-////           f3 = pointer to name of binary output file
-////  Output:  none
-////  Purpose: opens a new SWMM project.
-////
-//{
-//	initPointers();
-//	setDefaults();
-//	openFiles(f1, f2, f3);
-//}
+	// don't open input file here
+
+	// --- initialize file pointers to NULL
+	Frpt.file = NULL;
+	Fout.file = NULL;
+
+	// --- save file names
+	sstrncpy(Frpt.name, f2, MAXFNAME);
+	sstrncpy(Fout.name, f3, MAXFNAME);
+
+	// --- check that file names are not identical
+	if (strcomp(f2, f3))
+	{
+		writecon(FMT11);
+		ErrorCode = ERR_FILE_NAME;
+		return;
+	}
+
+	// --- open report file
+	if ((Frpt.file = fopen(f2, "wt")) == NULL)
+	{
+		writecon(FMT13);
+		ErrorCode = ERR_RPT_FILE;
+		return;
+	}
+
+	// binary file is opened in swmm_start
+}

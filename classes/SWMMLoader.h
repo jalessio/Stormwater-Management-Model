@@ -17,6 +17,9 @@ extern int findmatch(char *s, char *keyword[]);
 
 extern double UCF(int u); 
 
+extern void InitPointers(); 
+extern void SetDefaults();
+
 #include <stdio.h>
 #include "consts.h"
 #include "macros.h"
@@ -60,6 +63,14 @@ public:
 	TNode* GetNode(const int & i);
 	int GetNodeCount() const;
 		
+	//access timeseries info
+	TTable* GetTSeries();
+	int GetTSeriesCount() const;
+
+	//access infiltration info
+	//only worry about horton for now
+	THorton* GetInfiltration();
+
 	//access analysis options info
 	AnalysisOptions GetAnalysisOptions();
 	
@@ -126,7 +137,7 @@ protected:
 	int ProjectFindObject(int type, char *id);
 	int ProjectAddObject(int type, char *id, int n);
 	char *ProjectFindID(int type, char *id);
-	void SetDefaults();
+	//void SetDefaults();
 
 	//utility functions - scraped from gage.c
 	int ReadGageParams(int j, char* tok[], int ntoks);
