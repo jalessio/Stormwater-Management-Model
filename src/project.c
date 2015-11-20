@@ -91,6 +91,12 @@ static void deleteHashTables(void);
 //=============================================================================
 
 // Wrappers
+HTtable** ProjectGetHTable()
+{
+	return Htable;
+}
+
+
 void InitPointers(void)
 {
 	initPointers();
@@ -99,6 +105,11 @@ void InitPointers(void)
 void SetDefaults(void)
 {
 	setDefaults();
+}
+
+void ProjectCreateHashTables(void)
+{
+	createHashTables();
 }
 
 void project_open(char *f1, char *f2, char *f3)

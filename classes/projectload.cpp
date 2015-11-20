@@ -9,6 +9,9 @@
 #include <malloc.h>
 #include <string.h>
 
+//void projectload_readinput();
+//void projectload_open(char *f2, char* f3);
+
 // pass in input file here? or do in projectopen?
 void projectload_readinput()
 {
@@ -16,6 +19,18 @@ void projectload_readinput()
 	const char* path = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.inp";
 	
 	SWMMLoader swmmloader(path);
+
+	// allocate memory for SWMM hashtable
+	ProjectCreateHashTables(); 
+	
+	// get class hashtable
+	HTtable** classHT = swmmloader.GetHtable();
+
+	// get empty SWMM hashtable from project.c
+	HTtable** Htable = ProjectGetHTable(); 
+
+	for (int i = 0; i < 16; i++)
+		memcpy(Htable[i], classHT[i], sizeof(struct HTentry)*HTMAXSIZE);
 
 	// analysis options
 	AnalysisOptions _aoptions = swmmloader.GetAnalysisOptions();
@@ -68,7 +83,6 @@ void projectload_readinput()
 	NewRoutingTime = _timelist.NewRoutingTime;      // Current routing time (msec)
 	TotalDuration = _timelist.TotalDuration;        // Simulation duration (msec)
 
-
 	// gages
 	Nobjects[GAGE] = swmmloader.GetGageCount();
 	Gage = (TGage *)calloc(Nobjects[GAGE], sizeof(TGage));
@@ -94,7 +108,7 @@ void projectload_readinput()
 	memcpy(Tseries, _tseries, sizeof(Tseries));
 
 	// infiltration
-	infil_create(Nobjects[SUBCATCH], InfilModel); // we know InfilModel because it was in aoptions
+	infil_create(Nobjects[SUBCATCH], InfilModel); // we know InfilModel because it was read in aoptions
 	switch (InfilModel)
 	{
 	case HORTON:
@@ -146,3 +160,5 @@ void projectload_open(char *f2, char* f3)
 
 	// binary file is opened in swmm_start
 }
+
+

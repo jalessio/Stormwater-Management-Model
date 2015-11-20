@@ -184,6 +184,11 @@ TimeList SWMMLoader::GetTimeList()
 	return _timelist;
 }
 
+HTtable** SWMMLoader::GetHtable()
+{
+	return _Htable;
+} //
+
 int* SWMMLoader::GetAllCounts()
 {
 	return _Nobjects;
@@ -860,7 +865,7 @@ void SWMMLoader::AllocObjArrays()
 	_tseries = new TTable[_Nobjects[TSERIES]]();
 
 	// --- allocate memory for infiltration data
-	InfilCreate(_Nobjects[SUBCATCH], _aoptions.InfilModel); // this uses calloc -- probably need to be consistent
+	InfilCreate(_Nobjects[SUBCATCH], _aoptions.InfilModel); // this uses new now
 
 	//add more as needed
 

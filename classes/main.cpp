@@ -1,18 +1,36 @@
 //#include "SWMMInput.h"
 #include "SWMMLoader.h"
 
+extern void projectload_readinput();
+extern void projectload_open(char* path2, char* path3);
+
 int main()
 {
 
-	 //SWMMLoader.c test stuff
+	//SWMMLoader.c test stuff
 	const char* path = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.inp";
+	char* pathrpt = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.rpt";
+	char* pathout = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.out";
+
 	//int nsubcatch;
 	AnalysisOptions aoptions;
 
 	SWMMLoader swmmloader(path);
 	aoptions = swmmloader.GetAnalysisOptions();
 
-	return 0;
+	HTtable** htable;
+	htable = swmmloader.GetHtable();
+
+	projectload_open(pathrpt, pathout);
+	projectload_readinput();
+//	report_writeTitle();
+	project_validate();
+
+}
+
+
+
+
 
 	// SWMMInput.c test stuff
 
@@ -56,4 +74,3 @@ int main()
 	//
 
 
-}

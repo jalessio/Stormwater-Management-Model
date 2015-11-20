@@ -13,13 +13,6 @@ If loading is happening in this file, some changes also need to be made to proje
 //extern int gage_readSeriesFormat(char* tok[], int ntoks, double x[]);
 //extern int gage_readFileFormat(char* tok[], int ntoks, double x[]);
 
-extern int findmatch(char *s, char *keyword[]);
-
-extern double UCF(int u); 
-
-extern void InitPointers(); 
-extern void SetDefaults();
-
 #include <stdio.h>
 #include "consts.h"
 #include "macros.h"
@@ -33,6 +26,15 @@ extern void SetDefaults();
 #include "hash.h"
 #include "mempool.h"
 #include <math.h>
+
+extern int findmatch(char *s, char *keyword[]);
+
+extern double UCF(int u);
+
+extern void InitPointers();
+extern void SetDefaults();
+extern void ProjectCreateHashTables();
+extern HTtable** ProjectGetHTable();
 
 class SWMMLoader
 {
@@ -76,6 +78,10 @@ public:
 	
 	// access timelist info
 	TimeList GetTimeList();
+
+	// access hashtable info
+	HTtable** GetHtable(); // Hash tables for object ID names
+	//char  _MemPoolAllocated;        // TRUE if memory pool allocated
 
 	//GetCounts for all types
 	int* GetAllCounts();
