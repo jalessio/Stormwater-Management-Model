@@ -13,10 +13,9 @@
 //void projectload_open(char *f2, char* f3);
 
 // pass in input file here? or do in projectopen?
-void projectload_readinput()
+void projectload_readinput(char* path)
 {
 	// for testing
-	const char* path = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.inp";
 	
 	SWMMLoader swmmloader(path);
 
@@ -87,34 +86,34 @@ void projectload_readinput()
 	Nobjects[GAGE] = swmmloader.GetGageCount();
 	Gage = (TGage *)calloc(Nobjects[GAGE], sizeof(TGage));
 	TGage* _gages = swmmloader.GetGages();
-	memcpy(Gage, _gages, sizeof(Gage));
+	memcpy(Gage, _gages, sizeof(TGage));
 
 	// subcatchments
 	Nobjects[SUBCATCH] = swmmloader.GetSubcatchCount();
 	Subcatch = (TSubcatch *)calloc(Nobjects[SUBCATCH], sizeof(TSubcatch));
 	TSubcatch* _subcatches = swmmloader.GetSubcatches();
-	memcpy(Subcatch, _subcatches, sizeof(Subcatch));
+	memcpy(Subcatch, _subcatches, sizeof(TSubcatch));
 
 	// nodes
 	Nobjects[NODE] = swmmloader.GetNodeCount();
 	Node = (TNode *)calloc(Nobjects[NODE], sizeof(TNode));
 	TNode* _node = swmmloader.GetNodes();
-	memcpy(Node, _subcatches, sizeof(Subcatch));
+	memcpy(Node, _node, sizeof(TNode));
 
 	// timeseries
 	Nobjects[TSERIES] = swmmloader.GetTSeriesCount();
 	Tseries = (TTable *)calloc(Nobjects[TSERIES], sizeof(TTable));
 	TTable* _tseries = swmmloader.GetTSeries();
-	memcpy(Tseries, _tseries, sizeof(Tseries));
+	memcpy(Tseries, _tseries, sizeof(TTable));
 
 	// infiltration
-	infil_create(Nobjects[SUBCATCH], InfilModel); // we know InfilModel because it was read in aoptions
-	switch (InfilModel)
-	{
-	case HORTON:
-		THorton* _hortinfil = swmmloader.GetInfiltration();
-		memcpy(HortInfil, _hortinfil, sizeof(HortInfil));
-	}
+	//infil_create(Nobjects[SUBCATCH], InfilModel); // we know InfilModel because it was read in aoptions
+	//switch (InfilModel)
+	//{
+	//case HORTON:
+	//	THorton* _hortinfil = swmmloader.GetInfiltration();
+	//	memcpy(HortInfil, _hortinfil, sizeof(HortInfil)); // check this sizeof
+	//}
 
 	// 2 options -- either allocate memory as above or call createObjects()
 	// that would need a wrapper in project

@@ -1,15 +1,15 @@
 //#include "SWMMInput.h"
 #include "SWMMLoader.h"
 
-extern void projectload_readinput();
+extern void projectload_readinput(char* path);
 extern void projectload_open(char* path2, char* path3);
 
 int main()
 {
 
 	//SWMMLoader.c test stuff
-	const char* path = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.inp";
-	char* pathrpt = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.rpt";
+	char* path = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.inp";
+	char* pathrpt = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple_v2.rpt";
 	char* pathout = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.out";
 
 	//int nsubcatch;
@@ -22,10 +22,11 @@ int main()
 	htable = swmmloader.GetHtable();
 
 	projectload_open(pathrpt, pathout);
-	projectload_readinput();
+	projectload_readinput(path);
 //	report_writeTitle();
 	project_validate();
 
+	return 0;
 }
 
 
