@@ -45,7 +45,7 @@ bool SWMMLoader::OpenFile(const char* path)
 
 	CreateHashTables();
 
-	SetDefaults();
+//	SetDefaults();
 
 	if (CountObjects() != ERR_NONE)
 		return false;
@@ -358,10 +358,11 @@ int SWMMLoader::CountObjects()
 				if (ProjectFindObject(TSERIES, tok) < 0)
 				{
 					if (!ProjectAddObject(TSERIES, tok, _Nobjects[TSERIES]))
-						//errcode = error_setInpError(ERR_DUP_NAME, tok);
+						errcode = error_setInpError(ERR_DUP_NAME, tok);
 					_Nobjects[TSERIES]++;
 				}
 				break;
+				
 				//add more cases as needed
 			}
 		}
@@ -837,11 +838,13 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2)
 
 void SWMMLoader::ClearObjArrays()
 {
+	delete[] _hortinfil;
+
 	delete[] _gages;
 	delete[] _subcatches;
 	delete[] _nodes;
 	delete[] _tseries;
-	delete[] _hortinfil;
+
 
 	_gages = NULL;
 	_subcatches = NULL;
@@ -1014,7 +1017,7 @@ int  SWMMLoader::ParseLine(int sect, char *line)
 		return err;
 
 	case s_TIMESERIES:
-		return TableReadTimeseries(_Tok, _Ntokens); // looks like swmm doesn't keep track of _Mobjects[TSERIES]?
+		return TableReadTimeseries(_Tok, _Ntokens); 
 
 	case s_JUNCTION:
 		return ReadNode(JUNCTION);					// _Mobjects in ReadNode

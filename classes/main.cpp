@@ -9,21 +9,25 @@ int main()
 
 	//SWMMLoader.c test stuff
 	char* path = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.inp";
-	char* pathrpt = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple_v2.rpt";
+	char* pathrpt = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.rpt";
 	char* pathout = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.out";
 
 	//int nsubcatch;
 	AnalysisOptions aoptions;
+	TimeList tlist;
 
 	SWMMLoader swmmloader(path);
 	aoptions = swmmloader.GetAnalysisOptions();
 
-	HTtable** htable;
-	htable = swmmloader.GetHtable();
+	tlist = swmmloader.GetTimeList();
+
+	TTable *tseries = swmmloader.GetTSeries();
+
+	//HTtable** htable;
+	//htable = swmmloader.GetHtable();
 
 	projectload_open(pathrpt, pathout);
 	projectload_readinput(path);
-//	report_writeTitle();
 	project_validate();
 
 	return 0;

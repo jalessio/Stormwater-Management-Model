@@ -62,6 +62,19 @@ void projectload_readinput(char* path)
 	MaxTrials = _aoptions.MaxTrials;						// Max. trials for DW routing
 	NumThreads = _aoptions.NumThreads;						// Number of parallel threads used //(5.1.008)
 
+	LengtheningStep = _aoptions.LengtheningStep;			// Time step for lengthening (sec)
+	StartDryDays = _aoptions.StartDryDays;					// Antecedent dry days
+	CourantFactor = _aoptions.CourantFactor;				// Courant time step factor
+	MinSurfArea = _aoptions.MinSurfArea;					// Minimum nodal surface area
+	MinSlope = _aoptions.MinSlope;							// Minimum conduit slope
+
+	RouteStep = _aoptions.RouteStep;						// Routing time step (sec)
+	MinRouteStep = _aoptions.MinRouteStep;					// Minimum variable time step (sec) //(5.1.008)
+
+	HeadTol = _aoptions.HeadTol;							// DW routing head tolerance (ft)
+	SysFlowTol = _aoptions.SysFlowTol;						// Tolerance for steady system flow
+	LatFlowTol = _aoptions.LatFlowTol;						// Tolerance for steady nodal inflow     
+
 	// time list
 	TimeList _timelist = swmmloader.GetTimeList();
 
@@ -107,13 +120,15 @@ void projectload_readinput(char* path)
 	memcpy(Tseries, _tseries, sizeof(TTable));
 
 	// infiltration
-	//infil_create(Nobjects[SUBCATCH], InfilModel); // we know InfilModel because it was read in aoptions
-	//switch (InfilModel)
-	//{
-	//case HORTON:
-	//	THorton* _hortinfil = swmmloader.GetInfiltration();
-	//	memcpy(HortInfil, _hortinfil, sizeof(HortInfil)); // check this sizeof
-	//}
+	//infil_create(Nobjects[SUBCATCH], InfilModel);
+	switch (InfilModel)
+	{
+	case HORTON:
+		HortInfil = (THorton *)calloc(1, sizeof(THorton));
+		if (HortInfil == NULL) ErrorCode = ERR_MEMORY;
+		THorton* _hortinfil = swmmloader.GetInfiltration();
+		memcpy(HortInfil, _hortinfil, sizeof(HortInfil)); // check this sizeof
+	}
 
 	// 2 options -- either allocate memory as above or call createObjects()
 	// that would need a wrapper in project
