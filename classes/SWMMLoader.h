@@ -138,7 +138,6 @@ protected:
 
 	//utility functions - scraped from project.c
 	void CreateHashTables();
-	void DeleteHashTables();
 	int ProjectReadOption(char* s1, char* s2);
 	int ProjectFindObject(int type, char *id);
 	int ProjectAddObject(int type, char *id, int n);

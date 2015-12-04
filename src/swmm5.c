@@ -206,6 +206,113 @@ int  main(int argc, char *argv[])
 }                                      /* End of main */
 #endif
 
+int inp_swmm_open(char* f1, char* f2, char* f3)
+//
+//  Input:   f1 = name of input file
+//           f2 = name of report file
+//           f3 = name of binary output file
+//  Output:  returns error code
+//  Purpose: opens a SWMM project.
+//
+{
+#ifdef DLL
+	_fpreset();
+#endif
+
+#ifdef WINDOWS
+	// --- begin exception handling here
+	__try
+#endif
+	{
+		// --- initialize error & warning codes
+		datetime_setDateFormat(M_D_Y);
+		ErrorCode = 0;
+		WarningCode = 0;
+		IsOpenFlag = FALSE;
+		IsStartedFlag = FALSE;
+		ExceptionCount = 0;
+
+		// --- open a SWMM project
+		projectload_open(f2, f3);
+		if (ErrorCode) return ErrorCode;
+		IsOpenFlag = TRUE;
+		report_writeLogo();
+		writecon(FMT06);
+
+		// --- retrieve project data from input file
+		projectload_readinput(f1);
+		if (ErrorCode) return ErrorCode;
+
+		// --- write project title to report file & validate data
+		report_writeTitle();
+		project_validate();
+
+		// --- write input summary to report file if requested
+		if (RptFlags.input) inputrpt_writeInput();
+	}
+
+#ifdef WINDOWS
+	// --- end of try loop; handle exception here
+	__except (xfilter(GetExceptionCode(), 0.0, 0))
+	{
+		ErrorCode = ERR_SYSTEM;
+	}
+#endif
+	return ErrorCode;
+}
+
+int inp_swmm_run(char* f1, char* f2, char* f3)
+{
+	long newHour, oldHour = 0;
+	long theDay, theHour;
+	DateTime elapsedTime = 0.0;
+
+	// --- open the files & read input data
+	ErrorCode = 0;
+	inp_swmm_open(f1, f2, f3);
+
+	// --- run the simulation if input data OK
+	if (!ErrorCode)
+	{
+		// --- initialize values
+		swmm_start(TRUE);
+
+		// --- execute each time step until elapsed time is re-set to 0
+		if (!ErrorCode)
+		{
+			writecon("\n o  Simulating day: 0     hour:  0");
+			do
+			{
+				swmm_step(&elapsedTime);
+				newHour = (long)(elapsedTime * 24.0);
+				if (newHour > oldHour)
+				{
+					theDay = (long)elapsedTime;
+					theHour = (long)((elapsedTime - floor(elapsedTime)) * 24.0);
+					writecon("\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+					sprintf(Msg, "%-5d hour: %-2d", theDay, theHour);
+					writecon(Msg);
+					oldHour = newHour;
+				}
+			} while (elapsedTime > 0.0 && !ErrorCode);
+			writecon("\b\b\b\b\b\b\b\b\b\b\b\b\b\b"
+				"\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+			writecon("Simulation complete           ");
+		}
+
+		// --- clean up
+		swmm_end();
+	}
+
+	// --- report results
+	if (Fout.mode == SCRATCH_FILE) swmm_report();
+
+	// --- close the system
+	swmm_close();
+	return ErrorCode;
+}
+
+
 //=============================================================================
 
 int DLLEXPORT  swmm_run(char* f1, char* f2, char* f3)
@@ -604,7 +711,7 @@ int DLLEXPORT swmm_close()
 {
     if ( Fout.file ) output_close();
     if ( IsOpenFlag ) project_close();
-    report_writeSysTime();
+//	    report_writeSysTime();
     if ( Finp.file != NULL ) fclose(Finp.file);
     if ( Frpt.file != NULL ) fclose(Frpt.file);
     if ( Fout.file != NULL )

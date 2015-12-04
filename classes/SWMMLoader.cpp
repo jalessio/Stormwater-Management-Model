@@ -45,8 +45,6 @@ bool SWMMLoader::OpenFile(const char* path)
 
 	CreateHashTables();
 
-//	SetDefaults();
-
 	if (CountObjects() != ERR_NONE)
 		return false;
 
@@ -230,18 +228,6 @@ void SWMMLoader::CreateHashTables()
 	else _MemPoolAllocated = TRUE;
 }
 
-// from project.c
-void SWMMLoader::DeleteHashTables()
-{
-	int j;
-	for (j = 0; j < MAX_OBJ_TYPES; j++)
-	{
-		if (_Htable[j] != NULL) HTfree(_Htable[j]);
-	}
-
-	// --- free object ID memory pool
-	if (_MemPoolAllocated) AllocFreePool();
-}
 
 int SWMMLoader::ProjectAddObject(int type, char *id, int n)
 //

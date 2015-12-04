@@ -1,8 +1,9 @@
 //#include "SWMMInput.h"
 #include "SWMMLoader.h"
+#include "SWMM5.h"
 
-extern void projectload_readinput(char* path);
-extern void projectload_open(char* path2, char* path3);
+//extern void projectload_readinput(char* path);
+//extern void projectload_open(char* path2, char* path3);
 
 int main()
 {
@@ -12,23 +13,26 @@ int main()
 	char* pathrpt = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.rpt";
 	char* pathout = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.out";
 
+	inp_swmm_run(path, pathrpt, pathout);
+//	swmm_run(path, pathrpt, pathout);
+
 	//int nsubcatch;
-	AnalysisOptions aoptions;
-	TimeList tlist;
+	//AnalysisOptions aoptions;
+	//TimeList tlist;
 
-	SWMMLoader swmmloader(path);
-	aoptions = swmmloader.GetAnalysisOptions();
+	//SWMMLoader swmmloader(path);
+	//aoptions = swmmloader.GetAnalysisOptions();
 
-	tlist = swmmloader.GetTimeList();
+	//tlist = swmmloader.GetTimeList();
 
-	TTable *tseries = swmmloader.GetTSeries();
+	//TTable *tseries = swmmloader.GetTSeries();
 
 	//HTtable** htable;
 	//htable = swmmloader.GetHtable();
 
-	projectload_open(pathrpt, pathout);
-	projectload_readinput(path);
-	project_validate();
+	//projectload_open(pathrpt, pathout);
+	//projectload_readinput(path);
+	//project_validate();
 
 	return 0;
 }

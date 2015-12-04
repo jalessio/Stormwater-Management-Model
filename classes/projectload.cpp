@@ -4,20 +4,29 @@
 // check errorcode in aoptions vs. _errCode (class member)
 
 #include "SWMMLoader.h"
+#include <string.h>
+#include <malloc.h>
 #define  EXTERN extern
 #include "globals.h"
-#include <malloc.h>
-#include <string.h>
+#include "lid.h"
 
-//void projectload_readinput();
-//void projectload_open(char *f2, char* f3);
 
-// pass in input file here? or do in projectopen?
-void projectload_readinput(char* path)
+//
+//#include <stdlib.h>
+//#include <string.h>
+//#include <malloc.h>
+//#include <math.h>                                                              //(5.1.008)
+//#include <omp.h>                                                               //(5.1.008)
+//#include "headers.h"
+//#include "lid.h" 
+//#include "hash.h"
+//#include "mempool.h"
+
+void projectload_readinput(char *path)
 {
-	// for testing
-	
+	// mimic project_readinput
 	SWMMLoader swmmloader(path);
+	int j, k;
 
 	// allocate memory for SWMM hashtable
 	ProjectCreateHashTables(); 
@@ -28,9 +37,40 @@ void projectload_readinput(char* path)
 	// get empty SWMM hashtable from project.c
 	HTtable** Htable = ProjectGetHTable(); 
 
-	for (int i = 0; i < 16; i++)
+	for (int i = 0; i < 15; i++)
 		memcpy(Htable[i], classHT[i], sizeof(struct HTentry)*HTMAXSIZE);
 
+	// get all counts needed -- this is handled by input_countObjects() in original SWMM
+	Nobjects[GAGE] = swmmloader.GetGageCount();
+	Nobjects[SUBCATCH] = swmmloader.GetSubcatchCount();
+	Nobjects[NODE] = swmmloader.GetNodeCount();
+	Nobjects[TSERIES] = swmmloader.GetTSeriesCount();
+
+	// allocate memory for each category of object
+	if (ErrorCode) return;
+	Gage = (TGage *)calloc(Nobjects[GAGE], sizeof(TGage));
+	Subcatch = (TSubcatch *)calloc(Nobjects[SUBCATCH], sizeof(TSubcatch));
+	Node = (TNode *)calloc(Nobjects[NODE], sizeof(TNode));
+	//Outfall = (TOutfall *)calloc(Nnodes[OUTFALL], sizeof(TOutfall));
+	//Divider = (TDivider *)calloc(Nnodes[DIVIDER], sizeof(TDivider));
+	//Storage = (TStorage *)calloc(Nnodes[STORAGE], sizeof(TStorage));
+	//Link = (TLink *)calloc(Nobjects[LINK], sizeof(TLink));
+	//Conduit = (TConduit *)calloc(Nlinks[CONDUIT], sizeof(TConduit));
+	//Pump = (TPump *)calloc(Nlinks[PUMP], sizeof(TPump));
+	//Orifice = (TOrifice *)calloc(Nlinks[ORIFICE], sizeof(TOrifice));
+	//Weir = (TWeir *)calloc(Nlinks[WEIR], sizeof(TWeir));
+	//Outlet = (TOutlet *)calloc(Nlinks[OUTLET], sizeof(TOutlet));
+	//Pollut = (TPollut *)calloc(Nobjects[POLLUT], sizeof(TPollut));
+	//Landuse = (TLanduse *)calloc(Nobjects[LANDUSE], sizeof(TLanduse));
+	//Pattern = (TPattern *)calloc(Nobjects[TIMEPATTERN], sizeof(TPattern));
+	//Curve = (TTable *)calloc(Nobjects[CURVE], sizeof(TTable));
+	Tseries = (TTable *)calloc(Nobjects[TSERIES], sizeof(TTable));
+	//Aquifer = (TAquifer *)calloc(Nobjects[AQUIFER], sizeof(TAquifer));
+	//UnitHyd = (TUnitHyd *)calloc(Nobjects[UNITHYD], sizeof(TUnitHyd));
+	//Snowmelt = (TSnowmelt *)calloc(Nobjects[SNOWMELT], sizeof(TSnowmelt));
+	//Shape = (TShape *)calloc(Nobjects[SHAPE], sizeof(TShape));
+
+	
 	// analysis options
 	AnalysisOptions _aoptions = swmmloader.GetAnalysisOptions();
 
@@ -95,43 +135,150 @@ void projectload_readinput(char* path)
 	NewRoutingTime = _timelist.NewRoutingTime;      // Current routing time (msec)
 	TotalDuration = _timelist.TotalDuration;        // Simulation duration (msec)
 
+	// --- create LID objects
+	lid_create(Nobjects[LID], Nobjects[SUBCATCH]);
+
+	// --- create control rules
+	ErrorCode = controls_create(Nobjects[CONTROL]);
+	if (ErrorCode) return;
+
+	// --- create cross section transects
+	ErrorCode = transect_create(Nobjects[TRANSECT]);
+	if (ErrorCode) return;
+
+	// --- allocate memory for infiltration data
+	infil_create(Nobjects[SUBCATCH], InfilModel);
+
+	// --- allocate memory for water quality state variables
+	for (j = 0; j < Nobjects[SUBCATCH]; j++)
+	{
+		Subcatch[j].initBuildup =
+			(double *)calloc(Nobjects[POLLUT], sizeof(double));
+		Subcatch[j].oldQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+		Subcatch[j].newQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+		Subcatch[j].pondedQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+		Subcatch[j].totalLoad = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+	}
+	for (j = 0; j < Nobjects[NODE]; j++)
+	{
+		Node[j].oldQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+		Node[j].newQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+		Node[j].extInflow = NULL;
+		Node[j].dwfInflow = NULL;
+		Node[j].rdiiInflow = NULL;
+		Node[j].treatment = NULL;
+	}
+	for (j = 0; j < Nobjects[LINK]; j++)
+	{
+		Link[j].oldQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+		Link[j].newQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+		Link[j].totalLoad = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+	}
+
+	// --- allocate memory for land use buildup/washoff functions
+	for (j = 0; j < Nobjects[LANDUSE]; j++)
+	{
+		Landuse[j].buildupFunc =
+			(TBuildup *)calloc(Nobjects[POLLUT], sizeof(TBuildup));
+		Landuse[j].washoffFunc =
+			(TWashoff *)calloc(Nobjects[POLLUT], sizeof(TWashoff));
+	}
+
+	// --- allocate memory for subcatchment landuse factors
+	for (j = 0; j < Nobjects[SUBCATCH]; j++)
+	{
+		Subcatch[j].landFactor =
+			(TLandFactor *)calloc(Nobjects[LANDUSE], sizeof(TLandFactor));
+		for (k = 0; k < Nobjects[LANDUSE]; k++)
+		{
+			Subcatch[j].landFactor[k].buildup =
+				(double *)calloc(Nobjects[POLLUT], sizeof(double));
+		}
+	}
+
+	// --- initialize buildup & washoff functions
+	for (j = 0; j < Nobjects[LANDUSE]; j++)
+	{
+		for (k = 0; k < Nobjects[POLLUT]; k++)
+		{
+			Landuse[j].buildupFunc[k].funcType = NO_BUILDUP;
+			Landuse[j].buildupFunc[k].normalizer = PER_AREA;
+			Landuse[j].washoffFunc[k].funcType = NO_WASHOFF;
+		}
+	}
+
+	// --- initialize rain gage properties
+	for (j = 0; j < Nobjects[GAGE]; j++)
+	{
+		Gage[j].tSeries = -1;
+		strcpy(Gage[j].fname, "");
+	}
+
+	// --- initialize subcatchment properties
+	for (j = 0; j < Nobjects[SUBCATCH]; j++)
+	{
+		Subcatch[j].outSubcatch = -1;
+		Subcatch[j].outNode = -1;
+		Subcatch[j].infil = -1;
+		Subcatch[j].groundwater = NULL;
+		Subcatch[j].gwLatFlowExpr = NULL;                                      //(5.1.007)
+		Subcatch[j].gwDeepFlowExpr = NULL;                                     //(5.1.007)
+		Subcatch[j].snowpack = NULL;
+		Subcatch[j].lidArea = 0.0;
+		for (k = 0; k < Nobjects[POLLUT]; k++)
+		{
+			Subcatch[j].initBuildup[k] = 0.0;
+		}
+	}
+
+	// --- initialize RDII unit hydrograph properties
+	for (j = 0; j < Nobjects[UNITHYD]; j++) rdii_initUnitHyd(j);
+
+	// --- initialize snowmelt properties
+	for (j = 0; j < Nobjects[SNOWMELT]; j++) snow_initSnowmelt(j);
+
+	// --- initialize storage node exfiltration                                //(5.1.007)
+	for (j = 0; j < Nnodes[STORAGE]; j++) Storage[j].exfil = NULL;             //(5.1.007)
+
+	// --- initialize link properties
+	for (j = 0; j < Nobjects[LINK]; j++)
+	{
+		Link[j].xsect.type = -1;
+		Link[j].cLossInlet = 0.0;
+		Link[j].cLossOutlet = 0.0;
+		Link[j].cLossAvg = 0.0;
+		Link[j].hasFlapGate = FALSE;
+	}
+	for (j = 0; j < Nlinks[PUMP]; j++) Pump[j].pumpCurve = -1;
+
+	// --- initialize reporting flags
+	for (j = 0; j < Nobjects[SUBCATCH]; j++) Subcatch[j].rptFlag = FALSE;
+	for (j = 0; j < Nobjects[NODE]; j++) Node[j].rptFlag = FALSE;
+	for (j = 0; j < Nobjects[LINK]; j++) Link[j].rptFlag = FALSE;
+
+	//  --- initialize curves, time series, and time patterns
+	for (j = 0; j < Nobjects[CURVE]; j++)   table_init(&Curve[j]);
+	for (j = 0; j < Nobjects[TSERIES]; j++) table_init(&Tseries[j]);
+	for (j = 0; j < Nobjects[TIMEPATTERN]; j++) inflow_initDwfPattern(j);
+
+
+
+	// then copy data now that everything has been allocated
 	// gages
-	Nobjects[GAGE] = swmmloader.GetGageCount();
-	Gage = (TGage *)calloc(Nobjects[GAGE], sizeof(TGage));
 	TGage* _gages = swmmloader.GetGages();
 	memcpy(Gage, _gages, sizeof(TGage));
 
 	// subcatchments
-	Nobjects[SUBCATCH] = swmmloader.GetSubcatchCount();
-	Subcatch = (TSubcatch *)calloc(Nobjects[SUBCATCH], sizeof(TSubcatch));
 	TSubcatch* _subcatches = swmmloader.GetSubcatches();
 	memcpy(Subcatch, _subcatches, sizeof(TSubcatch));
 
 	// nodes
-	Nobjects[NODE] = swmmloader.GetNodeCount();
-	Node = (TNode *)calloc(Nobjects[NODE], sizeof(TNode));
 	TNode* _node = swmmloader.GetNodes();
 	memcpy(Node, _node, sizeof(TNode));
 
 	// timeseries
-	Nobjects[TSERIES] = swmmloader.GetTSeriesCount();
-	Tseries = (TTable *)calloc(Nobjects[TSERIES], sizeof(TTable));
 	TTable* _tseries = swmmloader.GetTSeries();
 	memcpy(Tseries, _tseries, sizeof(TTable));
-
-	// infiltration
-	//infil_create(Nobjects[SUBCATCH], InfilModel);
-	switch (InfilModel)
-	{
-	case HORTON:
-		HortInfil = (THorton *)calloc(1, sizeof(THorton));
-		if (HortInfil == NULL) ErrorCode = ERR_MEMORY;
-		THorton* _hortinfil = swmmloader.GetInfiltration();
-		memcpy(HortInfil, _hortinfil, sizeof(HortInfil)); // check this sizeof
-	}
-
-	// 2 options -- either allocate memory as above or call createObjects()
-	// that would need a wrapper in project
 
 }
 
@@ -174,5 +321,3 @@ void projectload_open(char *f2, char* f3)
 
 	// binary file is opened in swmm_start
 }
-
-

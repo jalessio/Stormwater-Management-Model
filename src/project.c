@@ -1254,6 +1254,7 @@ void createHashTables()
     // --- initialize memory pool used to store object ID's
     if ( AllocInit() == NULL ) report_writeErrorMsg(ERR_MEMORY, "");
     else MemPoolAllocated = TRUE;
+	MemPoolAllocated = TRUE;
 }
 
 //=============================================================================
