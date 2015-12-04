@@ -37,8 +37,9 @@ void projectload_readinput(char *path)
 	// get empty SWMM hashtable from project.c
 	HTtable** Htable = ProjectGetHTable(); 
 
-	for (int i = 0; i < 15; i++)
-		memcpy(Htable[i], classHT[i], sizeof(struct HTentry)*HTMAXSIZE);
+	// 
+	for (int i = 0; i < MAX_OBJ_TYPES; i++)
+		memcpy(Htable[i], classHT[i], sizeof(HTtable)*HTMAXSIZE);
 
 	// get all counts needed -- this is handled by input_countObjects() in original SWMM
 	Nobjects[GAGE] = swmmloader.GetGageCount();
