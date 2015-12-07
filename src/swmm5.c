@@ -29,7 +29,7 @@
 //  Leave only one of the following 3 lines un-commented,
 //  depending on the choice of compilation target
 //**********************************************************
-//#define CLE     /* Compile as a command line executable */
+#define CLE     /* Compile as a command line executable */
 //#define SOL     /* Compile as a shared object library */
 //#define DLL     /* Compile as a Windows DLL */
 
@@ -148,7 +148,7 @@ static int  xfilter(int xc, DateTime elapsedTime, long step);
 //  Entry point used to compile a stand-alone executable.
 //-----------------------------------------------------------------------------
 #ifdef CLE 
-int  main(int argc, char *argv[])
+//int  main(int argc, char *argv[])//
 //
 //  Input:   argc = number of command line arguments
 //           argv = array of command line arguments
@@ -159,10 +159,11 @@ int  main(int argc, char *argv[])
 //  where f1 = name of input file, f2 = name of report file, and
 //  f3 = name of binary output file if saved (or blank if not saved).
 //
+int main(int argc, char *argv[])
 {
-    char *inputFile;
-    char *reportFile;
-    char *binaryFile;
+	char *inputFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.inp";
+	char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.rpt";
+	char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.out";;
     char blank[] = "";
     time_t start;
     double runTime;
@@ -174,15 +175,15 @@ int  main(int argc, char *argv[])
 
     // --- check for proper number of command line arguments
     start = time(0);
-    if (argc < 3) writecon(FMT01);
-    else
+//    if (argc < 3) writecon(FMT01);
+//    else
     {
         // --- extract file names from command line arguments
-        inputFile = argv[1];
-        reportFile = argv[2];
-        if (argc > 3) binaryFile = argv[3];
-        else          binaryFile = blank;
-        writecon(FMT02);
+//        inputFile = argv[1];
+//        reportFile = argv[2];
+//        if (argc > 3) binaryFile = argv[3];
+//        else          binaryFile = blank;
+//        writecon(FMT02);
 
         // --- run SWMM
         swmm_run(inputFile, reportFile, binaryFile);
@@ -197,10 +198,10 @@ int  main(int argc, char *argv[])
     }
 
 // --- Use the code below if you need to keep the console window visible
-/* 
+ 
     writecon("    Press Enter to continue...");
     getchar();
-*/
+
 
     return 0;
 }                                      /* End of main */

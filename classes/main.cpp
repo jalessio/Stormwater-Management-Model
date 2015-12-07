@@ -13,8 +13,8 @@ int main()
 	char* pathrpt = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.rpt";
 	char* pathout = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.out";
 
-	inp_swmm_run(path, pathrpt, pathout);
-//	swmm_run(path, pathrpt, pathout);
+//	inp_swmm_run(path, pathrpt, pathout);
+	swmm_run(path, pathrpt, pathout);
 
 	//int nsubcatch;
 	//AnalysisOptions aoptions;
