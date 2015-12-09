@@ -1,7 +1,7 @@
 // Functions used to populate the global variables in SWMM using data from the SWMMLoader class
 // Basically will have functionality of project_readinput() and probably project_open()
 
-// check errorcode in aoptions vs. _errCode (class member)
+//TODO check errorcode in aoptions vs. _errCode (class member)
 
 #include "SWMMLoader.h"
 #include <string.h>
@@ -11,18 +11,7 @@
 #include "lid.h"
 
 
-//
-//#include <stdlib.h>
-//#include <string.h>
-//#include <malloc.h>
-//#include <math.h>                                                              //(5.1.008)
-//#include <omp.h>                                                               //(5.1.008)
-//#include "headers.h"
-//#include "lid.h" 
-//#include "hash.h"
-//#include "mempool.h"
-
-void projectload_readinput(char *path)
+void projectload_readinput(char *path) 
 {
 	// mimic project_readinput
 	SWMMLoader swmmloader(path);
@@ -37,7 +26,7 @@ void projectload_readinput(char *path)
 	// get empty SWMM hashtable from project.c
 	HTtable** Htable = ProjectGetHTable(); 
 
-	// 
+	// populate SWMM hashtable
 	for (int i = 0; i < MAX_OBJ_TYPES; i++)
 		memcpy(Htable[i], classHT[i], sizeof(HTtable)*HTMAXSIZE);
 
@@ -63,7 +52,7 @@ void projectload_readinput(char *path)
 	//Outlet = (TOutlet *)calloc(Nlinks[OUTLET], sizeof(TOutlet));
 	//Pollut = (TPollut *)calloc(Nobjects[POLLUT], sizeof(TPollut));
 	//Landuse = (TLanduse *)calloc(Nobjects[LANDUSE], sizeof(TLanduse));
-	//Pattern = (TPattern *)calloc(Nobjects[TIMEPATTERN], sizeof(TPattern));
+	Pattern = (TPattern *)calloc(Nobjects[TIMEPATTERN], sizeof(TPattern));
 	//Curve = (TTable *)calloc(Nobjects[CURVE], sizeof(TTable));
 	Tseries = (TTable *)calloc(Nobjects[TSERIES], sizeof(TTable));
 	//Aquifer = (TAquifer *)calloc(Nobjects[AQUIFER], sizeof(TAquifer));
@@ -281,8 +270,11 @@ void projectload_readinput(char *path)
 	TTable* _tseries = swmmloader.GetTSeries();
 	memcpy(Tseries, _tseries, sizeof(TTable));
 
-}
+	// evaporation
+	TEvap _evap = swmmloader.GetEvap();
+	Evap = _evap;
 
+}
 
 // initPointers() is wrapped by InitPointers()
 // decide where to setDefaults() -- in project_open or in SWMMLoader?

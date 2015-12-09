@@ -172,6 +172,12 @@ THorton* SWMMLoader::GetInfiltration()
 	return _hortinfil;
 }
 
+TEvap SWMMLoader::GetEvap()
+{
+	return _evap;
+}
+
+
 AnalysisOptions SWMMLoader::GetAnalysisOptions()
 {
 	return _aoptions;
@@ -1002,6 +1008,9 @@ int  SWMMLoader::ParseLine(int sect, char *line)
 		_Mobjects[GAGE]++;
 		return err;
 
+	case s_EVAP:
+		return ClimateReadEvapParams(_Tok, _Ntokens);
+
 	case s_SUBCATCH:
 		j = _Mobjects[SUBCATCH];
 		err = ReadSubcatchParams(j, _Tok, _Ntokens);
@@ -1011,14 +1020,14 @@ int  SWMMLoader::ParseLine(int sect, char *line)
 	case s_SUBAREA:
 		return ReadSubareaParams(_Tok, _Ntokens);
 
-	case s_TIMESERIES:
-		return TableReadTimeseries(_Tok, _Ntokens); 
+	case s_INFIL:
+		return InfilReadParams(_aoptions.InfilModel, _Tok, _Ntokens);
 
 	case s_JUNCTION:
 		return ReadNode(JUNCTION);					// _Mobjects in ReadNode
 
-	case s_INFIL:
-		return InfilReadParams(_aoptions.InfilModel, _Tok, _Ntokens);
+	case s_TIMESERIES:
+		return TableReadTimeseries(_Tok, _Ntokens); 
 
 	default: return 0;
 	}
@@ -1529,6 +1538,96 @@ int SWMMLoader::ReadSubareaParams(char* tok[], int ntoks)
 		_subcatches[j].subArea[IMPERV1].routeTo = k;
 		_subcatches[j].subArea[IMPERV0].fOutlet = 1.0 - x[6];
 		_subcatches[j].subArea[IMPERV1].fOutlet = 1.0 - x[6];
+	}
+	return 0;
+}
+
+int SWMMLoader::ClimateReadEvapParams(char* tok[], int ntoks)
+//
+//  Input:   tok[] = array of string tokens
+//           ntoks = number of tokens
+//  Output:  returns error code
+//  Purpose: reads evaporation parameters from input line of data.
+//
+//  Data formats are:
+//    CONSTANT  value
+//    MONTHLY   v1 ... v12
+//    TIMESERIES name
+//    TEMPERATURE
+//    FILE      (v1 ... v12)
+//    RECOVERY   name
+//    DRY_ONLY   YES/NO
+//
+{
+	int i, k;
+	double x;
+
+	// --- find keyword indicating what form the evaporation data is in
+	k = findmatch(tok[0], EvapTypeWords);
+	if (k < 0) return error_setInpError(ERR_KEYWORD, tok[0]);
+
+	// --- check for RECOVERY pattern data
+	if (k == RECOVERY)
+	{
+		if (ntoks < 2) return error_setInpError(ERR_ITEMS, "");
+		i = project_findObject(TIMEPATTERN, tok[1]);
+		if (i < 0) return error_setInpError(ERR_NAME, tok[1]);
+		_evap.recoveryPattern = i;
+		return 0;
+	}
+
+	// --- check for no evaporation in wet periods
+	if (k == DRYONLY)
+	{
+		if (ntoks < 2) return error_setInpError(ERR_ITEMS, "");
+		if (strcomp(tok[1], w_NO))  _evap.dryOnly = FALSE;
+		else if (strcomp(tok[1], w_YES)) _evap.dryOnly = TRUE;
+		else return error_setInpError(ERR_KEYWORD, tok[1]);
+		return 0;
+	}
+
+	// --- process data depending on its form
+	_evap.type = k;
+	if (k != TEMPERATURE_EVAP && ntoks < 2)
+		return error_setInpError(ERR_ITEMS, "");
+	switch (k)
+	{
+	case CONSTANT_EVAP:
+		// --- for constant evap., fill monthly avg. values with same number
+		if (!getDouble(tok[1], &x))
+			return error_setInpError(ERR_NUMBER, tok[1]);
+		for (i = 0; i<12; i++) _evap.monthlyEvap[i] = x;
+		break;
+
+	case MONTHLY_EVAP:
+		// --- for monthly evap., read a value for each month of year
+		if (ntoks < 13) return error_setInpError(ERR_ITEMS, "");
+		for (i = 0; i<12; i++)
+		if (!getDouble(tok[i + 1], &_evap.monthlyEvap[i]))
+			return error_setInpError(ERR_NUMBER, tok[i + 1]);
+		break;
+
+	case TIMESERIES_EVAP:
+		// --- for time series evap., read name of time series
+		i = ProjectFindObject(TSERIES, tok[1]); // TODO check TSERIES
+		if (i < 0) return error_setInpError(ERR_NAME, tok[1]);
+		_evap.tSeries = i;
+		_tseries[i].refersTo = TIMESERIES_EVAP;
+		break;
+
+	case FILE_EVAP:
+		// --- for evap. from climate file, read monthly pan coeffs.
+		//     if they are provided (default values are 1.0)
+		if (ntoks > 1)
+		{
+			if (ntoks < 13) return error_setInpError(ERR_ITEMS, "");
+			for (i = 0; i<12; i++)
+			{
+				if (!getDouble(tok[i + 1], &_evap.panCoeff[i]))
+					return error_setInpError(ERR_NUMBER, tok[i + 1]);
+			}
+		}
+		break;
 	}
 	return 0;
 }

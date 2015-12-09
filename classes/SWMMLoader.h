@@ -85,6 +85,9 @@ public:
 	HTtable** GetHtable(); // Hash tables for object ID names
 	//char  _MemPoolAllocated;        // TRUE if memory pool allocated
 
+	// access evap info
+	TEvap GetEvap();
+
 	//GetCounts for all types
 	int* GetAllCounts();
 
@@ -121,6 +124,7 @@ protected:
 	AnalysisOptions _aoptions; // struct to store analysis options, defined in objects.h
 	TimeList _timelist; // struct to store times, defined in objects.h
 	THorton* _hortinfil; // infiltration object
+	TEvap _evap; // evaporation
 	
 	//utility functions
 	void ClearCounts();
@@ -166,6 +170,9 @@ protected:
 	void InfilCreate(int subcatchCount, int model);
 	int InfilReadParams(int m, char* tok[], int ntoks);
 	int HortonSetParams(THorton *infil, double p[]);
+
+	//utility functions - scraped from climate.c
+	int ClimateReadEvapParams(char* tok[], int ntoks);
 
 };
 
