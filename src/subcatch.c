@@ -65,6 +65,17 @@ double     VlidReturn;    // LID outflow returned to pervious area
 static  TSubarea* theSubarea;     // subarea to which getDdDt() is applied
 static  char *RunoffRoutingWords[] = { w_OUTLET,  w_IMPERV, w_PERV, NULL};
 
+// Wrappers
+//TSubarea* SubcatchGetSubarea()
+//{
+//	return theSubarea;
+//}
+
+char** SubcatchGetRunoffRoutingWords()
+{
+	return RunoffRoutingWords;
+}
+
 //-----------------------------------------------------------------------------
 //  External functions (declared in funcs.h)   
 //-----------------------------------------------------------------------------

@@ -144,10 +144,84 @@ static void execRouting(DateTime elapsedTime);
 static int  xfilter(int xc, DateTime elapsedTime, long step);
 #endif
 
-//-----------------------------------------------------------------------------
-//  Entry point used to compile a stand-alone executable.
-//-----------------------------------------------------------------------------
-#ifdef CLE 
+////-----------------------------------------------------------------------------
+////  Entry point used to compile a stand-alone executable.
+////-----------------------------------------------------------------------------
+//#ifdef CLE 
+//int main(int argc, char *argv[])
+//{
+////
+////  Input:   argc = number of command line arguments
+////           argv = array of command line arguments
+////  Output:  returns error status
+////  Purpose: processes command line arguments.
+////
+////  Command line for stand-alone operation is: swmm5 f1  f2  f3
+////  where f1 = name of input file, f2 = name of report file, and
+////  f3 = name of binary output file if saved (or blank if not saved).
+////
+//// to run normal SWMM -- modified from original to take filenames here instead of on the CLE, for debugging
+///*
+//	char *inputFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.inp";
+//	char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.rpt";
+//	char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.out";;*/
+//	char *inputFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot.inp";
+//	char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot.rpt";
+//	char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot.out";;
+//	
+//	char blank[] = "";
+//    time_t start;
+//    double runTime;
+//
+//    // --- initialize flags
+//    IsOpenFlag = FALSE;
+//    IsStartedFlag = FALSE;
+//    SaveResultsFlag = TRUE;
+//
+//    // --- check for proper number of command line arguments
+//    start = time(0);
+////    if (argc < 3) writecon(FMT01);
+////    else
+//    {
+//        // --- extract file names from command line arguments
+////        inputFile = argv[1];
+////        reportFile = argv[2];
+////        if (argc > 3) binaryFile = argv[3];
+////        else          binaryFile = blank;
+////        writecon(FMT02);
+//
+//        // --- run SWMM
+//        swmm_run(inputFile, reportFile, binaryFile);
+//
+//        // Display closing status on console
+//        runTime = difftime(time(0), start);
+//        sprintf(Msg, "\n\n... EPA-SWMM completed in %.2f seconds.", runTime);
+//        writecon(Msg);
+//        if      ( ErrorCode   ) writecon(FMT03);
+//        else if ( WarningCode ) writecon(FMT04);
+//        else                    writecon(FMT05);
+//    }
+//
+//// --- Use the code below if you need to keep the console window visible
+// 
+//    writecon("    Press Enter to continue...");
+//    getchar();
+//
+//
+//    return 0;
+//}                                      /* End of main */
+//#endif
+//
+
+
+
+
+
+// new swmm
+
+
+
+#ifdef CLE
 //int  main(int argc, char *argv[])//
 //
 //  Input:   argc = number of command line arguments
@@ -161,123 +235,57 @@ static int  xfilter(int xc, DateTime elapsedTime, long step);
 //
 int main(int argc, char *argv[])
 {
-	// to run normal SWMM -- modified from original to take filenames here instead of on the CLE, for debugging
-/*
-	char *inputFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.inp";
-	char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.rpt";
-	char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.out";;*/
+	// to run modified SWMM
+
+	//char *inputFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.inp";
+	//char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.rpt";
+	//char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.out";;
 	char *inputFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot.inp";
 	char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot.rpt";
 	char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot.out";;
-	
+
 	char blank[] = "";
-    time_t start;
-    double runTime;
+	time_t start;
+	double runTime;
 
-    // --- initialize flags
-    IsOpenFlag = FALSE;
-    IsStartedFlag = FALSE;
-    SaveResultsFlag = TRUE;
+	// --- initialize flags
+	IsOpenFlag = FALSE;
+	IsStartedFlag = FALSE;
+	SaveResultsFlag = TRUE;
 
-    // --- check for proper number of command line arguments
-    start = time(0);
-//    if (argc < 3) writecon(FMT01);
-//    else
-    {
-        // --- extract file names from command line arguments
-//        inputFile = argv[1];
-//        reportFile = argv[2];
-//        if (argc > 3) binaryFile = argv[3];
-//        else          binaryFile = blank;
-//        writecon(FMT02);
+	// --- check for proper number of command line arguments
+	start = time(0);
+	//    if (argc < 3) writecon(FMT01);
+	//    else
+	{
+		// --- extract file names from command line arguments
+		//        inputFile = argv[1];
+		//        reportFile = argv[2];
+		//        if (argc > 3) binaryFile = argv[3];
+		//        else          binaryFile = blank;
+		//        writecon(FMT02);
 
-        // --- run SWMM
-        swmm_run(inputFile, reportFile, binaryFile);
+		// --- run SWMM
+		inp_swmm_run(inputFile, reportFile, binaryFile);
 
-        // Display closing status on console
-        runTime = difftime(time(0), start);
-        sprintf(Msg, "\n\n... EPA-SWMM completed in %.2f seconds.", runTime);
-        writecon(Msg);
-        if      ( ErrorCode   ) writecon(FMT03);
-        else if ( WarningCode ) writecon(FMT04);
-        else                    writecon(FMT05);
-    }
+		// Display closing status on console
+		runTime = difftime(time(0), start);
+		sprintf(Msg, "\n\n... EPA-SWMM completed in %.2f seconds.", runTime);
+		writecon(Msg);
+		if (ErrorCode) writecon(FMT03);
+		else if (WarningCode) writecon(FMT04);
+		else                    writecon(FMT05);
+	}
 
-// --- Use the code below if you need to keep the console window visible
- 
-    writecon("    Press Enter to continue...");
-    getchar();
+	// --- Use the code below if you need to keep the console window visible
+
+	writecon("    Press Enter to continue...");
+	getchar();
 
 
-    return 0;
+	return 0;
 }                                      /* End of main */
 #endif
-
-//#ifdef CLE
-////int  main(int argc, char *argv[])//
-////
-////  Input:   argc = number of command line arguments
-////           argv = array of command line arguments
-////  Output:  returns error status
-////  Purpose: processes command line arguments.
-////
-////  Command line for stand-alone operation is: swmm5 f1  f2  f3
-////  where f1 = name of input file, f2 = name of report file, and
-////  f3 = name of binary output file if saved (or blank if not saved).
-////
-//int main(int argc, char *argv[])
-//{
-//	// to run modified SWMM
-//
-//	//char *inputFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.inp";
-//	//char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.rpt";
-//	//char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.out";;
-//	char *inputFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot.inp";
-//	char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot.rpt";
-//	char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot.out";;
-//
-//	char blank[] = "";
-//	time_t start;
-//	double runTime;
-//
-//	// --- initialize flags
-//	IsOpenFlag = FALSE;
-//	IsStartedFlag = FALSE;
-//	SaveResultsFlag = TRUE;
-//
-//	// --- check for proper number of command line arguments
-//	start = time(0);
-//	//    if (argc < 3) writecon(FMT01);
-//	//    else
-//	{
-//		// --- extract file names from command line arguments
-//		//        inputFile = argv[1];
-//		//        reportFile = argv[2];
-//		//        if (argc > 3) binaryFile = argv[3];
-//		//        else          binaryFile = blank;
-//		//        writecon(FMT02);
-//
-//		// --- run SWMM
-//		swmm_run(inputFile, reportFile, binaryFile);
-//
-//		// Display closing status on console
-//		runTime = difftime(time(0), start);
-//		sprintf(Msg, "\n\n... EPA-SWMM completed in %.2f seconds.", runTime);
-//		writecon(Msg);
-//		if (ErrorCode) writecon(FMT03);
-//		else if (WarningCode) writecon(FMT04);
-//		else                    writecon(FMT05);
-//	}
-//
-//	// --- Use the code below if you need to keep the console window visible
-//
-//	writecon("    Press Enter to continue...");
-//	getchar();
-//
-//
-//	return 0;
-//}                                      /* End of main */
-//#endif
 
 
 

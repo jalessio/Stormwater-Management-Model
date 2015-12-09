@@ -900,13 +900,19 @@ int SWMMLoader::ReadData()
 	int   sect, newsect;          // data sections
 	int   inperr, errsum;         // error code & total error count
 	int   lineLength;             // number of characters in input line
-	//int   i;
+	int   i;
 	long  lineCount = 0;
 
 	// --- read each line from input file
 	rewind(_inFile);
 	sect = 0;
 	errsum = 0;
+
+	// --- initialize starting date for all time series
+	for (i = 0; i < _Nobjects[TSERIES]; i++)
+	{
+		_tseries[i].lastDate = _timelist.StartDate + _timelist.StartTime;
+	}
 
 	while (fgets(line, MAXLINE, _inFile) != NULL)
 	{
@@ -1001,6 +1007,9 @@ int  SWMMLoader::ParseLine(int sect, char *line)
 		err = ReadSubcatchParams(j, _Tok, _Ntokens);
 		_Mobjects[SUBCATCH]++;
 		return err;
+
+	case s_SUBAREA:
+		return ReadSubareaParams(_Tok, _Ntokens);
 
 	case s_TIMESERIES:
 		return TableReadTimeseries(_Tok, _Ntokens); 
@@ -1432,6 +1441,95 @@ int  SWMMLoader::ReadSubcatchParams(int j, char* tok[], int ntoks)
 	//     if ( !snow_createSnowpack(j, (int)x[8]) )
 	//         return error_setInpError(ERR_MEMORY, "");
 	// }
+	return 0;
+}
+
+int SWMMLoader::ReadSubareaParams(char* tok[], int ntoks)
+// modified from subcatch_readSubareaParams in subcatch.c
+//
+//
+//  Input:   tok[] = array of string tokens
+//           ntoks = number of tokens
+//  Output:  returns an error code
+//  Purpose: reads subcatchment's subarea parameters from a tokenized 
+//           line of input data.
+//
+//  Data has format:
+//    Subcatch  Imperv_N  Perv_N  Imperv_S  Perv_S  PctZero  RouteTo (PctRouted)
+//
+{
+	int    i, j, k, m;
+	double x[7];
+	char** RunoffRoutingWords = SubcatchGetRunoffRoutingWords();
+
+	// --- check for enough tokens
+	if (ntoks < 7) return error_setInpError(ERR_ITEMS, "");
+
+	// --- check that named subcatch exists
+	j = ProjectFindObject(SUBCATCH, tok[0]);
+	if (j < 0) return error_setInpError(ERR_NAME, tok[0]);
+
+	// --- read in Mannings n, depression storage, & PctZero values
+	for (i = 0; i < 5; i++)
+	{
+		if (!getDouble(tok[i + 1], &x[i]) || x[i] < 0.0)
+			return error_setInpError(ERR_NAME, tok[i + 1]);
+	}
+
+	// --- check for valid runoff routing keyword
+	m = findmatch(tok[6], RunoffRoutingWords);
+	if (m < 0) return error_setInpError(ERR_KEYWORD, tok[6]);
+
+	// --- get percent routed parameter if present (default is 100)
+	x[5] = m;
+	x[6] = 1.0;
+	if (ntoks >= 8)
+	{
+		if (!getDouble(tok[7], &x[6]) || x[6] < 0.0 || x[6] > 100.0)
+			return error_setInpError(ERR_NUMBER, tok[7]);
+		x[6] /= 100.0;
+	}
+
+	// --- assign input values to each type of subarea
+	_subcatches[j].subArea[IMPERV0].N = x[0];
+	_subcatches[j].subArea[IMPERV1].N = x[0];
+	_subcatches[j].subArea[PERV].N = x[1];
+
+	_subcatches[j].subArea[IMPERV0].dStore = 0.0;
+	_subcatches[j].subArea[IMPERV1].dStore = x[2] / UCF(RAINDEPTH);
+	_subcatches[j].subArea[PERV].dStore = x[3] / UCF(RAINDEPTH);
+
+	_subcatches[j].subArea[IMPERV0].fArea = _subcatches[j].fracImperv * x[4] / 100.0;
+	_subcatches[j].subArea[IMPERV1].fArea = _subcatches[j].fracImperv * (1.0 - x[4] / 100.0);
+	_subcatches[j].subArea[PERV].fArea = (1.0 - _subcatches[j].fracImperv);
+
+	// --- assume that all runoff from each subarea goes to subcatch outlet
+	for (i = IMPERV0; i <= PERV; i++)
+	{
+		_subcatches[j].subArea[i].routeTo = TO_OUTLET;
+		_subcatches[j].subArea[i].fOutlet = 1.0;
+	}
+
+	// --- modify routing if pervious runoff routed to impervious area
+	//     (fOutlet is the fraction of runoff not routed)
+
+	k = (int)x[5];
+	if (_subcatches[j].fracImperv == 0.0
+		|| _subcatches[j].fracImperv == 1.0) k = TO_OUTLET;
+	if (k == TO_IMPERV && _subcatches[j].fracImperv)
+	{
+		_subcatches[j].subArea[PERV].routeTo = k;
+		_subcatches[j].subArea[PERV].fOutlet = 1.0 - x[6];
+	}
+
+	// --- modify routing if impervious runoff routed to pervious area
+	if (k == TO_PERV)
+	{
+		_subcatches[j].subArea[IMPERV0].routeTo = k;
+		_subcatches[j].subArea[IMPERV1].routeTo = k;
+		_subcatches[j].subArea[IMPERV0].fOutlet = 1.0 - x[6];
+		_subcatches[j].subArea[IMPERV1].fOutlet = 1.0 - x[6];
+	}
 	return 0;
 }
 

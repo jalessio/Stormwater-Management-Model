@@ -36,6 +36,8 @@ extern void SetDefaults();
 extern void ProjectCreateHashTables();
 extern HTtable** ProjectGetHTable();
 
+extern char** SubcatchGetRunoffRoutingWords();
+
 class SWMMLoader
 {
 public:
@@ -150,6 +152,7 @@ protected:
 
 	//utility functions - scraped from subcatch.c
 	int ReadSubcatchParams(int j, char* tok[], int ntoks);
+	int ReadSubareaParams(char* tok[], int ntoks);
 	
 	//utility functions - scraped from node.c
 	int ReadNodeParams(int j, int type, int k, char* tok[], int ntoks);
