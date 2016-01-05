@@ -29,42 +29,4 @@
   Dry Time Step ............ 01:00:00
   
   
-  **************************        Volume         Depth
-  Runoff Quantity Continuity     acre-feet        inches
-  **************************     ---------       -------
-  Total Precipitation ......         0.803         1.167
-  Evaporation Loss .........         0.014         0.020
-  Infiltration Loss ........         0.000         0.000
-  Surface Runoff ...........         0.796         1.156
-  Final Storage ............         0.000         0.000
-  Continuity Error (%) .....        -0.782
-  
-  
-  **************************        Volume        Volume
-  Flow Routing Continuity        acre-feet      10^6 gal
-  **************************     ---------     ---------
-  Dry Weather Inflow .......         0.000         0.000
-  Wet Weather Inflow .......         0.796         0.259
-  Groundwater Inflow .......         0.000         0.000
-  RDII Inflow ..............         0.000         0.000
-  External Inflow ..........         0.000         0.000
-  External Outflow .........         0.796         0.259
-  Flooding Loss ............         0.000         0.000
-  Evaporation Loss .........         0.000         0.000
-  Exfiltration Loss ........         0.000         0.000
-  Initial Stored Volume ....         0.000         0.000
-  Final Stored Volume ......         0.000         0.000
-  Continuity Error (%) .....         0.000
-  
-  
-  ***************************
-  Subcatchment Runoff Summary
-  ***************************
-  
-  --------------------------------------------------------------------------------------------------------
-                            Total      Total      Total      Total      Total       Total     Peak  Runoff
-                           Precip      Runon       Evap      Infil     Runoff      Runoff   Runoff   Coeff
-  Subcatchment                 in         in         in         in         in    10^6 gal      CFS
-  --------------------------------------------------------------------------------------------------------
-  1                          1.17       0.00       0.02       0.00       1.16        0.26    16.36   0.991
-  
+  Access violation  at step 1, hour 0 --- execution halted.

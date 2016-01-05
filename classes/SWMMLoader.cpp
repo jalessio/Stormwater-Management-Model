@@ -17,12 +17,16 @@ SWMMLoader::SWMMLoader()
 {
 	ClearErr();
 	ClearCounts();
+
+	//TODO alternative function to populate data if not loading from file
+
+	//SetNObjects();
 }
 
 SWMMLoader::SWMMLoader(const char* path)
 :_gages(NULL), _subcatches(NULL), _nodes(NULL), _tseries(NULL), _hortinfil(NULL)
 {
-	ClearErr();
+	ClearErr(); // Clearcounts() called by OpenFile
 	OpenFile(path);
 }
 
@@ -119,6 +123,11 @@ TGage* SWMMLoader::GetGage(const int & i)
 int SWMMLoader::GetGageCount() const
 {
 	return _Nobjects[GAGE];
+}
+
+void SWMMLoader::SetGageCount(int n)
+{
+	_Nobjects[GAGE] = n;
 }
 
 TSubcatch* SWMMLoader::GetSubcatches()
@@ -350,7 +359,7 @@ int SWMMLoader::CountObjects()
 				if (ProjectFindObject(TSERIES, tok) < 0)
 				{
 					if (!ProjectAddObject(TSERIES, tok, _Nobjects[TSERIES]))
-						errcode = error_setInpError(ERR_DUP_NAME, tok);
+						errcode = error_setInpError(ERR_DUP_NAME, tok); // TODO check others to see if you want to use this error code
 					_Nobjects[TSERIES]++;
 				}
 				break;
@@ -373,148 +382,6 @@ int SWMMLoader::CountObjects()
 	if (errsum > 0) _errCode = ERR_INPUT;
 	return _errCode;
 }
-
-//// from project.c -- not sure if we want to do this here, or just do inside SWMM (was done in project_open())
-//void SWMMLoader::SetDefaults()
-////
-////  Input:   none
-////  Output:  none
-////  Purpose: assigns default values to project variables.
-////
-//{
-//	//int i, j;
-//
-//	//// Project title & temp. file path
-//	//for (i = 0; i < MAXTITLE; i++) strcpy(Title[i], "");
-//	//strcpy(TempDir, "");
-//
-//	//// Interface files
-//	//Frain.mode = SCRATCH_FILE;     // Use scratch rainfall file
-//	//Fclimate.mode = NO_FILE;
-//	//Frunoff.mode = NO_FILE;
-//	//Frdii.mode = NO_FILE;
-//	//Fhotstart1.mode = NO_FILE;
-//	//Fhotstart2.mode = NO_FILE;
-//	//Finflows.mode = NO_FILE;
-//	//Foutflows.mode = NO_FILE;
-//	//Frain.file = NULL;
-//	//Fclimate.file = NULL;
-//	//Frunoff.file = NULL;
-//	//Frdii.file = NULL;
-//	//Fhotstart1.file = NULL;
-//	//Fhotstart2.file = NULL;
-//	//Finflows.file = NULL;
-//	//Foutflows.file = NULL;
-//	//Fout.file = NULL;
-//	//Fout.mode = NO_FILE;
-//
-//	// Analysis options
-//	_aoptions.UnitSystem = US;               // US unit system
-//	_aoptions.FlowUnits = CFS;               // CFS flow units
-//	_aoptions.InfilModel = HORTON;           // Horton infiltration method
-//	_aoptions.RouteModel = KW;               // Kin. wave flow routing method
-//	_aoptions.AllowPonding = FALSE;          // No ponding at nodes
-//	_aoptions.InertDamping = SOME;           // Partial inertial damping
-//	_aoptions.NormalFlowLtd = BOTH;          // Default normal flow limitation
-//	_aoptions.ForceMainEqn = H_W;            // Hazen-Williams eqn. for force mains
-//	_aoptions.LinkOffsets = DEPTH_OFFSET;    // Use depth for link offsets
-//	_aoptions.LengtheningStep = 0;           // No lengthening of conduits
-//	_aoptions.CourantFactor = 0.0;           // No variable time step 
-//	_aoptions.MinSurfArea = 0.0;             // Force use of default min. surface area
-//	_aoptions.SkipSteadyState = FALSE;       // Do flow routing in steady state periods 
-//	_aoptions.IgnoreRainfall = FALSE;        // Analyze rainfall/runoff
-//	_aoptions.IgnoreRDII = FALSE;            // Analyze RDII                         //(5.1.004)
-//	_aoptions.IgnoreSnowmelt = FALSE;        // Analyze snowmelt 
-//	_aoptions.IgnoreGwater = FALSE;          // Analyze groundwater 
-//	_aoptions.IgnoreRouting = FALSE;         // Analyze flow routing
-//	_aoptions.IgnoreQuality = FALSE;         // Analyze water quality
-//	_aoptions.WetStep = 300;                 // Runoff wet time step (secs)
-//	_aoptions.DryStep = 3600;                // Runoff dry time step (secs)
-//	_aoptions.RouteStep = 300.0;             // Routing time step (secs)
-//	_aoptions.MinRouteStep = 0.5;            // Minimum variable time step (sec)     //(5.1.008)
-//	_aoptions.ReportStep = 900;              // Reporting time step (secs)
-//	_aoptions.StartDryDays = 0.0;            // Antecedent dry days
-//	_aoptions.MaxTrials = 0;                 // Force use of default max. trials 
-//	_aoptions.HeadTol = 0.0;                 // Force use of default head tolerance
-//	_aoptions.SysFlowTol = 0.05;             // System flow tolerance for steady state
-//	_aoptions.LatFlowTol = 0.05;             // Lateral flow tolerance for steady state
-//	_aoptions.NumThreads = 0;                // Number of parallel threads to use
-//
-//	//// Deprecated options
-//	//SlopeWeighting = TRUE;             // Use slope weighting 
-//	//Compatibility = SWMM4;            // Use SWMM 4 up/dn weighting method
-//
-//	// Starting & ending date/time
-//	_timelist.StartDate = datetime_encodeDate(2004, 1, 1);
-//	_timelist.StartTime = datetime_encodeTime(0, 0, 0);
-//	_timelist.StartDateTime = _timelist.StartDate + _timelist.StartTime;
-//	_timelist.EndDate = _timelist.StartDate;
-//	_timelist.EndTime = 0.0;
-//	_timelist.ReportStartDate = NO_DATE;
-//	_timelist.ReportStartTime = NO_DATE;
-//	_aoptions.SweepStart = 1;
-//	_aoptions.SweepEnd = 365;
-//
-//	//// Reporting options
-//	//RptFlags.input = FALSE;
-//	//RptFlags.continuity = TRUE;
-//	//RptFlags.flowStats = TRUE;
-//	//RptFlags.controls = FALSE;
-//	//RptFlags.subcatchments = FALSE;
-//	//RptFlags.nodes = FALSE;
-//	//RptFlags.links = FALSE;
-//	//RptFlags.nodeStats = FALSE;
-//
-//	//// Temperature data
-//	//Temp.dataSource = NO_TEMP;
-//	//Temp.tSeries = -1;
-//	//Temp.ta = 70.0;
-//	//Temp.elev = 0.0;
-//	//Temp.anglat = 40.0;
-//	//Temp.dtlong = 0.0;
-//	//Temp.tmax = MISSING;
-//
-//	//// Wind speed data
-//	//Wind.type = MONTHLY_WIND;
-//	//for (i = 0; i<12; i++) Wind.aws[i] = 0.0;
-//
-//	//// Snowmelt parameters
-//	//Snow.snotmp = 34.0;
-//	//Snow.tipm = 0.5;
-//	//Snow.rnm = 0.6;
-//
-//	//// Snow areal depletion curves for pervious and impervious surfaces
-//	//for (i = 0; i<2; i++)
-//	//{
-//	//	for (j = 0; j<10; j++) Snow.adc[i][j] = 1.0;
-//	//}
-//
-//	//// Evaporation rates
-//	//Evap.type = CONSTANT_EVAP;
-//	//for (i = 0; i<12; i++)
-//	//{
-//	//	Evap.monthlyEvap[i] = 0.0;
-//	//	Evap.panCoeff[i] = 1.0;
-//	//}
-//	//Evap.recoveryPattern = -1;
-//	//Evap.recoveryFactor = 1.0;
-//	//Evap.tSeries = -1;
-//	//Evap.dryOnly = FALSE;
-//
-//	//////  Following code segment added to release 5.1.007.  ////                   //(5.1.007)
-//	//////
-//	//// Climate adjustments
-//	//for (i = 0; i < 12; i++)
-//	//{
-//	//	Adjust.temp[i] = 0.0;   // additive adjustments
-//	//	Adjust.evap[i] = 0.0;   // additive adjustments
-//	//	Adjust.rain[i] = 1.0;   // multiplicative adjustments
-//	//	Adjust.hydcon[i] = 1.0; // hyd. conductivity adjustments                //(5.1.008)
-//	//}
-//	//Adjust.rainFactor = 1.0;
-//	//Adjust.hydconFactor = 1.0;                                                  //(5.1.008)
-//	//////
-//}
 
 // from input.c -- called by input_countObjects()
 int SWMMLoader::ReadOption(char* line)
@@ -830,7 +697,22 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2)
 
 void SWMMLoader::ClearObjArrays()
 {
-	delete[] _hortinfil;
+	if (_aoptions.InfilModel == HORTON)
+	{
+		delete[] _hortinfil;
+		_hortinfil = NULL;
+	}
+	else if (_aoptions.InfilModel == GREEN_AMPT)
+	{
+		delete[] _gainfil;
+		_gainfil = NULL;
+	}
+	else
+	{
+		// might add more infiltration options later
+	}
+
+
 
 	delete[] _gages;
 	delete[] _subcatches;
@@ -842,7 +724,7 @@ void SWMMLoader::ClearObjArrays()
 	_subcatches = NULL;
 	_nodes = NULL;
 	_tseries = NULL;
-	_hortinfil = NULL;
+
 }
 
 // look at createObjects() in project.c -- some values need to be set
@@ -1644,15 +1526,14 @@ void SWMMLoader::InfilCreate(int subcatchCount, int model)
 	{
 	case HORTON:
 	case MOD_HORTON:
-		//_HortInfil = (THorton *)calloc(subcatchCount, sizeof(THorton));
-		_hortinfil = new THorton[_Nobjects[SUBCATCH]]();
+		_hortinfil = new THorton[_Nobjects[SUBCATCH]](); //TODO where are you deleting this
 		if (_hortinfil == NULL) _errCode = ERR_MEMORY;
 		break;
-	//case GREEN_AMPT:
-	//case MOD_GREEN_AMPT:                                                       //(5.1.010)
-	//	GAInfil = (TGrnAmpt *)calloc(subcatchCount, sizeof(TGrnAmpt));
-	//	if (GAInfil == NULL) ErrorCode = ERR_MEMORY;
-	//	break;
+	case GREEN_AMPT:
+	case MOD_GREEN_AMPT:                                                       //(5.1.010)
+		_gainfil = new TGrnAmpt[_Nobjects[SUBCATCH]]();
+		if (_gainfil == NULL) _errCode = ERR_MEMORY;
+		break;
 	//case CURVE_NUMBER:
 	//	CNInfil = (TCurveNum *)calloc(subcatchCount, sizeof(TCurveNum));
 	//	if (CNInfil == NULL) ErrorCode = ERR_MEMORY;

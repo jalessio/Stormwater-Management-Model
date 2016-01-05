@@ -1,8 +1,9 @@
 /*
-Working input API -- set up to load from input file
-Next step: write function that sends data from class to SWMM globals
+Working input API -- loads data from input file
 
-If loading is happening in this file, some changes also need to be made to project_open() -> openFiles()
+TODO
+-in original SWMM, units are converted in read step -- make sure this is consistent in swmmloader
+-test green & ampt infiltration (see Example_greenampt.inp)
 
 */
 
@@ -66,6 +67,8 @@ public:
 	TNode* GetNodes();
 	TNode* GetNode(const int & i);
 	int GetNodeCount() const;
+
+	void SetGageCount(int n);
 		
 	//access timeseries info
 	TTable* GetTSeries();
@@ -73,7 +76,8 @@ public:
 
 	//access infiltration info
 	//only worry about horton for now
-	THorton* GetInfiltration();
+	THorton* GetInfiltration(); // probably just overload, but then need an input param
+//	TGrnAmpt* GetInfiltration();
 
 	//access analysis options info
 	AnalysisOptions GetAnalysisOptions();
@@ -120,11 +124,14 @@ protected:
 	TGage* _gages;
 	TSubcatch* _subcatches;
 	TNode* _nodes;
-	TTable* _tseries; // for timeseries
-	AnalysisOptions _aoptions; // struct to store analysis options, defined in objects.h
-	TimeList _timelist; // struct to store times, defined in objects.h
-	THorton* _hortinfil; // infiltration object
-	TEvap _evap; // evaporation
+	TTable* _tseries;
+	THorton* _hortinfil;
+	TGrnAmpt* _gainfil;
+
+	//structs
+	AnalysisOptions _aoptions; 
+	TimeList _timelist; 
+	TEvap _evap; 
 	
 	//utility functions
 	void ClearCounts();
@@ -148,7 +155,6 @@ protected:
 	int ProjectFindObject(int type, char *id);
 	int ProjectAddObject(int type, char *id, int n);
 	char *ProjectFindID(int type, char *id);
-	//void SetDefaults();
 
 	//utility functions - scraped from gage.c
 	int ReadGageParams(int j, char* tok[], int ntoks);
@@ -173,6 +179,5 @@ protected:
 
 	//utility functions - scraped from climate.c
 	int ClimateReadEvapParams(char* tok[], int ntoks);
-
 };
 
