@@ -240,9 +240,9 @@ int main(int argc, char *argv[])
 	//char *inputFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.inp";
 	//char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.rpt";
 	//char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.out";;
-	char *inputFile  = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_WORKS.inp";
-	char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_WORKS.rpt";
-	char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_WORKS.out";
+	char *inputFile  = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\LID_bioretentialcell.inp";
+	char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\LID_bioretentialcell.rpt";
+	char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\LID_bioretentialcell.out";
 
 	char blank[] = "";
 	time_t start;

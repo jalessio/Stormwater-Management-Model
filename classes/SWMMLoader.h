@@ -105,6 +105,8 @@ protected:
 	int _Mobjects[MAX_OBJ_TYPES];	 // working array
 	int _Nnodes[MAX_NODE_TYPES];     // Number of each node sub-type 
 	int _Mnodes[MAX_NODE_TYPES];	 // working array
+	int _LidCount;
+	int _GroupCount;
 
 	/* int _Nlinks[MAX_LINK_TYPES]; */
 	int _errCode;
@@ -128,8 +130,8 @@ protected:
 	TTable* _tseries;
 	THorton* _hortinfil;
 	TGrnAmpt* _gainfil;
-	TLidProc*  LidProcs;            // array of LID processes
-	TLidGroup* LidGroups;           // array of LID process groups -- defined in lid.c in original swmm
+	TLidProc*  _LidProcs;            // array of LID processes
+	TLidGroup* _LidGroups;           // array of LID process groups -- defined in lid.c in original swmm
 
 
 	//structs
@@ -182,7 +184,7 @@ protected:
 	int HortonSetParams(THorton *infil, double p[]);
 
 	//utility functions - scraped from lid.c
-	void LIDCreate(int lidCount, int subcatchCount);
+	void LidCreate(int lidCount, int subcatchCount);
 
 	//utility functions - scraped from climate.c
 	int ClimateReadEvapParams(char* tok[], int ntoks);

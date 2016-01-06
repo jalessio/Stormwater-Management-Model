@@ -364,6 +364,18 @@ int SWMMLoader::CountObjects()
 				}
 				break;
 				
+
+			case s_LID_CONTROL:
+				// --- an LID object can span several lines
+				if (ProjectFindObject(LID, tok) < 0)
+				{
+					if (!ProjectAddObject(LID, tok, _Nobjects[LID]))
+					{
+						errcode = error_setInpError(ERR_DUP_NAME, tok);
+					}
+					_Nobjects[LID]++;
+				}
+				break;
 				//add more cases as needed
 			}
 		}
@@ -743,6 +755,9 @@ void SWMMLoader::AllocObjArrays()
 
 	// --- allocate memory for infiltration data
 	InfilCreate(_Nobjects[SUBCATCH], _aoptions.InfilModel); // this uses new now
+
+	LidCreate(_Nobjects[LID], _Nobjects[SUBCATCH]);
+
 
 	//add more as needed
 
@@ -1514,7 +1529,7 @@ int SWMMLoader::ClimateReadEvapParams(char* tok[], int ntoks)
 	return 0;
 }
 
-void SWMMLoader::LIDCreate(int lidCount, int subcatchCount)
+void SWMMLoader::LidCreate(int lidCount, int subcatchCount)
 //
 //  Purpose: creates an array of LID objects.
 //  Input:   n = number of LID processes
@@ -1524,49 +1539,49 @@ void SWMMLoader::LIDCreate(int lidCount, int subcatchCount)
 	int j;
 
 	//... assign NULL values to LID arrays
-	LidProcs = NULL;
-	LidGroups = NULL;
-	//LidCount = lidCount;
+	_LidProcs = NULL;
+	_LidGroups = NULL;
+	_LidCount = lidCount;
 
-	////... create LID groups
-	//GroupCount = subcatchCount;
-	//if (GroupCount == 0) return;
-	//LidGroups = (TLidGroup *)calloc(GroupCount, sizeof(TLidGroup));
-	//if (LidGroups == NULL)
-	//{
-	//	ErrorCode = ERR_MEMORY;
-	//	return;
-	//}
+	//... create LID groups
+	_GroupCount = subcatchCount;
+	if (_GroupCount == 0) return;
+	_LidGroups = (TLidGroup *)calloc(_GroupCount, sizeof(TLidGroup));
+	if (_LidGroups == NULL)
+	{
+		_errCode = ERR_MEMORY;
+		return;
+	}
 
-	////... initialize LID groups
-	//for (j = 0; j < GroupCount; j++) LidGroups[j] = NULL;
+	//... initialize LID groups
+	for (j = 0; j < _GroupCount; j++) _LidGroups[j] = NULL;
 
-	////... create LID objects
-	//if (LidCount == 0) return;
-	//LidProcs = (TLidProc *)calloc(LidCount, sizeof(TLidProc));
-	//if (LidProcs == NULL)
-	//{
-	//	ErrorCode = ERR_MEMORY;
-	//	return;
-	//}
+	//... create LID objects
+	if (_LidCount == 0) return;
+	_LidProcs = (TLidProc *)calloc(_LidCount, sizeof(TLidProc));
+	if (_LidProcs == NULL)
+	{
+		_errCode = ERR_MEMORY;
+		return;
+	}
 
-	////... initialize LID objects
-	//for (j = 0; j < LidCount; j++)
-	//{
-	//	LidProcs[j].lidType = -1;
-	//	LidProcs[j].surface.thickness = 0.0;
-	//	LidProcs[j].surface.voidFrac = 1.0;
-	//	LidProcs[j].surface.roughness = 0.0;
-	//	LidProcs[j].surface.surfSlope = 0.0;
-	//	LidProcs[j].pavement.thickness = 0.0;
-	//	LidProcs[j].soil.thickness = 0.0;
-	//	LidProcs[j].storage.thickness = 0.0;
-	//	LidProcs[j].storage.kSat = 0.0;
-	//	LidProcs[j].drain.coeff = 0.0;
-	//	LidProcs[j].drain.offset = 0.0;
-	//	LidProcs[j].drainMat.thickness = 0.0;
-	//	LidProcs[j].drainMat.roughness = 0.0;
-	//}
+	//... initialize LID objects
+	for (j = 0; j < _LidCount; j++)
+	{
+		_LidProcs[j].lidType = -1;
+		_LidProcs[j].surface.thickness = 0.0;
+		_LidProcs[j].surface.voidFrac = 1.0;
+		_LidProcs[j].surface.roughness = 0.0;
+		_LidProcs[j].surface.surfSlope = 0.0;
+		_LidProcs[j].pavement.thickness = 0.0;
+		_LidProcs[j].soil.thickness = 0.0;
+		_LidProcs[j].storage.thickness = 0.0;
+		_LidProcs[j].storage.kSat = 0.0;
+		_LidProcs[j].drain.coeff = 0.0;
+		_LidProcs[j].drain.offset = 0.0;
+		_LidProcs[j].drainMat.thickness = 0.0;
+		_LidProcs[j].drainMat.roughness = 0.0;
+	}
 }
 
 void SWMMLoader::InfilCreate(int subcatchCount, int model)
