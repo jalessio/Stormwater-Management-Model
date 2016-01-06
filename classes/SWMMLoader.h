@@ -20,12 +20,13 @@ TODO
 #include "enums.h"
 #include "error.h"
 #include "datetime.h"
-#include "objects.h"
+#include "objects.h" // includes infil.h
 #include "funcs.h"
 #include "text.h"
 #include "keywords.h"
 #include "hash.h"
 #include "mempool.h"
+#include "lid.h"
 #include <math.h>
 
 extern int findmatch(char *s, char *keyword[]);
@@ -127,6 +128,9 @@ protected:
 	TTable* _tseries;
 	THorton* _hortinfil;
 	TGrnAmpt* _gainfil;
+	TLidProc*  LidProcs;            // array of LID processes
+	TLidGroup* LidGroups;           // array of LID process groups -- defined in lid.c in original swmm
+
 
 	//structs
 	AnalysisOptions _aoptions; 
@@ -176,6 +180,9 @@ protected:
 	void InfilCreate(int subcatchCount, int model);
 	int InfilReadParams(int m, char* tok[], int ntoks);
 	int HortonSetParams(THorton *infil, double p[]);
+
+	//utility functions - scraped from lid.c
+	void LIDCreate(int lidCount, int subcatchCount);
 
 	//utility functions - scraped from climate.c
 	int ClimateReadEvapParams(char* tok[], int ntoks);
