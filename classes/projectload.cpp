@@ -17,14 +17,27 @@ void projectload_readinput(char *path)
 	SWMMLoader swmmloader(path);
 	int j, k;
 
+	HTtable** classHT;
+	HTtable** Htable;
+
+	AnalysisOptions _aoptions;
+	TimeList _timelist;
+
+	TGage* _gages;
+	TSubcatch* _subcatches;
+	TNode* _nodes;
+	TOutfall* _outfalls;
+	TTable* _tseries;
+	TEvap _evap;
+
 	// allocate memory for SWMM hashtable
 	ProjectCreateHashTables(); 
 	
 	// get class hashtable
-	HTtable** classHT = swmmloader.GetHtable();
+	classHT = swmmloader.GetHtable();
 
 	// get empty SWMM hashtable from project.c
-	HTtable** Htable = ProjectGetHTable(); 
+	Htable = ProjectGetHTable(); 
 
 	// populate SWMM hashtable
 	for (int i = 0; i < MAX_OBJ_TYPES; i++)
@@ -34,14 +47,16 @@ void projectload_readinput(char *path)
 	Nobjects[GAGE] = swmmloader.GetGageCount();
 	Nobjects[SUBCATCH] = swmmloader.GetSubcatchCount();
 	Nobjects[NODE] = swmmloader.GetNodeCount();
+	Nnodes[OUTFALL] = swmmloader.GetOutfallCount();
 	Nobjects[TSERIES] = swmmloader.GetTSeriesCount();
+	//Nobjects[LID] = swmmloader.GetLidCount();
 
 	// allocate memory for each category of object
 	if (ErrorCode) return;
 	Gage = (TGage *)calloc(Nobjects[GAGE], sizeof(TGage));
 	Subcatch = (TSubcatch *)calloc(Nobjects[SUBCATCH], sizeof(TSubcatch));
 	Node = (TNode *)calloc(Nobjects[NODE], sizeof(TNode));
-	//Outfall = (TOutfall *)calloc(Nnodes[OUTFALL], sizeof(TOutfall));
+	Outfall = (TOutfall *)calloc(Nnodes[OUTFALL], sizeof(TOutfall)); //TODO getter in class for outfall
 	//Divider = (TDivider *)calloc(Nnodes[DIVIDER], sizeof(TDivider));
 	//Storage = (TStorage *)calloc(Nnodes[STORAGE], sizeof(TStorage));
 	//Link = (TLink *)calloc(Nobjects[LINK], sizeof(TLink));
@@ -62,7 +77,7 @@ void projectload_readinput(char *path)
 
 	
 	// analysis options
-	AnalysisOptions _aoptions = swmmloader.GetAnalysisOptions();
+	_aoptions = swmmloader.GetAnalysisOptions();
 
 	UnitSystem = _aoptions.UnitSystem;						// Unit system
 	FlowUnits = _aoptions.FlowUnits;						// Flow units
@@ -106,7 +121,7 @@ void projectload_readinput(char *path)
 	LatFlowTol = _aoptions.LatFlowTol;						// Tolerance for steady nodal inflow     
 
 	// time list
-	TimeList _timelist = swmmloader.GetTimeList();
+	_timelist = swmmloader.GetTimeList();
 
 	StartDate = _timelist.StartDate;                // Starting date
 	StartTime = _timelist.StartTime;                // Starting time
@@ -255,23 +270,26 @@ void projectload_readinput(char *path)
 
 	// then copy data now that everything has been allocated
 	// gages
-	TGage* _gages = swmmloader.GetGages();
+	_gages = swmmloader.GetGages();
 	memcpy(Gage, _gages, sizeof(TGage));
 
 	// subcatchments
-	TSubcatch* _subcatches = swmmloader.GetSubcatches();
+	_subcatches = swmmloader.GetSubcatches();
 	memcpy(Subcatch, _subcatches, sizeof(TSubcatch));
 
 	// nodes
-	TNode* _node = swmmloader.GetNodes();
-	memcpy(Node, _node, sizeof(TNode));
+	_nodes = swmmloader.GetNodes();
+	memcpy(Node, _nodes, sizeof(TNode));
+
+	_outfalls = swmmloader.GetOutfalls();
+	memcpy(Outfall, _outfalls, sizeof(TOutfall));
 
 	// timeseries
-	TTable* _tseries = swmmloader.GetTSeries();
+	_tseries = swmmloader.GetTSeries();
 	memcpy(Tseries, _tseries, sizeof(TTable));
 
 	// evaporation
-	TEvap _evap = swmmloader.GetEvap();
+	_evap = swmmloader.GetEvap();
 	Evap = _evap;
 
 }

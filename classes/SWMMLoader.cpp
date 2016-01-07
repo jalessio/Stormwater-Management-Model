@@ -166,6 +166,16 @@ int SWMMLoader::GetNodeCount() const
 	return _Nobjects[NODE];
 }
 
+TOutfall* SWMMLoader::GetOutfalls()
+{
+	return _outfalls;
+}
+
+int SWMMLoader::GetOutfallCount() const
+{
+	return _Nnodes[OUTFALL];
+}
+
 TTable* SWMMLoader::GetTSeries()
 {
 	return _tseries;
@@ -186,6 +196,10 @@ TEvap SWMMLoader::GetEvap()
 	return _evap;
 }
 
+int SWMMLoader::GetLidCount() const
+{
+	return _Nobjects[LID];
+}
 
 AnalysisOptions SWMMLoader::GetAnalysisOptions()
 {
@@ -352,6 +366,12 @@ int SWMMLoader::CountObjects()
 				ProjectAddObject(NODE, tok, _Nobjects[NODE]);
 				_Nobjects[NODE]++;
 				_Nnodes[JUNCTION]++; 
+				break;
+
+			case s_OUTFALL:
+				ProjectAddObject(NODE, tok, _Nobjects[NODE]);
+				_Nobjects[NODE]++;
+				_Nnodes[OUTFALL]++;
 				break;
 
 			case s_TIMESERIES:
@@ -729,12 +749,14 @@ void SWMMLoader::ClearObjArrays()
 	delete[] _gages;
 	delete[] _subcatches;
 	delete[] _nodes;
+	delete[] _outfalls;
 	delete[] _tseries;
 
 
 	_gages = NULL;
 	_subcatches = NULL;
 	_nodes = NULL;
+	_outfalls = NULL;
 	_tseries = NULL;
 
 }
@@ -751,6 +773,7 @@ void SWMMLoader::AllocObjArrays()
 	_gages = new TGage[_Nobjects[GAGE]]();
 	_subcatches = new TSubcatch[_Nobjects[SUBCATCH]]();
 	_nodes = new TNode[_Nobjects[NODE]]();
+	_outfalls = new TOutfall[_Nobjects[OUTFALL]]();
 	_tseries = new TTable[_Nobjects[TSERIES]]();
 
 	// --- allocate memory for infiltration data
@@ -923,6 +946,9 @@ int  SWMMLoader::ParseLine(int sect, char *line)
 	case s_JUNCTION:
 		return ReadNode(JUNCTION);					// _Mobjects in ReadNode
 
+	case s_OUTFALL:
+		return ReadNode(OUTFALL);
+
 	case s_TIMESERIES:
 		return TableReadTimeseries(_Tok, _Ntokens); 
 
@@ -1055,11 +1081,91 @@ int SWMMLoader::ReadNodeParams(int j, int type, int k, char* tok[], int ntoks)
 	switch (type)
 	{
 	case JUNCTION: return JuncReadParams(j, k, tok, ntoks);
-	//case OUTFALL:  return outfall_readParams(j, k, tok, ntoks);
+	case OUTFALL:  return OutfallReadParams(j, k, tok, ntoks);
 	//case STORAGE:  return storage_readParams(j, k, tok, ntoks);
 	//case DIVIDER:  return divider_readParams(j, k, tok, ntoks);
 	default:       return 0;
 	}
+}
+
+int SWMMLoader::OutfallReadParams(int j, int k, char* tok[], int ntoks)
+//
+//  Input:   j = node index
+//           k = outfall index
+//           tok[] = array of string tokens
+//           ntoks = number of tokens
+//  Output:  returns an error message
+//  Purpose: reads an outfall's properties from a tokenized line of input.
+//
+//  Format of input line is:
+//    nodeID  elev  FIXED  fixedStage (flapGate) (routeTo)
+//    nodeID  elev  TIDAL  curveID (flapGate) (routeTo)
+//    nodeID  elev  TIMESERIES  tseriesID (flapGate) (routTo)
+//    nodeID  elev  FREE (flapGate) (routeTo)
+//    nodeID  elev  NORMAL (flapGate) (routeTo)
+//
+{
+	int    i, m, n;
+	double x[7];                                                               //(5.1.008)
+	char*  id;
+
+	if (ntoks < 3) return error_setInpError(ERR_ITEMS, "");
+	id = ProjectFindID(NODE, tok[0]);                      // node ID
+	if (id == NULL)
+		return error_setInpError(ERR_NAME, tok[0]);
+	if (!getDouble(tok[1], &x[0]))                       // invert elev. 
+		return error_setInpError(ERR_NUMBER, tok[1]);
+	i = findmatch(tok[2], OutfallTypeWords);               // outfall type
+	if (i < 0) return error_setInpError(ERR_KEYWORD, tok[2]);
+	x[1] = i;                                              // outfall type
+	x[2] = 0.0;                                            // fixed stage
+	x[3] = -1.;                                            // tidal curve
+	x[4] = -1.;                                            // tide series
+	x[5] = 0.;                                             // flap gate
+	x[6] = -1.;                                            // route to subcatch//(5.1.008)
+
+	n = 4;
+	if (i >= FIXED_OUTFALL)
+	{
+		if (ntoks < 4) return error_setInpError(ERR_ITEMS, "");
+		n = 5;
+		switch (i)
+		{
+		case FIXED_OUTFALL:                                // fixed stage
+			if (!getDouble(tok[3], &x[2]))
+				return error_setInpError(ERR_NUMBER, tok[3]);
+			break;
+		case TIDAL_OUTFALL:                                // tidal curve
+			m = project_findObject(CURVE, tok[3]);
+			if (m < 0) return error_setInpError(ERR_NAME, tok[3]);
+			x[3] = m;
+			break;
+		//case TIMESERIES_OUTFALL:                           // stage time series
+		//	m = project_findObject(TSERIES, tok[3]);
+		//	if (m < 0) return error_setInpError(ERR_NAME, tok[3]);
+		//	x[4] = m;
+		//	_Tseries[m].refersTo = TIMESERIES_OUTFALL;
+		}
+	}
+	if (ntoks == n)
+	{
+		m = findmatch(tok[n - 1], NoYesWords);               // flap gate
+		if (m < 0) return error_setInpError(ERR_KEYWORD, tok[n - 1]);
+		x[5] = m;
+	}
+
+	////  Added for release 5.1.008.  ////                                         //(5.1.008)
+	if (ntoks == n + 1)
+	{
+		m = ProjectFindObject(SUBCATCH, tok[n]);
+		if (m < 0) return error_setInpError(ERR_NAME, tok[n]);
+		x[6] = m;
+	}
+	////
+
+	_nodes[j].ID = id;
+	NodeSetParams(j, OUTFALL, k, x);
+	return 0;
 }
 
 int SWMMLoader::JuncReadParams(int j, int k, char* tok[], int ntoks)
@@ -1128,12 +1234,12 @@ void  SWMMLoader::NodeSetParams(int j, int type, int k, double x[])
 		_nodes[j].pondedArea = x[4] / (UCF(LENGTH)*UCF(LENGTH));
 		break;
 
-	//case OUTFALL:
-	//	Outfall[k].type = (int)x[1];
-	//	Outfall[k].fixedStage = x[2] / UCF(LENGTH);
-	//	Outfall[k].tideCurve = (int)x[3];
-	//	Outfall[k].stageSeries = (int)x[4];
-	//	Outfall[k].hasFlapGate = (char)x[5];
+	case OUTFALL:
+		_outfalls[k].type = (int)x[1];
+		_outfalls[k].fixedStage = x[2] / UCF(LENGTH);
+		_outfalls[k].tideCurve = (int)x[3];
+		_outfalls[k].stageSeries = (int)x[4];
+		_outfalls[k].hasFlapGate = (char)x[5];
 
 	//	////  Following code segment added to release 5.1.008.  ////                   //(5.1.008)
 
@@ -1539,27 +1645,27 @@ void SWMMLoader::LidCreate(int lidCount, int subcatchCount)
 	int j;
 
 	//... assign NULL values to LID arrays
-	_LidProcs = NULL;
-	_LidGroups = NULL;
+	_lidProcs = NULL;
+	_lidGroups = NULL;
 	_LidCount = lidCount;
 
 	//... create LID groups
 	_GroupCount = subcatchCount;
 	if (_GroupCount == 0) return;
-	_LidGroups = (TLidGroup *)calloc(_GroupCount, sizeof(TLidGroup));
-	if (_LidGroups == NULL)
+	_lidGroups = (TLidGroup *)calloc(_GroupCount, sizeof(TLidGroup));
+	if (_lidGroups == NULL)
 	{
 		_errCode = ERR_MEMORY;
 		return;
 	}
 
 	//... initialize LID groups
-	for (j = 0; j < _GroupCount; j++) _LidGroups[j] = NULL;
+	for (j = 0; j < _GroupCount; j++) _lidGroups[j] = NULL;
 
 	//... create LID objects
 	if (_LidCount == 0) return;
-	_LidProcs = (TLidProc *)calloc(_LidCount, sizeof(TLidProc));
-	if (_LidProcs == NULL)
+	_lidProcs = (TLidProc *)calloc(_LidCount, sizeof(TLidProc));
+	if (_lidProcs == NULL)
 	{
 		_errCode = ERR_MEMORY;
 		return;
@@ -1568,19 +1674,19 @@ void SWMMLoader::LidCreate(int lidCount, int subcatchCount)
 	//... initialize LID objects
 	for (j = 0; j < _LidCount; j++)
 	{
-		_LidProcs[j].lidType = -1;
-		_LidProcs[j].surface.thickness = 0.0;
-		_LidProcs[j].surface.voidFrac = 1.0;
-		_LidProcs[j].surface.roughness = 0.0;
-		_LidProcs[j].surface.surfSlope = 0.0;
-		_LidProcs[j].pavement.thickness = 0.0;
-		_LidProcs[j].soil.thickness = 0.0;
-		_LidProcs[j].storage.thickness = 0.0;
-		_LidProcs[j].storage.kSat = 0.0;
-		_LidProcs[j].drain.coeff = 0.0;
-		_LidProcs[j].drain.offset = 0.0;
-		_LidProcs[j].drainMat.thickness = 0.0;
-		_LidProcs[j].drainMat.roughness = 0.0;
+		_lidProcs[j].lidType = -1;
+		_lidProcs[j].surface.thickness = 0.0;
+		_lidProcs[j].surface.voidFrac = 1.0;
+		_lidProcs[j].surface.roughness = 0.0;
+		_lidProcs[j].surface.surfSlope = 0.0;
+		_lidProcs[j].pavement.thickness = 0.0;
+		_lidProcs[j].soil.thickness = 0.0;
+		_lidProcs[j].storage.thickness = 0.0;
+		_lidProcs[j].storage.kSat = 0.0;
+		_lidProcs[j].drain.coeff = 0.0;
+		_lidProcs[j].drain.offset = 0.0;
+		_lidProcs[j].drainMat.thickness = 0.0;
+		_lidProcs[j].drainMat.roughness = 0.0;
 	}
 }
 

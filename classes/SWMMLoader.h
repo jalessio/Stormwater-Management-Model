@@ -69,6 +69,9 @@ public:
 	TNode* GetNode(const int & i);
 	int GetNodeCount() const;
 
+	TOutfall* GetOutfalls();
+	int GetOutfallCount() const;
+
 	void SetGageCount(int n);
 		
 	//access timeseries info
@@ -92,6 +95,9 @@ public:
 
 	// access evap info
 	TEvap GetEvap();
+
+	// access lid info
+	int GetLidCount() const;
 
 	//GetCounts for all types
 	int* GetAllCounts();
@@ -127,11 +133,12 @@ protected:
 	TGage* _gages;
 	TSubcatch* _subcatches;
 	TNode* _nodes;
+	TOutfall*  _outfalls;
 	TTable* _tseries;
 	THorton* _hortinfil;
 	TGrnAmpt* _gainfil;
-	TLidProc*  _LidProcs;            // array of LID processes
-	TLidGroup* _LidGroups;           // array of LID process groups -- defined in lid.c in original swmm
+	TLidProc*  _lidProcs;            // array of LID processes
+	TLidGroup* _lidGroups;           // array of LID process groups -- defined in lid.c in original swmm
 
 
 	//structs
@@ -172,6 +179,7 @@ protected:
 	
 	//utility functions - scraped from node.c
 	int ReadNodeParams(int j, int type, int k, char* tok[], int ntoks);
+	int OutfallReadParams(int j, int k, char* tok[], int ntoks);
 	int JuncReadParams(int j, int k, char* tok[], int ntoks);
 	void NodeSetParams(int j, int type, int k, double x[]);
 
