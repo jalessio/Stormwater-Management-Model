@@ -140,6 +140,10 @@ typedef struct
     char      results[256];       // results for current time period           //(5.1.008)
 }   TLidRptFile;
 
+//-----------------------------------------------------------------------------
+//  Data Structures moved from lid.c
+//-----------------------------------------------------------------------------
+
 // LID Unit - specific LID process applied over a given area
 typedef struct
 {
@@ -190,7 +194,23 @@ struct LidGroup
 };
 typedef struct LidGroup* TLidGroup;
 
+//-----------------------------------------------------------------------------
+//  Enumerations moved from lid.c
+//-----------------------------------------------------------------------------
 
+enum LidLayerTypes {
+    SURF,                    // surface layer
+    SOIL,                    // soil layer
+    STOR,                    // storage layer
+    PAVE,                    // pavement layer
+    DRAINMAT,                // drainage mat layer
+    DRAIN};                  // underdrain system
+
+//// Note: DRAINMAT must be placed before DRAIN so the two keywords can
+///        be distinguished from one another when parsing a line of input. 
+
+extern char* LidLayerWords[7];
+extern char* LidTypeWords[];
 
 //-----------------------------------------------------------------------------
 //   LID Methods

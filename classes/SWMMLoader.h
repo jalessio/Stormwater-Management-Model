@@ -7,7 +7,9 @@ TODO
 
 */
 
-#pragma once
+#ifndef SWMMLOADER_H
+#define SWMMLOADER_H
+
 
 #include <cstdio>
 
@@ -20,7 +22,7 @@ TODO
 #include "enums.h"
 #include "error.h"
 #include "datetime.h"
-#include "objects.h" // includes infil.h
+#include "objects.h"
 #include "funcs.h"
 #include "text.h"
 #include "keywords.h"
@@ -37,6 +39,8 @@ extern void InitPointers();
 extern void SetDefaults();
 extern void ProjectCreateHashTables();
 extern HTtable** ProjectGetHTable();
+
+extern TLidGroup* GetLidGroups();
 
 extern char** SubcatchGetRunoffRoutingWords();
 
@@ -98,6 +102,7 @@ public:
 
 	// access lid info
 	int GetLidCount() const;
+	TLidGroup* GetLidGroups();
 
 	//GetCounts for all types
 	int* GetAllCounts();
@@ -193,8 +198,12 @@ protected:
 
 	//utility functions - scraped from lid.c
 	void LidCreate(int lidCount, int subcatchCount);
+	int LidReadProcParams(char* tok[], int ntoks);
+	int AddLidUnit(int j, int k, int n, double x[], char* fname, int drainSubcatch, int drainNode);
+	int LidReadGroupParams(char* tok[], int ntoks);
 
 	//utility functions - scraped from climate.c
 	int ClimateReadEvapParams(char* tok[], int ntoks);
 };
 
+#endif

@@ -201,6 +201,11 @@ int SWMMLoader::GetLidCount() const
 	return _Nobjects[LID];
 }
 
+TLidGroup* SWMMLoader::GetLidGroups()
+{
+	return _lidGroups;
+}
+
 AnalysisOptions SWMMLoader::GetAnalysisOptions()
 {
 	return _aoptions;
@@ -751,6 +756,8 @@ void SWMMLoader::ClearObjArrays()
 	delete[] _nodes;
 	delete[] _outfalls;
 	delete[] _tseries;
+	delete[] _lidGroups;
+	delete[] _lidProcs;
 
 
 	_gages = NULL;
@@ -758,6 +765,8 @@ void SWMMLoader::ClearObjArrays()
 	_nodes = NULL;
 	_outfalls = NULL;
 	_tseries = NULL;
+	_lidGroups = NULL;
+	_lidProcs = NULL;
 
 }
 
@@ -777,9 +786,9 @@ void SWMMLoader::AllocObjArrays()
 	_tseries = new TTable[_Nobjects[TSERIES]]();
 
 	// --- allocate memory for infiltration data
-	InfilCreate(_Nobjects[SUBCATCH], _aoptions.InfilModel); // this uses new now
+	InfilCreate(_Nobjects[SUBCATCH], _aoptions.InfilModel); // uses new
 
-	LidCreate(_Nobjects[LID], _Nobjects[SUBCATCH]);
+	LidCreate(_Nobjects[LID], _Nobjects[SUBCATCH]); // uses new
 
 
 	//add more as needed
@@ -951,6 +960,12 @@ int  SWMMLoader::ParseLine(int sect, char *line)
 
 	case s_TIMESERIES:
 		return TableReadTimeseries(_Tok, _Ntokens); 
+
+	case s_LID_CONTROL:
+		return LidReadProcParams(_Tok, _Ntokens);
+
+	case s_LID_USAGE:
+		return LidReadGroupParams(_Tok, _Ntokens);
 
 	default: return 0;
 	}
@@ -1241,17 +1256,17 @@ void  SWMMLoader::NodeSetParams(int j, int type, int k, double x[])
 		_outfalls[k].stageSeries = (int)x[4];
 		_outfalls[k].hasFlapGate = (char)x[5];
 
-	//	////  Following code segment added to release 5.1.008.  ////                   //(5.1.008)
+		////  Following code segment added to release 5.1.008.  ////                   //(5.1.008)
 
-	//	Outfall[k].routeTo = (int)x[6];
-	//	Outfall[k].wRouted = NULL;
-	//	if (Outfall[k].routeTo >= 0)
-	//	{
-	//		Outfall[k].wRouted =
-	//			(double *)calloc(Nobjects[POLLUT], sizeof(double));
-	//	}
-	//	////
-	//	break;
+		_outfalls[k].routeTo = (int)x[6];
+		_outfalls[k].wRouted = NULL;
+		if (_outfalls[k].routeTo >= 0)
+		{
+			_outfalls[k].wRouted =
+				(double *)calloc(_Nobjects[POLLUT], sizeof(double));
+		}
+		////
+		break;
 
 	//case STORAGE:
 	//	Node[j].fullDepth = x[1] / UCF(LENGTH);
@@ -1652,7 +1667,7 @@ void SWMMLoader::LidCreate(int lidCount, int subcatchCount)
 	//... create LID groups
 	_GroupCount = subcatchCount;
 	if (_GroupCount == 0) return;
-	_lidGroups = (TLidGroup *)calloc(_GroupCount, sizeof(TLidGroup));
+	_lidGroups = new TLidGroup[_GroupCount]();
 	if (_lidGroups == NULL)
 	{
 		_errCode = ERR_MEMORY;
@@ -1664,7 +1679,7 @@ void SWMMLoader::LidCreate(int lidCount, int subcatchCount)
 
 	//... create LID objects
 	if (_LidCount == 0) return;
-	_lidProcs = (TLidProc *)calloc(_LidCount, sizeof(TLidProc));
+	_lidProcs = new TLidProc[_LidCount]();
 	if (_lidProcs == NULL)
 	{
 		_errCode = ERR_MEMORY;
@@ -1688,6 +1703,204 @@ void SWMMLoader::LidCreate(int lidCount, int subcatchCount)
 		_lidProcs[j].drainMat.thickness = 0.0;
 		_lidProcs[j].drainMat.roughness = 0.0;
 	}
+}
+
+int SWMMLoader::LidReadProcParams(char* toks[], int ntoks)
+//
+//  Purpose: reads LID process information from line of input data file
+//  Input:   toks = array of string tokens
+//           ntoks = number of tokens
+//  Output:  returns error code
+//
+//  Format for first line that defines a LID process is:
+//    LID_ID  LID_Type
+//
+//  Followed by some combination of lines below depending on LID_Type:
+//    LID_ID  SURFACE   <parameters>
+//    LID_ID  PAVEMENT  <parameters>
+//    LID_ID  SOIL      <parameters>
+//    LID_ID  STORAGE   <parameters>
+//    LID_ID  DRAIN     <parameters>
+//    LID_ID  DRAINMAT  <parameters>
+//
+{
+	int j, m;
+
+	// --- check for minimum number of tokens
+	if (ntoks < 2) return error_setInpError(ERR_ITEMS, "");
+
+	// --- check that LID exists in database
+	j = ProjectFindObject(LID, toks[0]);
+	if (j < 0) return error_setInpError(ERR_NAME, toks[0]);
+
+	// --- assign ID if not done yet
+	if (_lidProcs[j].ID == NULL)
+		_lidProcs[j].ID = ProjectFindID(LID, toks[0]);
+
+	// --- check if second token is the type of LID
+	m = findmatch(toks[1], LidTypeWords);
+	if (m >= 0)
+	{
+		_lidProcs[j].lidType = m;
+		return 0;
+	}
+
+	// --- check if second token is name of LID layer
+	else m = findmatch(toks[1], LidLayerWords);
+
+	// --- read input parameters for the identified layer
+	//switch (m)
+	//{
+	//case SURF:  return readSurfaceData(j, toks, ntoks);
+	//case SOIL:  return readSoilData(j, toks, ntoks);
+	//case STOR:  return readStorageData(j, toks, ntoks);
+	//case PAVE:  return readPavementData(j, toks, ntoks);
+	//case DRAIN: return readDrainData(j, toks, ntoks);
+	//case DRAINMAT: return readDrainMatData(j, toks, ntoks);
+	//}
+	return error_setInpError(ERR_KEYWORD, toks[1]);
+}
+
+
+int SWMMLoader::LidReadGroupParams(char* toks[], int ntoks)
+//
+//  Purpose: reads input data for a LID unit placed in a subcatchment.
+//  Input:   toks = array of string tokens
+//           ntoks = number of tokens
+//  Output:  returns error code
+//
+//  Format of input data line is:
+//    Subcatch_ID  LID_ID  Number  Area  Width  InitSat  FromImp  ToPerv
+//                                                       (RptFile DrainTo)     //(5.1.008)
+//  where:
+//    Subcatch_ID    = name of subcatchment
+//    LID_ID         = name of LID process
+//    Number     (n) = number of replicate units
+//    Area    (x[0]) = area of each unit
+//    Width   (x[1]) = outflow width of each unit
+//    InitSat (x[2]) = % that LID is initially saturated
+//    FromImp (x[3]) = % of impervious runoff sent to LID
+//    ToPerv  (x[4]) = 1 if outflow goes to pervious sub-area; 0 if not
+//    RptFile        = name of detailed results file (optional)                //(5.1.008)
+//    DrainTo        = name of subcatch/node for drain flow (optional)         //(5.1.008)
+//
+{
+	int        i, j, k, n;
+	double     x[5];
+	char*      fname = NULL;                                                   //(5.1.008)
+	int        drainSubcatch = -1, drainNode = -1;                             //(5.1.008)
+
+	//... check for valid number of input tokens
+	if (ntoks < 8) return error_setInpError(ERR_ITEMS, "");
+
+	//... find subcatchment
+	j = ProjectFindObject(SUBCATCH, toks[0]);
+	if (j < 0) return error_setInpError(ERR_NAME, toks[0]);
+
+	//... find LID process in list of LID processes
+	k = ProjectFindObject(LID, toks[1]);
+	if (k < 0) return error_setInpError(ERR_NAME, toks[1]);
+
+	//... get number of replicates
+	n = atoi(toks[2]);
+	if (n < 0) return error_setInpError(ERR_NUMBER, toks[2]);
+	if (n == 0) return 0;
+
+	//... convert next 4 tokens to doubles
+	for (i = 3; i <= 7; i++)
+	{
+		if (!getDouble(toks[i], &x[i - 3]) || x[i - 3] < 0.0)
+			return error_setInpError(ERR_NUMBER, toks[i]);
+	}
+
+	//... check for valid percentages on tokens 5 & 6 (x[2] & x[3])
+	for (i = 2; i <= 3; i++) if (x[i] > 100.0)
+		return error_setInpError(ERR_NUMBER, toks[i + 3]);
+
+	//... read optional report file name
+	if (ntoks >= 9 && strcmp(toks[8], "*") != 0) fname = toks[8];
+
+	////  ----  Following code segment added to release 5.1.008.  ----  ////       //(5.1.008)
+	////
+	//... read optional underdrain outlet
+	if (ntoks >= 10 && strcmp(toks[9], "*") != 0)
+	{
+		drainSubcatch = ProjectFindObject(SUBCATCH, toks[9]);
+		if (drainSubcatch < 0)
+		{
+			drainNode = ProjectFindObject(NODE, toks[9]);
+			if (drainNode < 0) return error_setInpError(ERR_NAME, toks[9]);
+		}
+	}
+	////
+
+	//... create a new LID unit and add it to the subcatchment's LID group
+	return AddLidUnit(j, k, n, x, fname, drainSubcatch, drainNode);
+}
+
+int SWMMLoader::AddLidUnit(int j, int k, int n, double x[], char* fname,
+	int drainSubcatch, int drainNode)                                          //(5.1.008)
+//
+//  Purpose: adds an LID unit to a subcatchment's LID group.
+//  Input:   j = subcatchment index
+//           k = LID control index
+//           n = number of replicate units
+//           x = LID unit's parameters
+//           fname = name of detailed performance report file
+//           drainSubcatch = index of subcatchment receiving underdrain flow   //(5.1.008)
+//           drainNode = index of node receiving underdrain flow               //(5.1.008)
+//  Output:  returns an error code
+//
+{
+	TLidUnit*  lidUnit;
+	TLidList*  lidList;
+	TLidGroup  lidGroup;
+
+	//... create a LID group (pointer to an LidGroup struct)
+	//    if one doesn't already exist
+	lidGroup = _lidGroups[j];
+	if (!lidGroup)
+	{
+		lidGroup = (struct LidGroup *) malloc(sizeof(struct LidGroup)); //TODO change to new? 
+		if (!lidGroup) return error_setInpError(ERR_MEMORY, "");
+		lidGroup->lidList = NULL;
+		_lidGroups[j] = lidGroup;
+	}
+
+	//... create a new LID unit to add to the group
+	lidUnit = (TLidUnit *)malloc(sizeof(TLidUnit)); //TODO change to new? 
+	if (!lidUnit) return error_setInpError(ERR_MEMORY, "");
+	lidUnit->rptFile = NULL;
+
+	//... add the LID unit to the group
+	lidList = (TLidList *)malloc(sizeof(TLidList));
+	if (!lidList)
+	{
+		free(lidUnit);
+		return error_setInpError(ERR_MEMORY, "");
+	}
+	lidList->lidUnit = lidUnit;
+	lidList->nextLidUnit = lidGroup->lidList;
+	lidGroup->lidList = lidList;
+
+	//... assign parameter values to LID unit
+	lidUnit->lidIndex = k;
+	lidUnit->number = n;
+	lidUnit->area = x[0] / SQR(UCF(LENGTH));
+	lidUnit->fullWidth = x[1] / UCF(LENGTH);
+	lidUnit->initSat = x[2] / 100.0;
+	lidUnit->fromImperv = x[3] / 100.0;
+	lidUnit->toPerv = (x[4] > 0.0);
+	lidUnit->drainSubcatch = drainSubcatch;                                    //(5.1.008)
+	lidUnit->drainNode = drainNode;                                        //(5.1.008)
+
+	//... open report file if it was supplied
+	//if (fname != NULL)
+	//{
+	//	if (!CreateLidRptFile(lidUnit, fname))
+	//		return error_setInpError(ERR_RPT_FILE, fname);
+	//}
+	return 0;
 }
 
 void SWMMLoader::InfilCreate(int subcatchCount, int model)

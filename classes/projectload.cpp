@@ -8,7 +8,6 @@
 #include <malloc.h>
 #define  EXTERN extern
 #include "globals.h"
-#include "lid.h"
 
 
 void projectload_readinput(char *path) 
@@ -29,6 +28,8 @@ void projectload_readinput(char *path)
 	TOutfall* _outfalls;
 	TTable* _tseries;
 	TEvap _evap;
+	TLidGroup* _lidgroups;
+	TLidGroup* LidGroups;
 
 	// allocate memory for SWMM hashtable
 	ProjectCreateHashTables(); 
@@ -49,7 +50,7 @@ void projectload_readinput(char *path)
 	Nobjects[NODE] = swmmloader.GetNodeCount();
 	Nnodes[OUTFALL] = swmmloader.GetOutfallCount();
 	Nobjects[TSERIES] = swmmloader.GetTSeriesCount();
-	//Nobjects[LID] = swmmloader.GetLidCount();
+	Nobjects[LID] = swmmloader.GetLidCount();
 
 	// allocate memory for each category of object
 	if (ErrorCode) return;
@@ -291,6 +292,11 @@ void projectload_readinput(char *path)
 	// evaporation
 	_evap = swmmloader.GetEvap();
 	Evap = _evap;
+
+	// lid
+	_lidgroups = swmmloader.GetLidGroups();
+	LidGroups = GetLidGroups();			// get LidGroups from lid.c
+	memcpy(LidGroups, _lidgroups, sizeof(TLidGroup));
 
 }
 

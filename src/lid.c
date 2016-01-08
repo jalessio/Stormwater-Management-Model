@@ -74,30 +74,20 @@
 //-----------------------------------------------------------------------------
 //  Enumerations
 //-----------------------------------------------------------------------------
-enum LidLayerTypes {
-    SURF,                    // surface layer
-    SOIL,                    // soil layer
-    STOR,                    // storage layer
-    PAVE,                    // pavement layer
-    DRAINMAT,                // drainage mat layer
-    DRAIN};                  // underdrain system
 
-//// Note: DRAINMAT must be placed before DRAIN so the two keywords can
-///        be distinguished from one another when parsing a line of input. 
+char* LidLayerWords[7] =
+{ "SURFACE", "SOIL", "STORAGE", "PAVEMENT", "DRAINMAT", "DRAIN", NULL };
 
-char* LidLayerWords[] =
-    {"SURFACE", "SOIL", "STORAGE", "PAVEMENT", "DRAINMAT", "DRAIN", NULL};
-
-char* LidTypeWords[] =
-    {"BC",                   //bio-retention cell
-     "RG",                   //rain garden
-     "GR",                   //green roof
-     "IT",                   //infiltration trench
-     "PP",                   //porous pavement
-     "RB",                   //rain barrel
-     "VS",                   //vegetative swale
-     "RD",                   //rooftop disconnection
-     NULL};
+char* LidTypeWords[9] =
+{ "BC",                   //bio-retention cell
+"RG",                   //rain garden
+"GR",                   //green roof
+"IT",                   //infiltration trench
+"PP",                   //porous pavement
+"RB",                   //rain barrel
+"VS",                   //vegetative swale
+"RD",                   //rooftop disconnection
+NULL };
 
 //-----------------------------------------------------------------------------
 //  Data Structures
@@ -106,7 +96,6 @@ char* LidTypeWords[] =
 // moved LID list structure to lid.h
 
 // moved LID group structure to lid.h
-
 
 //-----------------------------------------------------------------------------
 //  Shared Variables
@@ -119,6 +108,13 @@ static int        GroupCount;          // number of LID groups (subcatchments)
 static double     EvapRate;            // evaporation rate (ft/s)
 static double     NativeInfil;         // native soil infil. rate (ft/s)
 static double     MaxNativeInfil;      // native soil infil. rate limit (ft/s)
+
+// Access shared variables
+TLidGroup* GetLidGroups()
+{
+	return LidGroups;
+}
+
 
 //-----------------------------------------------------------------------------
 //  Imported Variables (from SUBCATCH.C)

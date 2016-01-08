@@ -54,12 +54,13 @@
 //-----------------------------------------------------------------------------
 //  Enumerations
 //-----------------------------------------------------------------------------
-enum LidLayerTypes {
-    SURF,                    // surface layer
-    SOIL,                    // soil layer
-    STOR,                    // storage layer
-    PAVE,                    // pavement layer
-    DRAIN};                  // underdrain system
+
+//enum LidLayerTypes {
+//    SURF,                    // surface layer
+//    SOIL,                    // soil layer
+//    STOR,                    // storage layer
+//    PAVE,                    // pavement layer
+//    DRAIN};                  // underdrain system  // now defined in lid.h, which is included in this file
 
 enum LidRptVars {
     SURF_INFLOW,             // inflow to surface layer
