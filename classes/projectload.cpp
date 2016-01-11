@@ -30,6 +30,8 @@ void projectload_readinput(char *path)
 	TEvap _evap;
 	TLidGroup* _lidgroups;
 	TLidGroup* LidGroups;
+	TLidProc* _lidprocs;
+	TLidProc* LidProcs;
 
 	// allocate memory for SWMM hashtable
 	ProjectCreateHashTables(); 
@@ -295,8 +297,12 @@ void projectload_readinput(char *path)
 
 	// lid
 	_lidgroups = swmmloader.GetLidGroups();
-	LidGroups = GetLidGroups();			// get LidGroups from lid.c
+	LidGroups = GetLidGroups();						// get LidGroups from lid.c
 	memcpy(LidGroups, _lidgroups, sizeof(TLidGroup));
+
+	_lidprocs = swmmloader.GetLidProcs();
+	LidProcs = GetLidProcs();						// get LidProcs from lid.c
+	memcpy(LidProcs, _lidprocs, sizeof(TLidProc));
 
 }
 

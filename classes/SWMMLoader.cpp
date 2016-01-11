@@ -206,6 +206,11 @@ TLidGroup* SWMMLoader::GetLidGroups()
 	return _lidGroups;
 }
 
+TLidProc* SWMMLoader::GetLidProcs()
+{
+	return _lidProcs;
+}
+
 AnalysisOptions SWMMLoader::GetAnalysisOptions()
 {
 	return _aoptions;
@@ -1748,17 +1753,225 @@ int SWMMLoader::LidReadProcParams(char* toks[], int ntoks)
 	// --- check if second token is name of LID layer
 	else m = findmatch(toks[1], LidLayerWords);
 
-	// --- read input parameters for the identified layer
-	//switch (m)
-	//{
-	//case SURF:  return readSurfaceData(j, toks, ntoks);
-	//case SOIL:  return readSoilData(j, toks, ntoks);
-	//case STOR:  return readStorageData(j, toks, ntoks);
-	//case PAVE:  return readPavementData(j, toks, ntoks);
-	//case DRAIN: return readDrainData(j, toks, ntoks);
-	//case DRAINMAT: return readDrainMatData(j, toks, ntoks);
-	//}
+	 //--- read input parameters for the identified layer
+	switch (m)
+	{
+	case SURF:  return ReadSurfaceData(j, toks, ntoks);
+	case SOIL:  return ReadSoilData(j, toks, ntoks);
+	case STOR:  return ReadStorageData(j, toks, ntoks);
+	case PAVE:  return ReadPavementData(j, toks, ntoks);
+	case DRAIN: return ReadDrainData(j, toks, ntoks);
+	case DRAINMAT: return ReadDrainMatData(j, toks, ntoks);
+	}
 	return error_setInpError(ERR_KEYWORD, toks[1]);
+}
+
+int SWMMLoader::ReadSurfaceData(int j, char* toks[], int ntoks)
+//
+//  Purpose: reads surface layer data for a LID process from line of input
+//           data file
+//  Input:   j = LID process index 
+//           toks = array of string tokens
+//           ntoks = number of tokens
+//  Output:  returns error code
+//
+//  Format of data is:
+//  LID_ID  SURFACE  StorageHt  VegVolFrac  Roughness  SurfSlope  SideSlope  DamHt
+//
+{
+	int    i;
+	double x[5];
+
+	if (ntoks < 7) return error_setInpError(ERR_ITEMS, "");
+	for (i = 2; i < 7; i++)
+	{
+		if (!getDouble(toks[i], &x[i - 2]) || x[i - 2] < 0.0)
+			return error_setInpError(ERR_NUMBER, toks[i]);
+	}
+	if (x[1] >= 1.0) return error_setInpError(ERR_NUMBER, toks[3]);
+	if (x[0] == 0.0) x[1] = 0.0;
+
+	_lidProcs[j].surface.thickness = x[0] / UCF(RAINDEPTH);
+	_lidProcs[j].surface.voidFrac = 1.0 - x[1];
+	_lidProcs[j].surface.roughness = x[2];
+	_lidProcs[j].surface.surfSlope = x[3] / 100.0;
+	_lidProcs[j].surface.sideSlope = x[4];
+	return 0;
+}
+
+//=============================================================================
+
+int SWMMLoader::ReadPavementData(int j, char* toks[], int ntoks)
+//
+//  Purpose: reads pavement layer data for a LID process from line of input
+//           data file
+//  Input:   j = LID process index 
+//           toks = array of string tokens
+//           ntoks = number of tokens
+//  Output:  returns error code
+//
+//  Format of data is:
+//    LID_ID PAVEMENT  Thickness  VoidRatio  FracImperv  Permeability  ClogFactor
+//
+{
+	int    i;
+	double x[5];
+
+	if (ntoks < 7) return error_setInpError(ERR_ITEMS, "");
+	for (i = 2; i < 7; i++)
+	{
+		if (!getDouble(toks[i], &x[i - 2]) || x[i - 2] < 0.0)
+			return error_setInpError(ERR_NUMBER, toks[i]);
+	}
+
+	//... convert void ratio to void fraction
+	x[1] = x[1] / (x[1] + 1.0);
+
+	_lidProcs[j].pavement.thickness = x[0] / UCF(RAINDEPTH);
+	_lidProcs[j].pavement.voidFrac = x[1];
+	_lidProcs[j].pavement.impervFrac = x[2];
+	_lidProcs[j].pavement.kSat = x[3] / UCF(RAINFALL);
+	_lidProcs[j].pavement.clogFactor = x[4];
+	return 0;
+}
+
+//=============================================================================
+
+int SWMMLoader::ReadSoilData(int j, char* toks[], int ntoks)
+//
+//  Purpose: reads soil layer data for a LID process from line of input
+//           data file
+//  Input:   j = LID process index 
+//           toks = array of string tokens
+//           ntoks = number of tokens
+//  Output:  returns error code
+//
+//  Format of data is:
+//    LID_ID  SOIL  Thickness  Porosity  FieldCap  WiltPt Ksat  Kslope  Suction
+//
+{
+	int    i;
+	double x[7];
+
+	if (ntoks < 9) return error_setInpError(ERR_ITEMS, "");
+	for (i = 2; i < 9; i++)
+	{
+		if (!getDouble(toks[i], &x[i - 2]) || x[i - 2] < 0.0)
+			return error_setInpError(ERR_NUMBER, toks[i]);
+	}
+	_lidProcs[j].soil.thickness = x[0] / UCF(RAINDEPTH);
+	_lidProcs[j].soil.porosity = x[1];
+	_lidProcs[j].soil.fieldCap = x[2];
+	_lidProcs[j].soil.wiltPoint = x[3];
+	_lidProcs[j].soil.kSat = x[4] / UCF(RAINFALL);
+	_lidProcs[j].soil.kSlope = x[5];
+	_lidProcs[j].soil.suction = x[6] / UCF(RAINDEPTH);
+	return 0;
+}
+
+//=============================================================================
+
+int SWMMLoader::ReadStorageData(int j, char* toks[], int ntoks)
+//
+//  Purpose: reads drainage layer data for a LID process from line of input
+//           data file
+//  Input:   j = LID process index 
+//           toks = array of string tokens
+//           ntoks = number of tokens
+//  Output:  returns error code
+//
+//  Format of data is:
+//    LID_ID STORAGE  Thickness  VoidRatio  Ksat  ClogFactor 
+//
+{
+	int    i;
+	double x[6];
+
+	//... read numerical parameters
+	if (ntoks < 6) return error_setInpError(ERR_ITEMS, "");
+	for (i = 2; i < 6; i++)
+	{
+		if (!getDouble(toks[i], &x[i - 2]) || x[i - 2] < 0.0)
+			return error_setInpError(ERR_NUMBER, toks[i]);
+	}
+
+	//... convert void ratio to void fraction
+	x[1] = x[1] / (x[1] + 1.0);
+
+	//... save parameters to LID storage layer structure
+	_lidProcs[j].storage.thickness = x[0] / UCF(RAINDEPTH);
+	_lidProcs[j].storage.voidFrac = x[1];
+	_lidProcs[j].storage.kSat = x[2] / UCF(RAINFALL);
+	_lidProcs[j].storage.clogFactor = x[3];
+	return 0;
+}
+
+//=============================================================================
+
+int SWMMLoader::ReadDrainData(int j, char* toks[], int ntoks)
+//
+//  Purpose: reads underdrain data for a LID process from line of input
+//           data file
+//  Input:   j = LID process index 
+//           toks = array of string tokens
+//           ntoks = number of tokens
+//  Output:  returns error code
+//
+//  Format of data is:
+//    LID_ID DRAIN  coeff  expon  offset  delay
+//
+{
+	int    i;
+	double x[4];
+
+	//... read numerical parameters
+	if (ntoks < 6) return error_setInpError(ERR_ITEMS, "");
+	for (i = 2; i < 6; i++)
+	{
+		if (!getDouble(toks[i], &x[i - 2]) || x[i - 2] < 0.0)
+			return error_setInpError(ERR_NUMBER, toks[i]);
+	}
+
+	//... save parameters to LID drain layer structure
+	_lidProcs[j].drain.coeff = x[0];
+	_lidProcs[j].drain.expon = x[1];
+	_lidProcs[j].drain.offset = x[2] / UCF(RAINDEPTH);
+	_lidProcs[j].drain.delay = x[3] * 3600.0;
+	return 0;
+}
+
+//=============================================================================
+
+int SWMMLoader::ReadDrainMatData(int j, char* toks[], int ntoks)
+//
+//  Purpose: reads drainage mat data for a LID process from line of input
+//           data file
+//  Input:   j = LID process index 
+//           toks = array of string tokens
+//           ntoks = number of tokens
+//  Output:  returns error code
+//
+//  Format of data is:
+//    LID_ID DRAINMAT  thickness  voidRatio  roughness
+//
+{
+	int    i;
+	double x[3];
+
+	//... read numerical parameters
+	if (ntoks < 5) return error_setInpError(ERR_ITEMS, "");
+	if (_lidProcs[j].lidType != GREEN_ROOF) return 0;
+	for (i = 2; i < 5; i++)
+	{
+		if (!getDouble(toks[i], &x[i - 2]) || x[i - 2] < 0.0)
+			return error_setInpError(ERR_NUMBER, toks[i]);
+	}
+
+	//... save parameters to LID drain layer structure
+	_lidProcs[j].drainMat.thickness = x[0] / UCF(RAINDEPTH);;
+	_lidProcs[j].drainMat.voidFrac = x[1];
+	_lidProcs[j].drainMat.roughness = x[2];
+	return 0;
 }
 
 

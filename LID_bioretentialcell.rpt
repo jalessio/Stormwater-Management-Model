@@ -32,24 +32,24 @@
   **************************        Volume         Depth
   Runoff Quantity Continuity     acre-feet        inches
   **************************     ---------       -------
+  Initial LID Storage ......         0.002         0.028
   Total Precipitation ......         0.250         3.000
-  Outfall Runon ............         5.040        60.483
   Evaporation Loss .........         0.000         0.000
-  Infiltration Loss ........         0.000         0.000
-  Surface Runoff ...........         5.281        63.368
-  Final Storage ............         0.044         0.531
-  Continuity Error (%) .....        -0.655
+  Infiltration Loss ........         0.000         0.001
+  Surface Runoff ...........         0.242         2.908
+  Final Storage ............         0.011         0.132
+  Continuity Error (%) .....        -0.444
   
   
   **************************        Volume        Volume
   Flow Routing Continuity        acre-feet      10^6 gal
   **************************     ---------     ---------
   Dry Weather Inflow .......         0.000         0.000
-  Wet Weather Inflow .......         5.187         1.690
+  Wet Weather Inflow .......         0.241         0.079
   Groundwater Inflow .......         0.000         0.000
   RDII Inflow ..............         0.000         0.000
   External Inflow ..........         0.000         0.000
-  External Outflow .........         5.187         1.690
+  External Outflow .........         0.241         0.079
   Flooding Loss ............         0.000         0.000
   Evaporation Loss .........         0.000         0.000
   Exfiltration Loss ........         0.000         0.000
@@ -67,5 +67,16 @@
                            Precip      Runon       Evap      Infil     Runoff      Runoff   Runoff   Coeff
   Subcatchment                 in         in         in         in         in    10^6 gal      CFS
   --------------------------------------------------------------------------------------------------------
-  S1                         3.00      60.48       0.00       0.00      63.37        1.72    22.58   0.998
+  S1                         3.00       0.00       0.00       0.00       2.91        0.08     1.00   0.969
   
+
+  ***********************
+  LID Performance Summary
+  ***********************
+
+  --------------------------------------------------------------------------------------------------------------------
+                                         Total      Evap     Infil   Surface    Drain    Initial     Final  Continuity
+                                        Inflow      Loss      Loss   Outflow   Outflow   Storage   Storage       Error
+  Subcatchment      LID Control             in        in        in        in        in        in        in           %
+  --------------------------------------------------------------------------------------------------------------------
+  S1                Planter               3.00      0.00      0.09      0.00      0.00      2.40      5.30        0.29

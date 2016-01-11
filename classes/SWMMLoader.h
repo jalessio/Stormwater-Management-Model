@@ -103,6 +103,7 @@ public:
 	// access lid info
 	int GetLidCount() const;
 	TLidGroup* GetLidGroups();
+	TLidProc* GetLidProcs();
 
 	//GetCounts for all types
 	int* GetAllCounts();
@@ -201,6 +202,12 @@ protected:
 	int LidReadProcParams(char* tok[], int ntoks);
 	int AddLidUnit(int j, int k, int n, double x[], char* fname, int drainSubcatch, int drainNode);
 	int LidReadGroupParams(char* tok[], int ntoks);
+	int ReadSurfaceData(int j, char* toks[], int ntoks);
+	int ReadPavementData(int j, char* toks[], int ntoks);
+	int ReadSoilData(int j, char* toks[], int ntoks);
+	int ReadStorageData(int j, char* toks[], int ntoks);
+	int ReadDrainData(int j, char* toks[], int ntoks);
+	int ReadDrainMatData(int j, char* toks[], int ntoks);
 
 	//utility functions - scraped from climate.c
 	int ClimateReadEvapParams(char* tok[], int ntoks);

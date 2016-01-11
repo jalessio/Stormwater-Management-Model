@@ -210,7 +210,7 @@ enum LidLayerTypes {
 ///        be distinguished from one another when parsing a line of input. 
 
 extern char* LidLayerWords[7];
-extern char* LidTypeWords[];
+extern char* LidTypeWords[9];
 
 //-----------------------------------------------------------------------------
 //   LID Methods
@@ -252,5 +252,8 @@ double   lidproc_getOutflow(TLidUnit* lidUnit, TLidProc* lidProc,
 
 void     lidproc_saveResults(TLidUnit* lidUnit, TLidProc* lidProc,             //(5.1.008)
          double ucfRainfall, double ucfRainDepth);
+
+TLidGroup* GetLidGroups(void);
+TLidProc* GetLidProcs(void);
 
 #endif

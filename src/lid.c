@@ -115,6 +115,10 @@ TLidGroup* GetLidGroups()
 	return LidGroups;
 }
 
+TLidProc* GetLidProcs()
+{
+	return LidProcs;
+}
 
 //-----------------------------------------------------------------------------
 //  Imported Variables (from SUBCATCH.C)
