@@ -2074,22 +2074,22 @@ int SWMMLoader::AddLidUnit(int j, int k, int n, double x[], char* fname,
 	lidGroup = _lidGroups[j];
 	if (!lidGroup)
 	{
-		lidGroup = (struct LidGroup *) malloc(sizeof(struct LidGroup)); //TODO change to new? 
+		lidGroup = new LidGroup();
 		if (!lidGroup) return error_setInpError(ERR_MEMORY, "");
 		lidGroup->lidList = NULL;
 		_lidGroups[j] = lidGroup;
 	}
 
 	//... create a new LID unit to add to the group
-	lidUnit = (TLidUnit *)malloc(sizeof(TLidUnit)); //TODO change to new? 
+	lidUnit = new TLidUnit();
 	if (!lidUnit) return error_setInpError(ERR_MEMORY, "");
 	lidUnit->rptFile = NULL;
 
 	//... add the LID unit to the group
-	lidList = (TLidList *)malloc(sizeof(TLidList));
+	lidList = new TLidList();
 	if (!lidList)
 	{
-		free(lidUnit);
+		delete(lidUnit);
 		return error_setInpError(ERR_MEMORY, "");
 	}
 	lidList->lidUnit = lidUnit;
@@ -2128,7 +2128,7 @@ void SWMMLoader::InfilCreate(int subcatchCount, int model)
 	{
 	case HORTON:
 	case MOD_HORTON:
-		_hortinfil = new THorton[_Nobjects[SUBCATCH]](); //TODO where are you deleting this
+		_hortinfil = new THorton[_Nobjects[SUBCATCH]]();
 		if (_hortinfil == NULL) _errCode = ERR_MEMORY;
 		break;
 	case GREEN_AMPT:
