@@ -41,6 +41,12 @@ TCurveNum* CNInfil   = NULL;
 
 static double Fumax;   // saturated water volume in upper soil zone (ft)
 
+// Access local variables
+//THorton* GetInfiltration()
+//{
+//	return HortInfil;
+//}
+
 //-----------------------------------------------------------------------------
 //  External Functions (declared in infil.h)
 //-----------------------------------------------------------------------------

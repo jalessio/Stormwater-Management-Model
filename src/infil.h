@@ -105,4 +105,6 @@ void    grnampt_initState(TGrnAmpt *infil);
 double  grnampt_getInfil(TGrnAmpt *infil, double tstep, double irate,
         double depth, int modelType);                                          //(5.1.010)
 
+//THorton* GetInfiltration(void);
+
 #endif

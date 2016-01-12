@@ -5,7 +5,7 @@
 
 #include "SWMMLoader.h"
 #include <string.h>
-#include <malloc.h>
+#include <stdlib.h>
 #define  EXTERN extern
 #include "globals.h"
 
@@ -16,24 +16,9 @@ void projectload_readinput(char *path)
 	SWMMLoader swmmloader(path);
 	int j, k;
 
+	// allocate memory for SWMM hashtable
 	HTtable** classHT;
 	HTtable** Htable;
-
-	AnalysisOptions _aoptions;
-	TimeList _timelist;
-
-	TGage* _gages;
-	TSubcatch* _subcatches;
-	TNode* _nodes;
-	TOutfall* _outfalls;
-	TTable* _tseries;
-	TEvap _evap;
-	TLidGroup* _lidgroups;
-	TLidGroup* LidGroups;
-	TLidProc* _lidprocs;
-	TLidProc* LidProcs;
-
-	// allocate memory for SWMM hashtable
 	ProjectCreateHashTables(); 
 	
 	// get class hashtable
@@ -79,7 +64,7 @@ void projectload_readinput(char *path)
 	//Shape = (TShape *)calloc(Nobjects[SHAPE], sizeof(TShape));
 
 	
-	// analysis options
+	AnalysisOptions _aoptions;
 	_aoptions = swmmloader.GetAnalysisOptions();
 
 	UnitSystem = _aoptions.UnitSystem;						// Unit system
@@ -123,7 +108,7 @@ void projectload_readinput(char *path)
 	SysFlowTol = _aoptions.SysFlowTol;						// Tolerance for steady system flow
 	LatFlowTol = _aoptions.LatFlowTol;						// Tolerance for steady nodal inflow     
 
-	// time list
+	TimeList _timelist;
 	_timelist = swmmloader.GetTimeList();
 
 	StartDate = _timelist.StartDate;                // Starting date
@@ -272,38 +257,53 @@ void projectload_readinput(char *path)
 
 
 	// then copy data now that everything has been allocated
-	// gages
+	TGage* _gages;
 	_gages = swmmloader.GetGages();
-	memcpy(Gage, _gages, sizeof(TGage));
+	memcpy(Gage, _gages, sizeof(TGage)*Nobjects[GAGE]);
 
-	// subcatchments
+	TSubcatch* _subcatches;
 	_subcatches = swmmloader.GetSubcatches();
-	memcpy(Subcatch, _subcatches, sizeof(TSubcatch));
+	memcpy(Subcatch, _subcatches, sizeof(TSubcatch)*Nobjects[SUBCATCH]);
 
-	// nodes
+	//TSubarea* _subareas;
+	//_subareas = swmmloader.GetSuba
+
+	THorton* _hortinfil;
+	_hortinfil = swmmloader.GetInfiltration();
+	extern THorton* HortInfil;
+	memcpy(HortInfil, _hortinfil, sizeof(THorton)*Nobjects[SUBCATCH]);
+
+	TNode* _nodes;
 	_nodes = swmmloader.GetNodes();
-	memcpy(Node, _nodes, sizeof(TNode));
+	memcpy(Node, _nodes, sizeof(TNode)*Nobjects[NODE]);
 
-	_outfalls = swmmloader.GetOutfalls();
-	memcpy(Outfall, _outfalls, sizeof(TOutfall));
+	//TOutfall* _outfalls;
+	//_outfalls = swmmloader.GetOutfalls();
+	//memcpy(Outfall, _outfalls, sizeof(TOutfall)*Nobjects[OUTFALL]);
 
-	// timeseries
+	TTable* _tseries;
 	_tseries = swmmloader.GetTSeries();
-	memcpy(Tseries, _tseries, sizeof(TTable));
+	memcpy(Tseries, _tseries, sizeof(TTable)*Nobjects[TSERIES]);
 
-	// evaporation
-	_evap = swmmloader.GetEvap();
+	TEvap _evap;
+	_evap = swmmloader.GetEvap(); // TODO what's the default? and need to check if it exists
 	Evap = _evap;
 
-	// lid
+	// maybe uses externs instead
+	TLidGroup* _lidgroups;
+	TLidGroup* LidGroups;
 	_lidgroups = swmmloader.GetLidGroups();
 	LidGroups = GetLidGroups();						// get LidGroups from lid.c
-	memcpy(LidGroups, _lidgroups, sizeof(TLidGroup));
+	memcpy(LidGroups, _lidgroups, sizeof(TLidGroup)*Nobjects[LID]);
 
-	_lidprocs = swmmloader.GetLidProcs();
-	LidProcs = GetLidProcs();						// get LidProcs from lid.c
-	memcpy(LidProcs, _lidprocs, sizeof(TLidProc));
-
+	TLidProc* _lidprocs;
+	TLidProc* LidProcs;
+	if(Nobjects[LID] > 0)
+	{
+		_lidprocs = swmmloader.GetLidProcs();
+		LidProcs = GetLidProcs();						// get LidProcs from lid.c
+		memcpy(LidProcs, _lidprocs, sizeof(TLidProc)*Nobjects[LID]);
+	}
 }
 
 // initPointers() is wrapped by InitPointers()

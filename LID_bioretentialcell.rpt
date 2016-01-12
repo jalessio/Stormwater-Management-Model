@@ -34,22 +34,23 @@
   **************************     ---------       -------
   Initial LID Storage ......         0.002         0.028
   Total Precipitation ......         0.250         3.000
+  Outfall Runon ............         4.986        59.830
   Evaporation Loss .........         0.000         0.000
   Infiltration Loss ........         0.000         0.001
-  Surface Runoff ...........         0.242         2.908
-  Final Storage ............         0.011         0.132
-  Continuity Error (%) .....        -0.444
+  Surface Runoff ...........         5.224        62.683
+  Final Storage ............         0.049         0.582
+  Continuity Error (%) .....        -0.651
   
   
   **************************        Volume        Volume
   Flow Routing Continuity        acre-feet      10^6 gal
   **************************     ---------     ---------
   Dry Weather Inflow .......         0.000         0.000
-  Wet Weather Inflow .......         0.241         0.079
+  Wet Weather Inflow .......         5.131         1.672
   Groundwater Inflow .......         0.000         0.000
   RDII Inflow ..............         0.000         0.000
   External Inflow ..........         0.000         0.000
-  External Outflow .........         0.241         0.079
+  External Outflow .........         5.131         1.672
   Flooding Loss ............         0.000         0.000
   Evaporation Loss .........         0.000         0.000
   Exfiltration Loss ........         0.000         0.000
@@ -67,7 +68,7 @@
                            Precip      Runon       Evap      Infil     Runoff      Runoff   Runoff   Coeff
   Subcatchment                 in         in         in         in         in    10^6 gal      CFS
   --------------------------------------------------------------------------------------------------------
-  S1                         3.00       0.00       0.00       0.00       2.91        0.08     1.00   0.969
+  S1                         3.00      59.83       0.00       0.00      62.68        1.70    22.33   0.998
   
 
   ***********************
