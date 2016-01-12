@@ -80,7 +80,7 @@ void projectload_readinput(char *path)
 	Compatibility = _aoptions.Compatibility;				// SWMM 5/3/4 compatibility
 	SkipSteadyState = _aoptions.SkipSteadyState;			// Skip over steady state periods
 	IgnoreRainfall = _aoptions.IgnoreRainfall;				// Ignore rainfall/runoff
-	IgnoreRDII = _aoptions.IgnoreRainfall;					// Ignore RDII                     //(5.1.004)
+	IgnoreRDII = _aoptions.IgnoreRDII;					    // Ignore RDII                     //(5.1.004)
 	IgnoreSnowmelt = _aoptions.IgnoreSnowmelt;			    // Ignore snowmelt
 	IgnoreGwater = _aoptions.IgnoreGwater;					// Ignore groundwater
 	IgnoreRouting = _aoptions.IgnoreRouting;				// Ignore flow routing
@@ -265,21 +265,28 @@ void projectload_readinput(char *path)
 	_subcatches = swmmloader.GetSubcatches();
 	memcpy(Subcatch, _subcatches, sizeof(TSubcatch)*Nobjects[SUBCATCH]);
 
-	//TSubarea* _subareas;
-	//_subareas = swmmloader.GetSuba
-
-	THorton* _hortinfil;
-	_hortinfil = swmmloader.GetInfiltration();
-	extern THorton* HortInfil;
-	memcpy(HortInfil, _hortinfil, sizeof(THorton)*Nobjects[SUBCATCH]);
+	if(InfilModel == HORTON)
+	{
+		THorton* _hortinfil;
+		_hortinfil = swmmloader.GetHortInfil();
+		extern THorton* HortInfil;
+		memcpy(HortInfil, _hortinfil, sizeof(THorton)*Nobjects[SUBCATCH]);
+	}
+	if (InfilModel == GREEN_AMPT)
+	{
+		TGrnAmpt* _gainfil;
+		_gainfil = swmmloader.GetGAInfil();
+		extern TGrnAmpt* GAInfil;
+		memcpy(GAInfil, _gainfil, sizeof(TGrnAmpt)*Nobjects[SUBCATCH]);
+	}
 
 	TNode* _nodes;
 	_nodes = swmmloader.GetNodes();
 	memcpy(Node, _nodes, sizeof(TNode)*Nobjects[NODE]);
 
-	//TOutfall* _outfalls;
-	//_outfalls = swmmloader.GetOutfalls();
-	//memcpy(Outfall, _outfalls, sizeof(TOutfall)*Nobjects[OUTFALL]);
+	TOutfall* _outfalls;
+	_outfalls = swmmloader.GetOutfalls();
+	memcpy(Outfall, _outfalls, sizeof(TOutfall)*Nnodes[OUTFALL]);
 
 	TTable* _tseries;
 	_tseries = swmmloader.GetTSeries();
@@ -291,17 +298,15 @@ void projectload_readinput(char *path)
 
 	// maybe uses externs instead
 	TLidGroup* _lidgroups;
-	TLidGroup* LidGroups;
+	extern TLidGroup* LidGroups;
 	_lidgroups = swmmloader.GetLidGroups();
-	LidGroups = GetLidGroups();						// get LidGroups from lid.c
 	memcpy(LidGroups, _lidgroups, sizeof(TLidGroup)*Nobjects[LID]);
 
 	TLidProc* _lidprocs;
-	TLidProc* LidProcs;
+	extern TLidProc* LidProcs;
 	if(Nobjects[LID] > 0)
 	{
 		_lidprocs = swmmloader.GetLidProcs();
-		LidProcs = GetLidProcs();						// get LidProcs from lid.c
 		memcpy(LidProcs, _lidprocs, sizeof(TLidProc)*Nobjects[LID]);
 	}
 }

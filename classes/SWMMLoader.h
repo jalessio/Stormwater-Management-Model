@@ -3,7 +3,6 @@ Working input API -- loads data from input file
 
 TODO
 -in original SWMM, units are converted in read step -- make sure this is consistent in swmmloader
--test green & ampt infiltration (see Example_greenampt.inp)
 
 */
 
@@ -84,8 +83,8 @@ public:
 
 	//access infiltration info
 	//only worry about horton for now
-	THorton* GetInfiltration(); // probably just overload, but then need an input param
-//	TGrnAmpt* GetInfiltration();
+	THorton* GetHortInfil(); // probably just overload, but then need an input param
+	TGrnAmpt* GetGAInfil();
 
 	//access analysis options info
 	AnalysisOptions GetAnalysisOptions();
@@ -196,6 +195,7 @@ protected:
 	void InfilCreate(int subcatchCount, int model);
 	int InfilReadParams(int m, char* tok[], int ntoks);
 	int HortonSetParams(THorton *infil, double p[]);
+	int GrnamptSetParams(TGrnAmpt *infil, double p[]);
 
 	//utility functions - scraped from lid.c
 	void LidCreate(int lidCount, int subcatchCount);

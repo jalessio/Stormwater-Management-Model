@@ -238,9 +238,9 @@ int main(int argc, char *argv[])
 	// to run modified SWMM
 
 	// one subcatchment:
-	char *inputFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.inp";
-	char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.rpt";
-	char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.out";;
+	//char *inputFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.inp";
+	//char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.rpt";
+	//char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.out";;
 	
 	// LID:
 	//char *inputFile  = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\LID_bioretentialcell.inp";
@@ -248,9 +248,9 @@ int main(int argc, char *argv[])
 	//char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\LID_bioretentialcell.out";
 
 	// 7 subcatchments, Horton infil:
-	//char *inputFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\Example1-Post.inp";
-	//char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\Example1-Post.rpt";
-	//char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\Example1-Post.out";;
+	char *inputFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\Example1-Post.inp";
+	char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\Example1-Post.rpt";
+	char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\Example1-Post.out";;
 
 
 

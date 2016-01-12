@@ -100,25 +100,25 @@ NULL };
 //-----------------------------------------------------------------------------
 //  Shared Variables
 //-----------------------------------------------------------------------------
-static TLidProc*  LidProcs;            // array of LID processes
+TLidProc*  LidProcs;            // array of LID processes
 static int        LidCount;            // number of LID processes
-static TLidGroup* LidGroups;           // array of LID process groups
+TLidGroup* LidGroups;           // array of LID process groups
 static int        GroupCount;          // number of LID groups (subcatchments)
 
 static double     EvapRate;            // evaporation rate (ft/s)
 static double     NativeInfil;         // native soil infil. rate (ft/s)
 static double     MaxNativeInfil;      // native soil infil. rate limit (ft/s)
 
-// Access shared variables
-TLidGroup* GetLidGroups()
-{
-	return LidGroups;
-}
-
-TLidProc* GetLidProcs()
-{
-	return LidProcs;
-}
+//// Access shared variables
+//TLidGroup* GetLidGroups()
+//{
+//	return LidGroups;
+//}
+//
+//TLidProc* GetLidProcs()
+//{
+//	return LidProcs;
+//}
 
 //-----------------------------------------------------------------------------
 //  Imported Variables (from SUBCATCH.C)

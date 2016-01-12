@@ -2,14 +2,6 @@
 #include <cstring>
 #include <stdlib.h>
 
-/*
-The following function definitions need to be added to gage.c
-In order for us to be able to add linkages to the called functions.
-Functions and variables declared static are typically only available
-within the scope of the c file, and cannot be directly extern'd.
-Therefore, we need the wrappers below.
-*/
-
 const int SWMMLoader::MAXERRS = 100;        // Max. input errors reported
 
 SWMMLoader::SWMMLoader()
@@ -186,10 +178,16 @@ int SWMMLoader::GetTSeriesCount() const
 	return _Nobjects[TSERIES];
 }
 
-THorton* SWMMLoader::GetInfiltration()
+THorton* SWMMLoader::GetHortInfil()
 {
 	return _hortinfil;
 }
+
+TGrnAmpt* SWMMLoader::GetGAInfil()
+{
+	return _gainfil;
+}
+
 
 TEvap SWMMLoader::GetEvap()
 {
@@ -1108,85 +1106,7 @@ int SWMMLoader::ReadNodeParams(int j, int type, int k, char* tok[], int ntoks)
 	}
 }
 
-int SWMMLoader::OutfallReadParams(int j, int k, char* tok[], int ntoks)
-//
-//  Input:   j = node index
-//           k = outfall index
-//           tok[] = array of string tokens
-//           ntoks = number of tokens
-//  Output:  returns an error message
-//  Purpose: reads an outfall's properties from a tokenized line of input.
-//
-//  Format of input line is:
-//    nodeID  elev  FIXED  fixedStage (flapGate) (routeTo)
-//    nodeID  elev  TIDAL  curveID (flapGate) (routeTo)
-//    nodeID  elev  TIMESERIES  tseriesID (flapGate) (routTo)
-//    nodeID  elev  FREE (flapGate) (routeTo)
-//    nodeID  elev  NORMAL (flapGate) (routeTo)
-//
-{
-	int    i, m, n;
-	double x[7];                                                               //(5.1.008)
-	char*  id;
 
-	if (ntoks < 3) return error_setInpError(ERR_ITEMS, "");
-	id = ProjectFindID(NODE, tok[0]);                      // node ID
-	if (id == NULL)
-		return error_setInpError(ERR_NAME, tok[0]);
-	if (!getDouble(tok[1], &x[0]))                       // invert elev. 
-		return error_setInpError(ERR_NUMBER, tok[1]);
-	i = findmatch(tok[2], OutfallTypeWords);               // outfall type
-	if (i < 0) return error_setInpError(ERR_KEYWORD, tok[2]);
-	x[1] = i;                                              // outfall type
-	x[2] = 0.0;                                            // fixed stage
-	x[3] = -1.;                                            // tidal curve
-	x[4] = -1.;                                            // tide series
-	x[5] = 0.;                                             // flap gate
-	x[6] = -1.;                                            // route to subcatch//(5.1.008)
-
-	n = 4;
-	if (i >= FIXED_OUTFALL)
-	{
-		if (ntoks < 4) return error_setInpError(ERR_ITEMS, "");
-		n = 5;
-		switch (i)
-		{
-		case FIXED_OUTFALL:                                // fixed stage
-			if (!getDouble(tok[3], &x[2]))
-				return error_setInpError(ERR_NUMBER, tok[3]);
-			break;
-		case TIDAL_OUTFALL:                                // tidal curve
-			m = project_findObject(CURVE, tok[3]);
-			if (m < 0) return error_setInpError(ERR_NAME, tok[3]);
-			x[3] = m;
-			break;
-		//case TIMESERIES_OUTFALL:                           // stage time series
-		//	m = project_findObject(TSERIES, tok[3]);
-		//	if (m < 0) return error_setInpError(ERR_NAME, tok[3]);
-		//	x[4] = m;
-		//	_Tseries[m].refersTo = TIMESERIES_OUTFALL;
-		}
-	}
-	if (ntoks == n)
-	{
-		m = findmatch(tok[n - 1], NoYesWords);               // flap gate
-		if (m < 0) return error_setInpError(ERR_KEYWORD, tok[n - 1]);
-		x[5] = m;
-	}
-
-	////  Added for release 5.1.008.  ////                                         //(5.1.008)
-	if (ntoks == n + 1)
-	{
-		m = ProjectFindObject(SUBCATCH, tok[n]);
-		if (m < 0) return error_setInpError(ERR_NAME, tok[n]);
-		x[6] = m;
-	}
-	////
-
-	_nodes[j].ID = id;
-	NodeSetParams(j, OUTFALL, k, x);
-	return 0;
-}
 
 int SWMMLoader::JuncReadParams(int j, int k, char* tok[], int ntoks)
 //
@@ -1297,6 +1217,86 @@ void  SWMMLoader::NodeSetParams(int j, int type, int k, double x[])
 	//	Node[j].pondedArea = x[10] / (UCF(LENGTH)*UCF(LENGTH));
 	//	break;
 	}
+}
+
+int SWMMLoader::OutfallReadParams(int j, int k, char* tok[], int ntoks)
+//
+//  Input:   j = node index
+//           k = outfall index
+//           tok[] = array of string tokens
+//           ntoks = number of tokens
+//  Output:  returns an error message
+//  Purpose: reads an outfall's properties from a tokenized line of input.
+//
+//  Format of input line is:
+//    nodeID  elev  FIXED  fixedStage (flapGate) (routeTo)
+//    nodeID  elev  TIDAL  curveID (flapGate) (routeTo)
+//    nodeID  elev  TIMESERIES  tseriesID (flapGate) (routTo)
+//    nodeID  elev  FREE (flapGate) (routeTo)
+//    nodeID  elev  NORMAL (flapGate) (routeTo)
+//
+{
+	int    i, m, n;
+	double x[7];                                                               //(5.1.008)
+	char*  id;
+
+	if (ntoks < 3) return error_setInpError(ERR_ITEMS, "");
+	id = ProjectFindID(NODE, tok[0]);                      // node ID
+	if (id == NULL)
+		return error_setInpError(ERR_NAME, tok[0]);
+	if (!getDouble(tok[1], &x[0]))                       // invert elev. 
+		return error_setInpError(ERR_NUMBER, tok[1]);
+	i = findmatch(tok[2], OutfallTypeWords);               // outfall type
+	if (i < 0) return error_setInpError(ERR_KEYWORD, tok[2]);
+	x[1] = i;                                              // outfall type
+	x[2] = 0.0;                                            // fixed stage
+	x[3] = -1.;                                            // tidal curve
+	x[4] = -1.;                                            // tide series
+	x[5] = 0.;                                             // flap gate
+	x[6] = -1.;                                            // route to subcatch//(5.1.008)
+
+	n = 4;
+	if (i >= FIXED_OUTFALL)
+	{
+		if (ntoks < 4) return error_setInpError(ERR_ITEMS, "");
+		n = 5;
+		switch (i)
+		{
+		case FIXED_OUTFALL:                                // fixed stage
+			if (!getDouble(tok[3], &x[2]))
+				return error_setInpError(ERR_NUMBER, tok[3]);
+			break;
+		case TIDAL_OUTFALL:                                // tidal curve
+			m = ProjectFindObject(CURVE, tok[3]);
+			if (m < 0) return error_setInpError(ERR_NAME, tok[3]);
+			x[3] = m;
+			break;
+		//case TIMESERIES_OUTFALL:                           // stage time series
+		//	m = project_findObject(TSERIES, tok[3]);
+		//	if (m < 0) return error_setInpError(ERR_NAME, tok[3]);
+		//	x[4] = m;
+		//	_Tseries[m].refersTo = TIMESERIES_OUTFALL;
+		}
+	}
+	if (ntoks == n)
+	{
+		m = findmatch(tok[n - 1], NoYesWords);               // flap gate
+		if (m < 0) return error_setInpError(ERR_KEYWORD, tok[n - 1]);
+		x[5] = m;
+	}
+
+	////  Added for release 5.1.008.  ////                                         //(5.1.008)
+	if (ntoks == n + 1)
+	{
+		m = ProjectFindObject(SUBCATCH, tok[n]);
+		if (m < 0) return error_setInpError(ERR_NAME, tok[n]);
+		x[6] = m;
+	}
+	////
+
+	_nodes[j].ID = id;
+	NodeSetParams(j, OUTFALL, k, x);
+	return 0;
 }
 
 
@@ -1632,7 +1632,7 @@ int SWMMLoader::ClimateReadEvapParams(char* tok[], int ntoks)
 
 	case TIMESERIES_EVAP:
 		// --- for time series evap., read name of time series
-		i = ProjectFindObject(TSERIES, tok[1]); // TODO check TSERIES
+		i = ProjectFindObject(TSERIES, tok[1]);
 		if (i < 0) return error_setInpError(ERR_NAME, tok[1]);
 		_evap.tSeries = i;
 		_tseries[i].refersTo = TIMESERIES_EVAP;
@@ -2165,7 +2165,7 @@ int SWMMLoader::InfilReadParams(int m, char* tok[], int ntoks)
 	// --- number of input tokens depends on infiltration model m
 	if (m == HORTON)       n = 5;
 	//else if (m == MOD_HORTON)   n = 5;
-	//else if (m == GREEN_AMPT)   n = 4;
+	else if (m == GREEN_AMPT)   n = 4;
 	//else if (m == MOD_GREEN_AMPT)   n = 4;                                   //(5.1.010)
 	//else if (m == CURVE_NUMBER) n = 4;
 	else return 0;
@@ -2193,10 +2193,10 @@ int SWMMLoader::InfilReadParams(int m, char* tok[], int ntoks)
 	case HORTON:
 	case MOD_HORTON:   status = HortonSetParams(&_hortinfil[j], x);
 		break;
-	//case GREEN_AMPT:
-	//case MOD_GREEN_AMPT:                                                     //(5.1.010)
-	//	status = grnampt_setParams(&GAInfil[j], x);
-	//	break;
+	case GREEN_AMPT:
+	case MOD_GREEN_AMPT:                                                     //(5.1.010)
+		status = GrnamptSetParams(&_gainfil[j], x);
+		break;
 	//case CURVE_NUMBER: status = curvenum_setParams(&CNInfil[j], x);
 	//	break;
 	default:           status = TRUE;
@@ -2232,6 +2232,27 @@ int SWMMLoader::HortonSetParams(THorton *infil, double p[])
 	// --- optional max. infil. capacity (ft) (p[4] = 0 if no value supplied)
 	infil->Fmax = p[4] / UCF(RAINDEPTH);
 	if (infil->f0 < infil->fmin) return FALSE;
+	return TRUE;
+}
+
+int SWMMLoader::GrnamptSetParams(TGrnAmpt *infil, double p[])
+//
+//  Input:   infil = ptr. to Green-Ampt infiltration object
+//           p[] = array of parameter values
+//  Output:  returns TRUE if parameters are valid, FALSE otherwise
+//  Purpose: assigns Green-Ampt infiltration parameters to a subcatchment.
+//
+{
+	double ksat;                       // sat. hyd. conductivity in in/hr
+
+	if (p[0] < 0.0 || p[1] <= 0.0 || p[2] < 0.0) return FALSE;               //(5.1.007)
+	infil->S = p[0] / UCF(RAINDEPTH);   // Capillary suction head (ft)
+	infil->Ks = p[1] / UCF(RAINFALL);    // Sat. hyd. conductivity (ft/sec)
+	infil->IMDmax = p[2];                    // Max. init. moisture deficit
+
+	// --- find depth of upper soil zone (ft) using Mein's eqn.
+	ksat = infil->Ks * 12. * 3600.;
+	infil->Lu = 4.0 * sqrt(ksat) / 12.;
 	return TRUE;
 }
 
