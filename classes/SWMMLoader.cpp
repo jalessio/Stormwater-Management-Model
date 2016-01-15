@@ -18,7 +18,7 @@ SWMMLoader::SWMMLoader()
 SWMMLoader::SWMMLoader(const char* path)
 :_gages(NULL), _subcatches(NULL), _nodes(NULL), _tseries(NULL), _hortinfil(NULL)
 {
-	ClearErr(); // Clearcounts() called by OpenFile
+	ClearErr(); // ClearCounts() called by OpenFile
 	OpenFile(path);
 }
 
@@ -317,8 +317,8 @@ char *SWMMLoader::ProjectFindID(int type, char *id)
 
 int SWMMLoader::CountObjects()
 {
-	char  line[MAXLINE + 1];             // line from input data file     
-	char  wLine[MAXLINE + 1];            // working copy of input line   
+	char  line[MAXLINE + 1];           // line from input data file     
+	char  wLine[MAXLINE + 1];          // working copy of input line   
 	char  *tok;                        // first string token of line          
 	int   sect = -1, newsect;          // input data sections          
 	int   errcode = 0;                 // error code
@@ -659,10 +659,10 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2)
 	////  Following code section added to release 5.1.008.  ////                   //(5.1.008)
 
 	// --- minimum variable time step for dynamic wave routing
-	//case MIN_ROUTE_STEP:
-	//	if (!getDouble(s2, &MinRouteStep) || MinRouteStep < 0.0)
-	//		return error_setInpError(ERR_NUMBER, s2);
-	//	break;
+	case MIN_ROUTE_STEP:
+		if (!getDouble(s2, &_aoptions.MinRouteStep) || _aoptions.MinRouteStep < 0.0)
+			return error_setInpError(ERR_NUMBER, s2);
+		break;
 
 	case NUM_THREADS:
 		m = atoi(s2);
@@ -673,12 +673,12 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2)
 	// --- safety factor applied to variable time step estimates under
 	//     dynamic wave flow routing (value of 0 indicates that variable
 	//     time step option not used)
-	//case VARIABLE_STEP:
-	//	if (!getDouble(s2, &CourantFactor))
-	//		return error_setInpError(ERR_NUMBER, s2);
-	//	if (CourantFactor < 0.0 || CourantFactor > 2.0)
-	//		return error_setInpError(ERR_NUMBER, s2);
-	//	break;
+	case VARIABLE_STEP:
+		if (!getDouble(s2, &_aoptions.CourantFactor))
+			return error_setInpError(ERR_NUMBER, s2);
+		if (_aoptions.CourantFactor < 0.0 || _aoptions.CourantFactor > 2.0)
+			return error_setInpError(ERR_NUMBER, s2);
+		break;
 
 	// --- minimum surface area (ft2 or sq. meters) associated with nodes
 	//     under dynamic wave flow routing 
