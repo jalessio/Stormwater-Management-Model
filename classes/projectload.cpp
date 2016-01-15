@@ -14,22 +14,41 @@ void projectload_readinput(char *path)
 {
 	// mimic project_readinput
 	SWMMLoader swmmloader(path);
-	int j, k;
+	int j, k, m;
 
-	// allocate memory for SWMM hashtable
 	HTtable** classHT;
 	HTtable** Htable;
 	ProjectCreateHashTables(); 
 	
-	// get class hashtable
-	classHT = swmmloader.GetHtable();
+	classHT = swmmloader.GetHtable();  		// get class hashtable
+	Htable = ProjectGetHTable();			// get empty SWMM hashtable from project.c
 
-	// get empty SWMM hashtable from project.c
-	Htable = ProjectGetHTable(); 
+	int  len;
+	char *newID;
 
 	// populate SWMM hashtable
 	for (int i = 0; i < MAX_OBJ_TYPES; i++)
-		memcpy(Htable[i], classHT[i], sizeof(HTtable)*HTMAXSIZE);
+	{
+		for (int j = 0; j < HTMAXSIZE; j++)
+		{
+			if (classHT[i][j] != NULL) 
+			{
+				len = strlen((*classHT[i][j]).key) + 1;
+				newID = (char *)Alloc(len*sizeof(char));
+				strcpy(newID, (*classHT[i][j]).key);
+
+				struct HTentry *entry;
+				entry = (struct HTentry *) malloc(sizeof(struct HTentry));
+				//if (entry == NULL); // check for null 
+				entry->key = newID;
+				entry->data = (*classHT[i][j]).data;
+				entry->next = Htable[i][j];
+				Htable[i][j] = entry;
+
+			}
+		}
+	}
+
 
 	// get all counts needed -- this is handled by input_countObjects() in original SWMM
 	Nobjects[GAGE] = swmmloader.GetGageCount();
@@ -143,24 +162,24 @@ void projectload_readinput(char *path)
 	infil_create(Nobjects[SUBCATCH], InfilModel);
 
 	// --- allocate memory for water quality state variables
-	for (j = 0; j < Nobjects[SUBCATCH]; j++)
-	{
-		Subcatch[j].initBuildup =
-			(double *)calloc(Nobjects[POLLUT], sizeof(double));
-		Subcatch[j].oldQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
-		Subcatch[j].newQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
-		Subcatch[j].pondedQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
-		Subcatch[j].totalLoad = (double *)calloc(Nobjects[POLLUT], sizeof(double));
-	}
-	for (j = 0; j < Nobjects[NODE]; j++)
-	{
-		Node[j].oldQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
-		Node[j].newQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
-		Node[j].extInflow = NULL;
-		Node[j].dwfInflow = NULL;
-		Node[j].rdiiInflow = NULL;
-		Node[j].treatment = NULL;
-	}
+	//for (j = 0; j < Nobjects[SUBCATCH]; j++)
+	//{
+	//	Subcatch[j].initBuildup =
+	//		(double *)calloc(Nobjects[POLLUT], sizeof(double));
+	//	Subcatch[j].oldQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+	//	Subcatch[j].newQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+	//	Subcatch[j].pondedQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+	//	Subcatch[j].totalLoad = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+	//}
+	//for (j = 0; j < Nobjects[NODE]; j++)
+	//{
+	//	Node[j].oldQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+	//	Node[j].newQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+	//	Node[j].extInflow = NULL;
+	//	Node[j].dwfInflow = NULL;
+	//	Node[j].rdiiInflow = NULL;
+	//	Node[j].treatment = NULL;
+	//}
 	for (j = 0; j < Nobjects[LINK]; j++)
 	{
 		Link[j].oldQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
@@ -178,16 +197,16 @@ void projectload_readinput(char *path)
 	}
 
 	// --- allocate memory for subcatchment landuse factors
-	for (j = 0; j < Nobjects[SUBCATCH]; j++)
-	{
-		Subcatch[j].landFactor =
-			(TLandFactor *)calloc(Nobjects[LANDUSE], sizeof(TLandFactor));
-		for (k = 0; k < Nobjects[LANDUSE]; k++)
-		{
-			Subcatch[j].landFactor[k].buildup =
-				(double *)calloc(Nobjects[POLLUT], sizeof(double));
-		}
-	}
+	//for (j = 0; j < Nobjects[SUBCATCH]; j++)
+	//{
+	//	Subcatch[j].landFactor =
+	//		(TLandFactor *)calloc(Nobjects[LANDUSE], sizeof(TLandFactor));
+	//	for (k = 0; k < Nobjects[LANDUSE]; k++)
+	//	{
+	//		Subcatch[j].landFactor[k].buildup =
+	//			(double *)calloc(Nobjects[POLLUT], sizeof(double));
+	//	}
+	//}
 
 	// --- initialize buildup & washoff functions
 	for (j = 0; j < Nobjects[LANDUSE]; j++)
@@ -208,21 +227,21 @@ void projectload_readinput(char *path)
 	}
 
 	// --- initialize subcatchment properties
-	for (j = 0; j < Nobjects[SUBCATCH]; j++)
-	{
-		Subcatch[j].outSubcatch = -1;
-		Subcatch[j].outNode = -1;
-		Subcatch[j].infil = -1;
-		Subcatch[j].groundwater = NULL;
-		Subcatch[j].gwLatFlowExpr = NULL;                                      //(5.1.007)
-		Subcatch[j].gwDeepFlowExpr = NULL;                                     //(5.1.007)
-		Subcatch[j].snowpack = NULL;
-		Subcatch[j].lidArea = 0.0;
-		for (k = 0; k < Nobjects[POLLUT]; k++)
-		{
-			Subcatch[j].initBuildup[k] = 0.0;
-		}
-	}
+	//for (j = 0; j < Nobjects[SUBCATCH]; j++)
+	//{
+	//	Subcatch[j].outSubcatch = -1;
+	//	Subcatch[j].outNode = -1;
+	//	Subcatch[j].infil = -1;
+	//	Subcatch[j].groundwater = NULL;
+	//	Subcatch[j].gwLatFlowExpr = NULL;                                      //(5.1.007)
+	//	Subcatch[j].gwDeepFlowExpr = NULL;                                     //(5.1.007)
+	//	Subcatch[j].snowpack = NULL;
+	//	Subcatch[j].lidArea = 0.0;
+	//	for (k = 0; k < Nobjects[POLLUT]; k++)
+	//	{
+	//		Subcatch[j].initBuildup[k] = 0.0;
+	//	}
+	//}
 
 	// --- initialize RDII unit hydrograph properties
 	for (j = 0; j < Nobjects[UNITHYD]; j++) rdii_initUnitHyd(j);

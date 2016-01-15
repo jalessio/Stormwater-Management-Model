@@ -25,6 +25,11 @@ SWMMLoader::SWMMLoader(const char* path)
 SWMMLoader::~SWMMLoader()
 {
 	ClearObjArrays();
+
+	for (int j = 0; j < MAX_OBJ_TYPES; j++)
+	{
+		if (_Htable[j] != NULL) HTfree(_Htable[j]);
+	}
 }
 
 bool SWMMLoader::OpenFile(const char* path)
@@ -761,7 +766,6 @@ void SWMMLoader::ClearObjArrays()
 	delete[] _tseries;
 	delete[] _lidGroups;
 	delete[] _lidProcs;
-
 
 	_gages = NULL;
 	_subcatches = NULL;
