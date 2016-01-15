@@ -1,9 +1,6 @@
 /*
 Working input API -- loads data from input file
 
-TODO
--in original SWMM, units are converted in read step -- make sure this is consistent in swmmloader
-
 */
 
 #ifndef SWMMLOADER_H

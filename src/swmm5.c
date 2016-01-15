@@ -264,8 +264,6 @@ int main(int argc, char *argv[])
 	char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\Example1-Post.rpt";
 	char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\Example1-Post.out";
 
-
-
 	char blank[] = "";
 	time_t start;
 	double runTime;

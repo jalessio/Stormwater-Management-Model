@@ -391,8 +391,7 @@ int SWMMLoader::CountObjects()
 				// --- a Time Series can span several lines
 				if (ProjectFindObject(TSERIES, tok) < 0)
 				{
-					if (!ProjectAddObject(TSERIES, tok, _Nobjects[TSERIES]))
-						errcode = error_setInpError(ERR_DUP_NAME, tok); // TODO check others to see if you want to use this error code
+					ProjectAddObject(TSERIES, tok, _Nobjects[TSERIES]);
 					_Nobjects[TSERIES]++;
 				}
 				break;
@@ -402,10 +401,7 @@ int SWMMLoader::CountObjects()
 				// --- an LID object can span several lines
 				if (ProjectFindObject(LID, tok) < 0)
 				{
-					if (!ProjectAddObject(LID, tok, _Nobjects[LID]))
-					{
-						errcode = error_setInpError(ERR_DUP_NAME, tok);
-					}
+					ProjectAddObject(LID, tok, _Nobjects[LID]);
 					_Nobjects[LID]++;
 				}
 				break;

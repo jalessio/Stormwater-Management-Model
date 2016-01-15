@@ -252,7 +252,7 @@
 //	addObject(sect, id);
 //
 //	if (index < 0 || index >= _Nobjects[GAGE])
-//		return 999; //TODO error
+//		return 999; //error
 //
 //
 //	_gages[index].ID = id;

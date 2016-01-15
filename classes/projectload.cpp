@@ -63,7 +63,7 @@ void projectload_readinput(char *path)
 	Gage = (TGage *)calloc(Nobjects[GAGE], sizeof(TGage));
 	Subcatch = (TSubcatch *)calloc(Nobjects[SUBCATCH], sizeof(TSubcatch));
 	Node = (TNode *)calloc(Nobjects[NODE], sizeof(TNode));
-	Outfall = (TOutfall *)calloc(Nnodes[OUTFALL], sizeof(TOutfall)); //TODO getter in class for outfall
+	Outfall = (TOutfall *)calloc(Nnodes[OUTFALL], sizeof(TOutfall));
 	//Divider = (TDivider *)calloc(Nnodes[DIVIDER], sizeof(TDivider));
 	//Storage = (TStorage *)calloc(Nnodes[STORAGE], sizeof(TStorage));
 	//Link = (TLink *)calloc(Nobjects[LINK], sizeof(TLink));
