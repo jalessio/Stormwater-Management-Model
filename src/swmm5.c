@@ -63,8 +63,20 @@
 #endif
 ////
 
+#define _CRTDBG_MAP_ALLOC
+//#define _DEBUG
+//
+//#ifdef _DEBUG
+//#ifndef DBG_NEW
+//#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+//#define new DBG_NEW
+//#endif
+//#endif  // _DEBUG
+
+#include <stdlib.h> // order changed for debugging purposes
+#include <crtdbg.h>
+
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <time.h>
@@ -165,9 +177,9 @@ static int  xfilter(int xc, DateTime elapsedTime, long step);
 //	char *inputFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.inp";
 //	char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.rpt";
 //	char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.out";;*/
-//	char *inputFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot.inp";
-//	char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot.rpt";
-//	char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot.out";;
+//	char *inputFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\Example1-Post.inp";
+//	char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\Example1-Post.rpt";
+//	char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\Example1-Post.out";;
 //	
 //	char blank[] = "";
 //    time_t start;
@@ -211,7 +223,7 @@ static int  xfilter(int xc, DateTime elapsedTime, long step);
 //    return 0;
 //}                                      /* End of main */
 //#endif
-//
+
 
 
 
@@ -232,7 +244,7 @@ static int  xfilter(int xc, DateTime elapsedTime, long step);
 //  Command line for stand-alone operation is: swmm5 f1  f2  f3
 //  where f1 = name of input file, f2 = name of report file, and
 //  f3 = name of binary output file if saved (or blank if not saved).
-//
+
 int main(int argc, char *argv[])
 {
 	// to run modified SWMM
@@ -241,16 +253,16 @@ int main(int argc, char *argv[])
 	//char *inputFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.inp";
 	//char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.rpt";
 	//char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.out";;
-	
+	//
 	// LID:
-	char *inputFile  = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\LID_bioretentialcell.inp";
-	char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\LID_bioretentialcell.rpt";
-	char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\LID_bioretentialcell.out";
+	//char *inputFile  = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\LID_bioretentialcell.inp";
+	//char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\LID_bioretentialcell.rpt";
+	//char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\LID_bioretentialcell.out";
 
-	// 7 subcatchments, Horton infil:
-	//char *inputFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\Example1-Post.inp";
-	//char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\Example1-Post.rpt";
-	//char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\Example1-Post.out";;
+	// 7 subcatchments:
+	char *inputFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\Example1-Post.inp";
+	char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\Example1-Post.rpt";
+	char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\Example1-Post.out";
 
 
 
@@ -292,8 +304,16 @@ int main(int argc, char *argv[])
 	writecon("    Press Enter to continue...");
 	getchar();
 
-
+#ifdef WINDOWS 
+	_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
+	_CrtDumpMemoryLeaks();
 	return 0;
+
+#else
+	return 0;
+
+#endif
+
 }                                      /* End of main */
 #endif
 
