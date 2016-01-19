@@ -9,6 +9,9 @@
 #define  EXTERN extern
 #include "globals.h"
 
+extern void InitPointers(); // might need to modify this
+extern void SetDefaults();
+
 
 void projectload_readinput(char *path) 
 {
@@ -146,6 +149,20 @@ void projectload_readinput(char *path)
 	OldRoutingTime = _timelist.OldRoutingTime;      // Previous routing time (msec)
 	NewRoutingTime = _timelist.NewRoutingTime;      // Current routing time (msec)
 	TotalDuration = _timelist.TotalDuration;        // Simulation duration (msec)
+
+	TRptFlags _rptFlags;
+	_rptFlags = swmmloader.GetRptFlags();
+
+	RptFlags.report = _rptFlags.report;
+	RptFlags.input = _rptFlags.input;
+	RptFlags.subcatchments = _rptFlags.subcatchments;
+	RptFlags.nodes = _rptFlags.nodes;
+	RptFlags.links = _rptFlags.links;
+	RptFlags.continuity = _rptFlags.continuity;
+	RptFlags.flowStats = _rptFlags.flowStats;
+	RptFlags.nodeStats = _rptFlags.nodeStats;
+	RptFlags.controls = _rptFlags.controls;
+	RptFlags.linesPerPage = _rptFlags.linesPerPage;
 
 	// --- create LID objects
 	lid_create(Nobjects[LID], Nobjects[SUBCATCH]);

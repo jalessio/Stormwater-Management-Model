@@ -830,7 +830,7 @@ int DLLEXPORT swmm_close()
 {
     if ( Fout.file ) output_close();
     if ( IsOpenFlag ) project_close();
-//	    report_writeSysTime();
+	    report_writeSysTime();
     if ( Finp.file != NULL ) fclose(Finp.file);
     if ( Frpt.file != NULL ) fclose(Frpt.file);
     if ( Fout.file != NULL )

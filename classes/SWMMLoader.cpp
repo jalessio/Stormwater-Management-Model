@@ -4,6 +4,8 @@
 
 const int SWMMLoader::MAXERRS = 100;        // Max. input errors reported
 
+
+
 SWMMLoader::SWMMLoader()
 :_inFile(NULL), _gages(NULL), _subcatches(NULL), _nodes(NULL), _tseries(NULL), _hortinfil(NULL)
 {
@@ -50,6 +52,7 @@ bool SWMMLoader::OpenFile(const char* path)
 		return false;
 
 	AllocObjArrays();
+	//SetDefaults();
 
 	ReadData();
 
@@ -223,6 +226,12 @@ TimeList SWMMLoader::GetTimeList()
 {
 	return _timelist;
 }
+
+TRptFlags SWMMLoader::GetRptFlags()
+{
+	return _rptFlags;
+}
+
 
 HTtable** SWMMLoader::GetHtable()
 {
@@ -970,8 +979,92 @@ int  SWMMLoader::ParseLine(int sect, char *line)
 	case s_LID_USAGE:
 		return LidReadGroupParams(_Tok, _Ntokens);
 
+	case s_REPORT:
+		return ReportReadOptions(_Tok, _Ntokens);
+
 	default: return 0;
 	}
+}
+
+int SWMMLoader::ReportReadOptions(char* tok[], int ntoks)
+//
+//  Input:   tok[] = array of string tokens
+//           ntoks = number of tokens
+//  Output:  returns an error code
+//  Purpose: reads reporting options from a line of input
+//
+{
+	char  k;
+	int   j, m, t;
+	if (ntoks < 2) return error_setInpError(ERR_ITEMS, "");
+	k = (char)findmatch(tok[0], ReportWords);
+	if (k < 0) return error_setInpError(ERR_KEYWORD, tok[0]);
+	switch (k)
+	{
+	case 0: // Input
+		m = findmatch(tok[1], NoYesWords);
+		if (m == YES) _rptFlags.input = TRUE;
+		else if (m == NO)  _rptFlags.input = FALSE;
+		else                 return error_setInpError(ERR_KEYWORD, tok[1]);
+		return 0;
+
+	case 1: // Continuity
+		m = findmatch(tok[1], NoYesWords);
+		if (m == YES) _rptFlags.continuity = TRUE;
+		else if (m == NO)  _rptFlags.continuity = FALSE;
+		else                 return error_setInpError(ERR_KEYWORD, tok[1]);
+		return 0;
+
+	case 2: // Flow Statistics
+		m = findmatch(tok[1], NoYesWords);
+		if (m == YES) _rptFlags.flowStats = TRUE;
+		else if (m == NO)  _rptFlags.flowStats = FALSE;
+		else                 return error_setInpError(ERR_KEYWORD, tok[1]);
+		return 0;
+
+	case 3: // Controls
+		m = findmatch(tok[1], NoYesWords);
+		if (m == YES) _rptFlags.controls = TRUE;
+		else if (m == NO)  _rptFlags.controls = FALSE;
+		else                 return error_setInpError(ERR_KEYWORD, tok[1]);
+		return 0;
+
+	case 4:  m = SUBCATCH;  break;  // Subcatchments
+	case 5:  m = NODE;      break;  // Nodes
+	case 6:  m = LINK;      break;  // Links
+
+	case 7: // Node Statistics
+		m = findmatch(tok[1], NoYesWords);
+		if (m == YES) _rptFlags.nodeStats = TRUE;
+		else if (m == NO)  _rptFlags.nodeStats = FALSE;
+		else                 return error_setInpError(ERR_KEYWORD, tok[1]);
+		return 0;
+
+	default: return error_setInpError(ERR_KEYWORD, tok[1]);
+	}
+	k = (char)findmatch(tok[1], NoneAllWords);
+	if (k < 0)
+	{
+		k = SOME;
+		for (t = 1; t < ntoks; t++)
+		{
+			j = ProjectFindObject(m, tok[t]);
+			if (j < 0) return error_setInpError(ERR_NAME, tok[t]);
+			switch (m)
+			{
+			case SUBCATCH:  _subcatches[j].rptFlag = TRUE;  break;
+			case NODE:      _nodes[j].rptFlag = TRUE;  break;
+			//case LINK:      _links[j].rptFlag = TRUE;  break;
+			}
+		}
+	}
+	switch (m)
+	{
+	case SUBCATCH: _rptFlags.subcatchments = k;  break;
+	case NODE:     _rptFlags.nodes = k;  break;
+	case LINK:     _rptFlags.links = k;  break;
+	}
+	return 0;
 }
 
 
@@ -2304,6 +2397,148 @@ int  SWMMLoader::GetTokens(char *s)
 	}
 	return(n);
 }
+
+void SWMMLoader::SetDefaults()
+//
+//  Input:   none
+//  Output:  none
+//  Purpose: assigns default values to project variables.
+//
+{
+	int i, j;
+
+	// Project title & temp. file path
+	//for (i = 0; i < MAXTITLE; i++) strcpy(Title[i], "");
+	//strcpy(TempDir, ""); //TODO add title
+
+	// Interface files
+	//Frain.mode = SCRATCH_FILE;     // Use scratch rainfall file
+	//Fclimate.mode = NO_FILE;
+	//Frunoff.mode = NO_FILE;
+	//Frdii.mode = NO_FILE;
+	//Fhotstart1.mode = NO_FILE;
+	//Fhotstart2.mode = NO_FILE;
+	//Finflows.mode = NO_FILE;
+	//Foutflows.mode = NO_FILE;
+	//Frain.file = NULL;
+	//Fclimate.file = NULL;
+	//Frunoff.file = NULL;
+	//Frdii.file = NULL;
+	//Fhotstart1.file = NULL;
+	//Fhotstart2.file = NULL;
+	//Finflows.file = NULL;
+	//Foutflows.file = NULL;
+	//Fout.file = NULL;
+	//Fout.mode = NO_FILE;
+
+	// Analysis options
+	_aoptions.UnitSystem = US;               // US unit system
+	_aoptions.FlowUnits = CFS;              // CFS flow units
+	_aoptions.InfilModel = HORTON;           // Horton infiltration method
+	_aoptions.RouteModel = KW;               // Kin. wave flow routing method
+	_aoptions.AllowPonding = FALSE;            // No ponding at nodes
+	_aoptions.InertDamping = SOME;             // Partial inertial damping
+	_aoptions.NormalFlowLtd = BOTH;             // Default normal flow limitation
+	_aoptions.ForceMainEqn = H_W;              // Hazen-Williams eqn. for force mains
+	_aoptions.LinkOffsets = DEPTH_OFFSET;     // Use depth for link offsets
+	_aoptions.LengtheningStep = 0;                // No lengthening of conduits
+	_aoptions.CourantFactor = 0.0;              // No variable time step 
+	_aoptions.MinSurfArea = 0.0;              // Force use of default min. surface area
+	_aoptions.SkipSteadyState = FALSE;            // Do flow routing in steady state periods 
+	_aoptions.IgnoreRainfall = FALSE;            // Analyze rainfall/runoff
+	_aoptions.IgnoreRDII = FALSE;            // Analyze RDII                         //(5.1.004)
+	_aoptions.IgnoreSnowmelt = FALSE;            // Analyze snowmelt 
+	_aoptions.IgnoreGwater = FALSE;            // Analyze groundwater 
+	_aoptions.IgnoreRouting = FALSE;            // Analyze flow routing
+	_aoptions.IgnoreQuality = FALSE;            // Analyze water quality
+	_aoptions.WetStep = 300;              // Runoff wet time step (secs)
+	_aoptions.DryStep = 3600;             // Runoff dry time step (secs)
+	_aoptions.RouteStep = 300.0;            // Routing time step (secs)
+	_aoptions.MinRouteStep = 0.5;              // Minimum variable time step (sec)     //(5.1.008)
+	_aoptions.ReportStep = 900;              // Reporting time step (secs)
+	_aoptions.StartDryDays = 0.0;              // Antecedent dry days
+	_aoptions.MaxTrials = 0;                // Force use of default max. trials 
+	_aoptions.HeadTol = 0.0;              // Force use of default head tolerance
+	_aoptions.SysFlowTol = 0.05;             // System flow tolerance for steady state
+	_aoptions.LatFlowTol = 0.05;             // Lateral flow tolerance for steady state
+	_aoptions.NumThreads = 0;                // Number of parallel threads to use
+
+	// Deprecated options
+	_aoptions.SlopeWeighting = TRUE;             // Use slope weighting 
+	_aoptions.Compatibility = SWMM4;            // Use SWMM 4 up/dn weighting method
+
+	// Starting & ending date/time
+	_timelist.StartDate = datetime_encodeDate(2004, 1, 1);
+	_timelist.StartTime = datetime_encodeTime(0, 0, 0);
+	_timelist.StartDateTime = _timelist.StartDate + _timelist.StartTime;
+	_timelist.EndDate = _timelist.StartDate;
+	_timelist.EndTime = 0.0;
+	_timelist.ReportStartDate = NO_DATE;
+	_timelist.ReportStartTime = NO_DATE;
+	//_timelist.SweepStart = 1;
+	//_timelist.SweepEnd = 365;
+
+	// Reporting options
+	_rptFlags.input = FALSE;
+	_rptFlags.continuity = TRUE;
+	_rptFlags.flowStats = TRUE;
+	_rptFlags.controls = FALSE;
+	_rptFlags.subcatchments = FALSE;
+	_rptFlags.nodes = FALSE;
+	_rptFlags.links = FALSE;
+	_rptFlags.nodeStats = FALSE;
+
+	// Temperature data
+	//Temp.dataSource = NO_TEMP;
+	//Temp.tSeries = -1;
+	//Temp.ta = 70.0;
+	//Temp.elev = 0.0;
+	//Temp.anglat = 40.0;
+	//Temp.dtlong = 0.0;
+	//Temp.tmax = MISSING;
+
+	// Wind speed data
+	//Wind.type = MONTHLY_WIND;
+	//for (i = 0; i<12; i++) Wind.aws[i] = 0.0;
+
+	// Snowmelt parameters
+	//Snow.snotmp = 34.0;
+	//Snow.tipm = 0.5;
+	//Snow.rnm = 0.6;
+
+	// Snow areal depletion curves for pervious and impervious surfaces
+	//for (i = 0; i<2; i++)
+	//{
+	//	for (j = 0; j<10; j++) Snow.adc[i][j] = 1.0;
+	//}
+
+	// Evaporation rates
+	_evap.type = CONSTANT_EVAP;
+	for (i = 0; i<12; i++)
+	{
+		_evap.monthlyEvap[i] = 0.0;
+		_evap.panCoeff[i] = 1.0;
+	}
+	_evap.recoveryPattern = -1;
+	_evap.recoveryFactor = 1.0;
+	_evap.tSeries = -1;
+	_evap.dryOnly = FALSE;
+
+	////  Following code segment added to release 5.1.007.  ////                   //(5.1.007)
+	////
+	// Climate adjustments
+	//for (i = 0; i < 12; i++)
+	//{
+	//	Adjust.temp[i] = 0.0;   // additive adjustments
+	//	Adjust.evap[i] = 0.0;   // additive adjustments
+	//	Adjust.rain[i] = 1.0;   // multiplicative adjustments
+	//	Adjust.hydcon[i] = 1.0; // hyd. conductivity adjustments                //(5.1.008)
+	//}
+	//Adjust.rainFactor = 1.0;
+	//Adjust.hydconFactor = 1.0;                                                  //(5.1.008)
+	//////
+}
+
 
 int SWMMLoader::SetSubcatch(int index, double fracimperv)
 //Format:

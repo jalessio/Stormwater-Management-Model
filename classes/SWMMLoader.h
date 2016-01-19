@@ -31,8 +31,7 @@ extern int findmatch(char *s, char *keyword[]);
 
 extern double UCF(int u);
 
-extern void InitPointers();
-extern void SetDefaults();
+
 extern void ProjectCreateHashTables();
 extern HTtable** ProjectGetHTable();
 
@@ -96,6 +95,9 @@ public:
 	// access evap info
 	TEvap GetEvap();
 
+	// access report flags
+	TRptFlags GetRptFlags();
+
 	// access lid info
 	int GetLidCount() const;
 	TLidGroup* GetLidGroups();
@@ -142,6 +144,7 @@ protected:
 	TLidProc*  _lidProcs;            // array of LID processes
 	TLidGroup* _lidGroups;           // array of LID process groups -- defined in lid.c in original swmm
 
+	TRptFlags _rptFlags;
 
 	//structs
 	AnalysisOptions _aoptions; 
@@ -170,6 +173,7 @@ protected:
 	int ProjectFindObject(int type, char *id);
 	int ProjectAddObject(int type, char *id, int n);
 	char *ProjectFindID(int type, char *id);
+	void SetDefaults();
 
 	//utility functions - scraped from gage.c
 	int ReadGageParams(int j, char* tok[], int ntoks);
@@ -193,6 +197,9 @@ protected:
 	int InfilReadParams(int m, char* tok[], int ntoks);
 	int HortonSetParams(THorton *infil, double p[]);
 	int GrnamptSetParams(TGrnAmpt *infil, double p[]);
+
+	//utility functions - scraped from report.c
+	int ReportReadOptions(char* tok[], int ntoks);
 
 	//utility functions - scraped from lid.c
 	void LidCreate(int lidCount, int subcatchCount);
