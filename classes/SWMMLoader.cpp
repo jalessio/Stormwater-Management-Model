@@ -2432,40 +2432,40 @@ void SWMMLoader::SetDefaults()
 	//Fout.mode = NO_FILE;
 
 	// Analysis options
-	_aoptions.UnitSystem = US;               // US unit system
-	_aoptions.FlowUnits = CFS;              // CFS flow units
-	_aoptions.InfilModel = HORTON;           // Horton infiltration method
-	_aoptions.RouteModel = KW;               // Kin. wave flow routing method
-	_aoptions.AllowPonding = FALSE;            // No ponding at nodes
-	_aoptions.InertDamping = SOME;             // Partial inertial damping
-	_aoptions.NormalFlowLtd = BOTH;             // Default normal flow limitation
-	_aoptions.ForceMainEqn = H_W;              // Hazen-Williams eqn. for force mains
-	_aoptions.LinkOffsets = DEPTH_OFFSET;     // Use depth for link offsets
+	_aoptions.UnitSystem      = US;               // US unit system
+	_aoptions.FlowUnits       = CFS;              // CFS flow units
+	_aoptions.InfilModel      = HORTON;           // Horton infiltration method
+	_aoptions.RouteModel      = KW;               // Kin. wave flow routing method
+	_aoptions.AllowPonding    = FALSE;            // No ponding at nodes
+	_aoptions.InertDamping    = SOME;             // Partial inertial damping
+	_aoptions.NormalFlowLtd   = BOTH;             // Default normal flow limitation
+	_aoptions.ForceMainEqn    = H_W;              // Hazen-Williams eqn. for force mains
+	_aoptions.LinkOffsets     = DEPTH_OFFSET;     // Use depth for link offsets
 	_aoptions.LengtheningStep = 0;                // No lengthening of conduits
-	_aoptions.CourantFactor = 0.0;              // No variable time step 
-	_aoptions.MinSurfArea = 0.0;              // Force use of default min. surface area
+	_aoptions.CourantFactor   = 0.0;              // No variable time step 
+	_aoptions.MinSurfArea     = 0.0;              // Force use of default min. surface area
 	_aoptions.SkipSteadyState = FALSE;            // Do flow routing in steady state periods 
-	_aoptions.IgnoreRainfall = FALSE;            // Analyze rainfall/runoff
-	_aoptions.IgnoreRDII = FALSE;            // Analyze RDII                         //(5.1.004)
-	_aoptions.IgnoreSnowmelt = FALSE;            // Analyze snowmelt 
-	_aoptions.IgnoreGwater = FALSE;            // Analyze groundwater 
-	_aoptions.IgnoreRouting = FALSE;            // Analyze flow routing
-	_aoptions.IgnoreQuality = FALSE;            // Analyze water quality
-	_aoptions.WetStep = 300;              // Runoff wet time step (secs)
-	_aoptions.DryStep = 3600;             // Runoff dry time step (secs)
-	_aoptions.RouteStep = 300.0;            // Routing time step (secs)
-	_aoptions.MinRouteStep = 0.5;              // Minimum variable time step (sec)     //(5.1.008)
-	_aoptions.ReportStep = 900;              // Reporting time step (secs)
-	_aoptions.StartDryDays = 0.0;              // Antecedent dry days
-	_aoptions.MaxTrials = 0;                // Force use of default max. trials 
-	_aoptions.HeadTol = 0.0;              // Force use of default head tolerance
-	_aoptions.SysFlowTol = 0.05;             // System flow tolerance for steady state
-	_aoptions.LatFlowTol = 0.05;             // Lateral flow tolerance for steady state
-	_aoptions.NumThreads = 0;                // Number of parallel threads to use
+	_aoptions.IgnoreRainfall  = FALSE;            // Analyze rainfall/runoff
+	_aoptions.IgnoreRDII      = FALSE;            // Analyze RDII                         //(5.1.004)
+	_aoptions.IgnoreSnowmelt  = FALSE;            // Analyze snowmelt 
+	_aoptions.IgnoreGwater    = FALSE;            // Analyze groundwater 
+	_aoptions.IgnoreRouting   = FALSE;            // Analyze flow routing
+	_aoptions.IgnoreQuality   = FALSE;            // Analyze water quality
+	_aoptions.WetStep         = 300;              // Runoff wet time step (secs)
+	_aoptions.DryStep         = 3600;             // Runoff dry time step (secs)
+	_aoptions.RouteStep       = 300.0;            // Routing time step (secs)
+	_aoptions.MinRouteStep    = 0.5;              // Minimum variable time step (sec)     //(5.1.008)
+	_aoptions.ReportStep      = 900;              // Reporting time step (secs)
+	_aoptions.StartDryDays    = 0.0;              // Antecedent dry days
+	_aoptions.MaxTrials       = 0;                // Force use of default max. trials 
+	_aoptions.HeadTol         = 0.0;              // Force use of default head tolerance
+	_aoptions.SysFlowTol      = 0.05;             // System flow tolerance for steady state
+	_aoptions.LatFlowTol      = 0.05;             // Lateral flow tolerance for steady state
+	_aoptions.NumThreads      = 0;                // Number of parallel threads to use
 
 	// Deprecated options
-	_aoptions.SlopeWeighting = TRUE;             // Use slope weighting 
-	_aoptions.Compatibility = SWMM4;            // Use SWMM 4 up/dn weighting method
+	_aoptions.SlopeWeighting  = TRUE;             // Use slope weighting 
+	_aoptions.Compatibility   = SWMM4;            // Use SWMM 4 up/dn weighting method
 
 	// Starting & ending date/time
 	_timelist.StartDate = datetime_encodeDate(2004, 1, 1);
@@ -2475,8 +2475,8 @@ void SWMMLoader::SetDefaults()
 	_timelist.EndTime = 0.0;
 	_timelist.ReportStartDate = NO_DATE;
 	_timelist.ReportStartTime = NO_DATE;
-	//_timelist.SweepStart = 1;
-	//_timelist.SweepEnd = 365;
+	_aoptions.SweepStart = 1;
+	_aoptions.SweepEnd = 365;
 
 	// Reporting options
 	_rptFlags.input = FALSE;
