@@ -60,6 +60,7 @@ void projectload_readinput(char *path)
 	Nnodes[OUTFALL] = swmmloader.GetOutfallCount();
 	Nobjects[TSERIES] = swmmloader.GetTSeriesCount();
 	Nobjects[LID] = swmmloader.GetLidCount();
+	Nobjects[LANDUSE] = swmmloader.GetLanduseCount();
 
 	// allocate memory for each category of object
 	if (ErrorCode) return;
@@ -76,7 +77,7 @@ void projectload_readinput(char *path)
 	//Weir = (TWeir *)calloc(Nlinks[WEIR], sizeof(TWeir));
 	//Outlet = (TOutlet *)calloc(Nlinks[OUTLET], sizeof(TOutlet));
 	//Pollut = (TPollut *)calloc(Nobjects[POLLUT], sizeof(TPollut));
-	//Landuse = (TLanduse *)calloc(Nobjects[LANDUSE], sizeof(TLanduse));
+	Landuse = (TLanduse *)calloc(Nobjects[LANDUSE], sizeof(TLanduse));
 	Pattern = (TPattern *)calloc(Nobjects[TIMEPATTERN], sizeof(TPattern));
 	//Curve = (TTable *)calloc(Nobjects[CURVE], sizeof(TTable));
 	Tseries = (TTable *)calloc(Nobjects[TSERIES], sizeof(TTable));
@@ -244,21 +245,21 @@ void projectload_readinput(char *path)
 	}
 
 	// --- initialize subcatchment properties
-	//for (j = 0; j < Nobjects[SUBCATCH]; j++)
-	//{
-	//	Subcatch[j].outSubcatch = -1;
-	//	Subcatch[j].outNode = -1;
-	//	Subcatch[j].infil = -1;
-	//	Subcatch[j].groundwater = NULL;
-	//	Subcatch[j].gwLatFlowExpr = NULL;                                      //(5.1.007)
-	//	Subcatch[j].gwDeepFlowExpr = NULL;                                     //(5.1.007)
-	//	Subcatch[j].snowpack = NULL;
-	//	Subcatch[j].lidArea = 0.0;
-	//	for (k = 0; k < Nobjects[POLLUT]; k++)
-	//	{
-	//		Subcatch[j].initBuildup[k] = 0.0;
-	//	}
-	//}
+	for (j = 0; j < Nobjects[SUBCATCH]; j++)
+	{
+		Subcatch[j].outSubcatch = -1;
+		Subcatch[j].outNode = -1;
+		Subcatch[j].infil = -1;
+		Subcatch[j].groundwater = NULL;
+		Subcatch[j].gwLatFlowExpr = NULL;                                      //(5.1.007)
+		Subcatch[j].gwDeepFlowExpr = NULL;                                     //(5.1.007)
+		Subcatch[j].snowpack = NULL;
+		Subcatch[j].lidArea = 0.0;
+		for (k = 0; k < Nobjects[POLLUT]; k++)
+		{
+			Subcatch[j].initBuildup[k] = 0.0;
+		}
+	}
 
 	// --- initialize RDII unit hydrograph properties
 	for (j = 0; j < Nobjects[UNITHYD]; j++) rdii_initUnitHyd(j);
@@ -332,7 +333,6 @@ void projectload_readinput(char *path)
 	_evap = swmmloader.GetEvap(); // TODO what's the default? and need to check if it exists
 	Evap = _evap;
 
-	// maybe uses externs instead
 	TLidGroup* _lidgroups;
 	extern TLidGroup* LidGroups;
 	_lidgroups = swmmloader.GetLidGroups();
@@ -345,6 +345,10 @@ void projectload_readinput(char *path)
 		_lidprocs = swmmloader.GetLidProcs();
 		memcpy(LidProcs, _lidprocs, sizeof(TLidProc)*Nobjects[LID]);
 	}
+
+	TLanduse* _landuse;
+	_landuse = swmmloader.GetLanduse();
+	memcpy(Landuse, _landuse, sizeof(TLanduse)*Nobjects[LANDUSE]);
 }
 
 // initPointers() is wrapped by InitPointers()

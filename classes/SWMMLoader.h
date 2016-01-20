@@ -103,6 +103,10 @@ public:
 	TLidGroup* GetLidGroups();
 	TLidProc* GetLidProcs();
 
+	// access landuse info
+	int GetLanduseCount() const;
+	TLanduse* GetLanduse();
+
 	//GetCounts for all types
 	int* GetAllCounts();
 
@@ -143,7 +147,8 @@ protected:
 	TGrnAmpt* _gainfil;
 	TLidProc*  _lidProcs;            // array of LID processes
 	TLidGroup* _lidGroups;           // array of LID process groups -- defined in lid.c in original swmm
-
+	TLanduse* _landuse;
+	
 	TRptFlags _rptFlags;
 
 	//structs
@@ -215,6 +220,9 @@ protected:
 
 	//utility functions - scraped from climate.c
 	int ClimateReadEvapParams(char* tok[], int ntoks);
+
+	//utility functions - scraped from landuse.c
+	int LanduseReadParams(int j, char* tok[], int ntoks);
 };
 
 #endif

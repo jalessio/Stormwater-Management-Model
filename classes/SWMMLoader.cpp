@@ -217,6 +217,16 @@ TLidProc* SWMMLoader::GetLidProcs()
 	return _lidProcs;
 }
 
+int SWMMLoader::GetLanduseCount() const
+{
+	return _Nobjects[LANDUSE];
+}
+
+TLanduse* SWMMLoader::GetLanduse()
+{
+	return _landuse;
+}
+
 AnalysisOptions SWMMLoader::GetAnalysisOptions()
 {
 	return _aoptions;
@@ -762,8 +772,6 @@ void SWMMLoader::ClearObjArrays()
 		// might add more infiltration options later
 	}
 
-
-
 	delete[] _gages;
 	delete[] _subcatches;
 	delete[] _nodes;
@@ -771,6 +779,7 @@ void SWMMLoader::ClearObjArrays()
 	delete[] _tseries;
 	delete[] _lidGroups;
 	delete[] _lidProcs;
+	delete[] _landuse;
 
 	_gages = NULL;
 	_subcatches = NULL;
@@ -779,6 +788,7 @@ void SWMMLoader::ClearObjArrays()
 	_tseries = NULL;
 	_lidGroups = NULL;
 	_lidProcs = NULL;
+	_landuse = NULL;
 
 }
 
@@ -795,8 +805,9 @@ void SWMMLoader::AllocObjArrays()
 	_subcatches = new TSubcatch[_Nobjects[SUBCATCH]]();
 	_nodes = new TNode[_Nobjects[NODE]]();
 	_outfalls = new TOutfall[_Nobjects[OUTFALL]]();
+	_landuse = new TLanduse[_Nobjects[LANDUSE]]();
 	_tseries = new TTable[_Nobjects[TSERIES]]();
-
+	
 	// --- allocate memory for infiltration data
 	InfilCreate(_Nobjects[SUBCATCH], _aoptions.InfilModel); // uses new
 
@@ -936,6 +947,7 @@ int SWMMLoader::ReadData()
 
 int  SWMMLoader::ParseLine(int sect, char *line)
 {
+	//TODO order this the same as swmm's parseline
 	int j, err;
 	switch (sect)
 	{
@@ -982,8 +994,53 @@ int  SWMMLoader::ParseLine(int sect, char *line)
 	case s_REPORT:
 		return ReportReadOptions(_Tok, _Ntokens);
 
+	case s_LANDUSE:
+		j = _Mobjects[LANDUSE];
+		err = landuse_readParams(j, _Tok, _Ntokens);
+		_Mobjects[LANDUSE]++;
+		return err;
+
 	default: return 0;
 	}
+}
+
+int  SWMMLoader::LanduseReadParams(int j, char* tok[], int ntoks)
+//
+//  Input:   j = land use index
+//           tok[] = array of string tokens
+//           ntoks = number of tokens
+//  Output:  returns an error code
+//  Purpose: reads landuse parameters from a tokenized line of input.
+//
+//  Data format is:
+//    landuseID  (sweepInterval sweepRemoval sweepDays0)
+//
+{
+	char *id;
+	if (ntoks < 1) return error_setInpError(ERR_ITEMS, "");
+	id = project_findID(LANDUSE, tok[0]);
+	if (id == NULL) return error_setInpError(ERR_NAME, tok[0]);
+	_landuse[j].ID = id;
+	if (ntoks > 1)
+	{
+		if (ntoks < 4) return error_setInpError(ERR_ITEMS, "");
+		if (!getDouble(tok[1], &_landuse[j].sweepInterval))
+			return error_setInpError(ERR_NUMBER, tok[1]);
+		if (!getDouble(tok[2], &_landuse[j].sweepRemoval))
+			return error_setInpError(ERR_NUMBER, tok[2]);
+		if (!getDouble(tok[3], &_landuse[j].sweepDays0))
+			return error_setInpError(ERR_NUMBER, tok[3]);
+	}
+	else
+	{
+		_landuse[j].sweepInterval = 0.0;
+		_landuse[j].sweepRemoval = 0.0;
+		_landuse[j].sweepDays0 = 0.0;
+	}
+	if (_landuse[j].sweepRemoval < 0.0
+		|| _landuse[j].sweepRemoval > 1.0)
+		return error_setInpError(ERR_NUMBER, tok[2]);
+	return 0;
 }
 
 int SWMMLoader::ReportReadOptions(char* tok[], int ntoks)
