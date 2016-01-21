@@ -17,7 +17,7 @@ void projectload_readinput(char *path)
 {
 	// mimic project_readinput
 	SWMMLoader swmmloader(path);
-	int j, k, m;
+	int k, m;
 
 	HTtable** classHT;
 	HTtable** Htable;
@@ -198,7 +198,7 @@ void projectload_readinput(char *path)
 	//	Node[j].rdiiInflow = NULL;
 	//	Node[j].treatment = NULL;
 	//}
-	for (j = 0; j < Nobjects[LINK]; j++)
+	for (int j = 0; j < Nobjects[LINK]; j++)
 	{
 		Link[j].oldQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
 		Link[j].newQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
@@ -206,7 +206,7 @@ void projectload_readinput(char *path)
 	}
 
 	// --- allocate memory for land use buildup/washoff functions
-	for (j = 0; j < Nobjects[LANDUSE]; j++)
+	for (int j = 0; j < Nobjects[LANDUSE]; j++)
 	{
 		Landuse[j].buildupFunc =
 			(TBuildup *)calloc(Nobjects[POLLUT], sizeof(TBuildup));
@@ -227,7 +227,7 @@ void projectload_readinput(char *path)
 	//}
 
 	// --- initialize buildup & washoff functions
-	for (j = 0; j < Nobjects[LANDUSE]; j++)
+	for (int j = 0; j < Nobjects[LANDUSE]; j++)
 	{
 		for (k = 0; k < Nobjects[POLLUT]; k++)
 		{
@@ -238,14 +238,14 @@ void projectload_readinput(char *path)
 	}
 
 	// --- initialize rain gage properties
-	for (j = 0; j < Nobjects[GAGE]; j++)
+	for (int j = 0; j < Nobjects[GAGE]; j++)
 	{
 		Gage[j].tSeries = -1;
 		strcpy(Gage[j].fname, "");
 	}
 
 	// --- initialize subcatchment properties
-	for (j = 0; j < Nobjects[SUBCATCH]; j++)
+	for (int j = 0; j < Nobjects[SUBCATCH]; j++)
 	{
 		Subcatch[j].outSubcatch = -1;
 		Subcatch[j].outNode = -1;
@@ -262,16 +262,16 @@ void projectload_readinput(char *path)
 	}
 
 	// --- initialize RDII unit hydrograph properties
-	for (j = 0; j < Nobjects[UNITHYD]; j++) rdii_initUnitHyd(j);
+	for (int j = 0; j < Nobjects[UNITHYD]; j++) rdii_initUnitHyd(j);
 
 	// --- initialize snowmelt properties
-	for (j = 0; j < Nobjects[SNOWMELT]; j++) snow_initSnowmelt(j);
+	for (int j = 0; j < Nobjects[SNOWMELT]; j++) snow_initSnowmelt(j);
 
 	// --- initialize storage node exfiltration                                //(5.1.007)
-	for (j = 0; j < Nnodes[STORAGE]; j++) Storage[j].exfil = NULL;             //(5.1.007)
+	for (int j = 0; j < Nnodes[STORAGE]; j++) Storage[j].exfil = NULL;             //(5.1.007)
 
 	// --- initialize link properties
-	for (j = 0; j < Nobjects[LINK]; j++)
+	for (int j = 0; j < Nobjects[LINK]; j++)
 	{
 		Link[j].xsect.type = -1;
 		Link[j].cLossInlet = 0.0;
@@ -279,17 +279,17 @@ void projectload_readinput(char *path)
 		Link[j].cLossAvg = 0.0;
 		Link[j].hasFlapGate = FALSE;
 	}
-	for (j = 0; j < Nlinks[PUMP]; j++) Pump[j].pumpCurve = -1;
+	for (int j = 0; j < Nlinks[PUMP]; j++) Pump[j].pumpCurve = -1;
 
 	// --- initialize reporting flags
-	for (j = 0; j < Nobjects[SUBCATCH]; j++) Subcatch[j].rptFlag = FALSE;
-	for (j = 0; j < Nobjects[NODE]; j++) Node[j].rptFlag = FALSE;
-	for (j = 0; j < Nobjects[LINK]; j++) Link[j].rptFlag = FALSE;
+	for (int j = 0; j < Nobjects[SUBCATCH]; j++) Subcatch[j].rptFlag = FALSE;
+	for (int j = 0; j < Nobjects[NODE]; j++) Node[j].rptFlag = FALSE;
+	for (int j = 0; j < Nobjects[LINK]; j++) Link[j].rptFlag = FALSE;
 
 	//  --- initialize curves, time series, and time patterns
-	for (j = 0; j < Nobjects[CURVE]; j++)   table_init(&Curve[j]);
-	for (j = 0; j < Nobjects[TSERIES]; j++) table_init(&Tseries[j]);
-	for (j = 0; j < Nobjects[TIMEPATTERN]; j++) inflow_initDwfPattern(j);
+	for (int j = 0; j < Nobjects[CURVE]; j++)   table_init(&Curve[j]);
+	for (int j = 0; j < Nobjects[TSERIES]; j++) table_init(&Tseries[j]);
+	for (int j = 0; j < Nobjects[TIMEPATTERN]; j++) inflow_initDwfPattern(j);
 
 
 
@@ -333,18 +333,33 @@ void projectload_readinput(char *path)
 	_evap = swmmloader.GetEvap(); // TODO what's the default? and need to check if it exists
 	Evap = _evap;
 
-	TLidGroup* _lidgroups;
-	extern TLidGroup* LidGroups;
-	_lidgroups = swmmloader.GetLidGroups();
-	memcpy(LidGroups, _lidgroups, sizeof(TLidGroup)*Nobjects[LID]);
+	// have to be careful with LIDs
+	// need to set the next properly in the LidGroups LidList when a given subcatch has multiple associated LIDs
 
+	// set LidCount and GroupCount (now externs in lid.c)
+	LidCount = Nobjects[LID];
+	GroupCount = Nobjects[SUBCATCH];
+
+	// lidprocs first
 	TLidProc* _lidprocs;
+	_lidprocs = swmmloader.GetLidProcs();
 	extern TLidProc* LidProcs;
-	if(Nobjects[LID] > 0)
+	memcpy(LidProcs, _lidprocs, sizeof(TLidProc)*Nobjects[LID]);
+
+	TLidGroup* _lidgroups;
+	_lidgroups = swmmloader.GetLidGroups();
+
+	// call new function in lid.c similar to AddLidUnit()
+	for (int j = 0; j < Nobjects[SUBCATCH]; j++)
 	{
-		_lidprocs = swmmloader.GetLidProcs();
-		memcpy(LidProcs, _lidprocs, sizeof(TLidProc)*Nobjects[LID]);
+		if (_lidgroups[j] != NULL)	
+		{ 
+			lid_copyunit(j, _lidgroups[j]);
+		}
 	}
+
+	// need to allocate memory for lidList and copy it separately -- right now LidGroups[i].lidList is 
+	// referring to _lidgroups[i].lidList
 
 	TLanduse* _landuse;
 	_landuse = swmmloader.GetLanduse();

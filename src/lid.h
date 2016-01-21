@@ -24,6 +24,10 @@
 #include <string.h>
 #include "infil.h"
 
+// Counts moved from lid.c
+extern int LidCount;
+extern int GroupCount;
+
 //-----------------------------------------------------------------------------
 //  Enumerations
 //-----------------------------------------------------------------------------
@@ -255,5 +259,7 @@ void     lidproc_saveResults(TLidUnit* lidUnit, TLidProc* lidProc,             /
 
 TLidGroup* GetLidGroups(void);
 TLidProc* GetLidProcs(void);
+
+int lid_copyunit(int j, TLidGroup _lidgroup);
 
 #endif

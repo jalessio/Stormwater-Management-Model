@@ -100,10 +100,10 @@ NULL };
 //-----------------------------------------------------------------------------
 //  Shared Variables
 //-----------------------------------------------------------------------------
-TLidProc*  LidProcs;            // array of LID processes
-static int        LidCount;            // number of LID processes
-TLidGroup* LidGroups;           // array of LID process groups
-static int        GroupCount;          // number of LID groups (subcatchments)
+TLidProc*  LidProcs;				   // array of LID processes
+int        LidCount = 0;			   // number of LID processes
+TLidGroup* LidGroups;				   // array of LID process groups
+int        GroupCount = 0;			   // number of LID groups (subcatchments)
 
 static double     EvapRate;            // evaporation rate (ft/s)
 static double     NativeInfil;         // native soil infil. rate (ft/s)
@@ -1851,4 +1851,71 @@ fprintf(f,
 
     //... initialize LID dryness state                                         //(5.1.008)
     lidUnit->rptFile->wasDry = TRUE;                                           //(5.1.010)
+}
+
+
+//int (int j, int k, int n, double x[], char* fname,
+//	int drainSubcatch, int drainNode)                                          //(5.1.008)
+int lid_copyunit(int j, TLidGroup _lidgroup)
+//
+//  Purpose: adds an LID unit to a subcatchment's LID group.
+//  Input:   j = subcatchment index
+//           k = LID control index
+//           n = number of replicate units
+//           x = LID unit's parameters
+//           fname = name of detailed performance report file
+//           drainSubcatch = index of subcatchment receiving underdrain flow   //(5.1.008)
+//           drainNode = index of node receiving underdrain flow               //(5.1.008)
+//  Output:  returns an error code
+//
+{
+	TLidUnit*  lidUnit;
+	TLidList*  lidList;
+	TLidGroup  lidGroup;
+
+	//... create a LID group (pointer to an LidGroup struct)
+	//    if one doesn't already exist
+	lidGroup = LidGroups[j];
+	if (!lidGroup)
+	{
+		lidGroup = (struct LidGroup *) malloc(sizeof(struct LidGroup));
+		//if (!lidGroup) return error_setInpError(ERR_MEMORY, "");
+		lidGroup->lidList = NULL;
+		LidGroups[j] = lidGroup;
+	}
+
+	//... create a new LID unit to add to the group
+	lidUnit = (TLidUnit *)malloc(sizeof(TLidUnit));
+	//if (!lidUnit) return error_setInpError(ERR_MEMORY, "");
+	lidUnit->rptFile = NULL;
+
+	//... add the LID unit to the group
+	lidList = (TLidList *)malloc(sizeof(TLidList));
+	if (!lidList)
+	{
+		free(lidUnit);
+		return error_setInpError(ERR_MEMORY, "");
+	}
+	lidList->lidUnit = lidUnit;
+	lidList->nextLidUnit = lidGroup->lidList;
+	lidGroup->lidList = lidList;
+
+	//... assign parameter values to LID unit
+	lidUnit->lidIndex      = _lidgroup->lidList->lidUnit->lidIndex;
+	lidUnit->number        = _lidgroup->lidList->lidUnit->number;
+	lidUnit->area          = _lidgroup->lidList->lidUnit->area;
+	lidUnit->fullWidth     = _lidgroup->lidList->lidUnit->fullWidth;
+	lidUnit->initSat       = _lidgroup->lidList->lidUnit->initSat;
+	lidUnit->fromImperv    = _lidgroup->lidList->lidUnit->fromImperv;
+	lidUnit->toPerv        = _lidgroup->lidList->lidUnit->toPerv;
+	lidUnit->drainSubcatch = _lidgroup->lidList->lidUnit->drainSubcatch;           //(5.1.008)
+	lidUnit->drainNode     = _lidgroup->lidList->lidUnit->drainNode;               //(5.1.008)
+
+	//... open report file if it was supplied
+	//if (fname != NULL)
+	//{
+	//	if (!createLidRptFile(lidUnit, fname))
+	//		return error_setInpError(ERR_RPT_FILE, fname);
+	//}
+	//return 0;
 }

@@ -777,9 +777,20 @@ void SWMMLoader::ClearObjArrays()
 	delete[] _nodes;
 	delete[] _outfalls;
 	delete[] _tseries;
+	delete[] _landuse;
+
+
+
+	int j;
+	if (_lidGroups != NULL)
+	{ 
+		for (j = 0; j < _Nobjects[LID]; j++) DeleteLidGroup(j); 
+	}
 	delete[] _lidGroups;
 	delete[] _lidProcs;
-	delete[] _landuse;
+	_GroupCount = 0;
+	_LidCount = 0;
+
 
 	_gages = NULL;
 	_subcatches = NULL;
@@ -947,7 +958,6 @@ int SWMMLoader::ReadData()
 
 int  SWMMLoader::ParseLine(int sect, char *line)
 {
-	//TODO order this the same as swmm's parseline
 	int j, err;
 	switch (sect)
 	{
@@ -982,23 +992,23 @@ int  SWMMLoader::ParseLine(int sect, char *line)
 	case s_OUTFALL:
 		return ReadNode(OUTFALL);
 
+	case s_LANDUSE:
+		j = _Mobjects[LANDUSE];
+		err = LanduseReadParams(j, _Tok, _Ntokens);
+		_Mobjects[LANDUSE]++;
+		return err;
+
 	case s_TIMESERIES:
 		return TableReadTimeseries(_Tok, _Ntokens); 
+
+	case s_REPORT:
+		return ReportReadOptions(_Tok, _Ntokens);
 
 	case s_LID_CONTROL:
 		return LidReadProcParams(_Tok, _Ntokens);
 
 	case s_LID_USAGE:
 		return LidReadGroupParams(_Tok, _Ntokens);
-
-	case s_REPORT:
-		return ReportReadOptions(_Tok, _Ntokens);
-
-	case s_LANDUSE:
-		j = _Mobjects[LANDUSE];
-		err = landuse_readParams(j, _Tok, _Ntokens);
-		_Mobjects[LANDUSE]++;
-		return err;
 
 	default: return 0;
 	}
@@ -1829,12 +1839,18 @@ void SWMMLoader::LidCreate(int lidCount, int subcatchCount)
 		return;
 	}
 
-	//... initialize LID groups
-	for (j = 0; j < _GroupCount; j++) _lidGroups[j] = NULL;
+	/*... initialize LID groups
+	_GroupCount is _Nobjects[SUBCATCH]
+	each subcatch has a _lidGroups[subcatch index]
+	if a subcatch has no associated LIDs, _lidGroups[subcatch index] = NULL*/
+	for (j = 0; j < _GroupCount; j++) _lidGroups[j] = NULL; 
 
-	//... create LID objects
+	/*... create LID objects
+	_LidCount is the actual number of LIDs in the .inp file (_Nobjects[LID])
+	each LID is stored as a _lidProc[lid process index]
+	lid process indices are in the order listed in the [LID_CONTROLS] section of the .inp file*/
 	if (_LidCount == 0) return;
-	_lidProcs = new TLidProc[_LidCount]();
+	_lidProcs = new TLidProc[_LidCount]();		
 	if (_lidProcs == NULL)
 	{
 		_errCode = ERR_MEMORY;
@@ -2264,6 +2280,37 @@ int SWMMLoader::AddLidUnit(int j, int k, int n, double x[], char* fname,
 	//		return error_setInpError(ERR_RPT_FILE, fname);
 	//}
 	return 0;
+}
+
+void SWMMLoader::DeleteLidGroup(int j)
+//
+//  Purpose: frees all LID units associated with a subcatchment.
+//  Input:   j = group (or subcatchment) index
+//  Output:  none
+//
+{
+	TLidGroup  lidGroup = _lidGroups[j];
+	TLidList*  lidList;
+	TLidUnit*  lidUnit;
+	TLidList*  nextLidUnit;
+
+	if (lidGroup == NULL) return;
+	lidList = lidGroup->lidList;
+	while (lidList)
+	{
+		lidUnit = lidList->lidUnit;
+		if (lidUnit->rptFile)
+		{
+			if (lidUnit->rptFile->file) fclose(lidUnit->rptFile->file);
+			delete(lidUnit->rptFile);
+		}
+		nextLidUnit = lidList->nextLidUnit;
+		delete(lidUnit);
+		delete(lidList);
+		lidList = nextLidUnit;
+	}
+	delete(lidGroup);
+	_lidGroups[j] = NULL;
 }
 
 void SWMMLoader::InfilCreate(int subcatchCount, int model)

@@ -210,6 +210,7 @@ protected:
 	void LidCreate(int lidCount, int subcatchCount);
 	int LidReadProcParams(char* tok[], int ntoks);
 	int AddLidUnit(int j, int k, int n, double x[], char* fname, int drainSubcatch, int drainNode);
+	void DeleteLidGroup(int j);
 	int LidReadGroupParams(char* tok[], int ntoks);
 	int ReadSurfaceData(int j, char* toks[], int ntoks);
 	int ReadPavementData(int j, char* toks[], int ntoks);
