@@ -265,8 +265,12 @@ void SWMMLoader::ClearCounts()
 	for (i = 0; i<MAX_OBJ_TYPES; ++i)
 	{
 		_Nobjects[i] = 0;
-		_Nnodes[i] = 0;
 		_Mobjects[i] = 0;
+	}
+
+	for (i = 0; i < 4; ++i)
+	{
+		_Nnodes[i] = 0;
 		_Mnodes[i] = 0;
 	}
 }
