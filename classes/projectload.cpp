@@ -17,7 +17,7 @@ void projectload_readinput(char *path)
 {
 	// mimic project_readinput
 	SWMMLoader swmmloader(path);
-	int k, m;
+	int k;
 
 	HTtable** classHT;
 	HTtable** Htable;
@@ -368,13 +368,9 @@ void projectload_readinput(char *path)
 	memcpy(Landuse, _landuse, sizeof(TLanduse)*Nobjects[LANDUSE]);
 }
 
-// initPointers() is wrapped by InitPointers()
-// decide where to setDefaults() -- in project_open or in SWMMLoader?
-// setDefaults() is wrapped by SetDefaults()
-// change openFiles() to only open the report and binary files
-
 void projectload_open(char *f2, char* f3)
 {
+	// wrapped functions
 	InitPointers();
 	SetDefaults();
 

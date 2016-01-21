@@ -250,14 +250,14 @@ int main(int argc, char *argv[])
 	// to run modified SWMM
 
 	// one subcatchment:
-	//char *inputFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.inp";
-	//char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.rpt";
-	//char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\parkinglot_simple.out";;
-	//
+	//char *inputFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\parkinglot_simple.inp";
+	//char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\parkinglot_simple.rpt";
+	//char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\parkinglot_simple.out";;
+	
 	// LID:
-	//char *inputFile  = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\LID_bioretentialcell.inp";
-	//char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\LID_bioretentialcell.rpt";
-	//char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\LID_bioretentialcell.out";
+	char *inputFile  = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\LID_bioretentialcell.inp";
+	char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\LID_bioretentialcell.rpt";
+	char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\LID_bioretentialcell.out";
 
 	// 7 subcatchments:
 	//char *inputFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\Example1-Post.inp";
@@ -265,9 +265,9 @@ int main(int argc, char *argv[])
 	//char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\Example1-Post.out";
 
 	// different types of LIDs:
-	char *inputFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\Example4.inp";
-	char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\Example4.rpt";
-	char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\Example4.out";
+	//char *inputFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\Example4.inp";
+	//char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\Example4.rpt";
+	//char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\Example4.out";
 
 	char blank[] = "";
 	time_t start;
