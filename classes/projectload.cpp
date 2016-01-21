@@ -346,20 +346,22 @@ void projectload_readinput(char *path)
 	extern TLidProc* LidProcs;
 	memcpy(LidProcs, _lidprocs, sizeof(TLidProc)*Nobjects[LID]);
 
-	TLidGroup* _lidgroups;
+	TLidGroup* _lidgroups; 	// a lidGroup holds all the lidUnits associated with a given subcatchment
 	_lidgroups = swmmloader.GetLidGroups();
 
-	// call new function in lid.c similar to AddLidUnit()
 	for (int j = 0; j < Nobjects[SUBCATCH]; j++)
 	{
 		if (_lidgroups[j] != NULL)	
 		{ 
-			lid_copyunit(j, _lidgroups[j]);
+			lid_copyunit(j, _lidgroups[j]->lidList->lidUnit); 	// TLidUnit* lidUnit is a pointer so we have to copy it deeply
+			TLidList* testLidUnit = _lidgroups[j]->lidList->nextLidUnit; 
+			while (testLidUnit != NULL)				// check linked list for more lidUnits for this subcatch
+			{
+				lid_copyunit(j, _lidgroups[j]->lidList->nextLidUnit->lidUnit);
+				testLidUnit = testLidUnit->nextLidUnit;		
+			}
 		}
 	}
-
-	// need to allocate memory for lidList and copy it separately -- right now LidGroups[i].lidList is 
-	// referring to _lidgroups[i].lidList
 
 	TLanduse* _landuse;
 	_landuse = swmmloader.GetLanduse();

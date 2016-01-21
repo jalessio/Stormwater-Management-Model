@@ -1856,7 +1856,7 @@ fprintf(f,
 
 //int (int j, int k, int n, double x[], char* fname,
 //	int drainSubcatch, int drainNode)                                          //(5.1.008)
-int lid_copyunit(int j, TLidGroup _lidgroup)
+int lid_copyunit(int j, TLidUnit* _lidUnit)
 //
 //  Purpose: adds an LID unit to a subcatchment's LID group.
 //  Input:   j = subcatchment index
@@ -1872,6 +1872,7 @@ int lid_copyunit(int j, TLidGroup _lidgroup)
 	TLidUnit*  lidUnit;
 	TLidList*  lidList;
 	TLidGroup  lidGroup;
+
 
 	//... create a LID group (pointer to an LidGroup struct)
 	//    if one doesn't already exist
@@ -1901,15 +1902,15 @@ int lid_copyunit(int j, TLidGroup _lidgroup)
 	lidGroup->lidList = lidList;
 
 	//... assign parameter values to LID unit
-	lidUnit->lidIndex      = _lidgroup->lidList->lidUnit->lidIndex;
-	lidUnit->number        = _lidgroup->lidList->lidUnit->number;
-	lidUnit->area          = _lidgroup->lidList->lidUnit->area;
-	lidUnit->fullWidth     = _lidgroup->lidList->lidUnit->fullWidth;
-	lidUnit->initSat       = _lidgroup->lidList->lidUnit->initSat;
-	lidUnit->fromImperv    = _lidgroup->lidList->lidUnit->fromImperv;
-	lidUnit->toPerv        = _lidgroup->lidList->lidUnit->toPerv;
-	lidUnit->drainSubcatch = _lidgroup->lidList->lidUnit->drainSubcatch;           //(5.1.008)
-	lidUnit->drainNode     = _lidgroup->lidList->lidUnit->drainNode;               //(5.1.008)
+	lidUnit->lidIndex      = _lidUnit->lidIndex;
+	lidUnit->number        = _lidUnit->number;
+	lidUnit->area          = _lidUnit->area;
+	lidUnit->fullWidth     = _lidUnit->fullWidth;
+	lidUnit->initSat       = _lidUnit->initSat;
+	lidUnit->fromImperv    = _lidUnit->fromImperv;
+	lidUnit->toPerv        = _lidUnit->toPerv;
+	lidUnit->drainSubcatch = _lidUnit->drainSubcatch;           //(5.1.008)
+	lidUnit->drainNode     = _lidUnit->drainNode;               //(5.1.008)
 
 	//... open report file if it was supplied
 	//if (fname != NULL)
@@ -1918,4 +1919,5 @@ int lid_copyunit(int j, TLidGroup _lidgroup)
 	//		return error_setInpError(ERR_RPT_FILE, fname);
 	//}
 	//return 0;
+
 }

@@ -260,6 +260,6 @@ void     lidproc_saveResults(TLidUnit* lidUnit, TLidProc* lidProc,             /
 TLidGroup* GetLidGroups(void);
 TLidProc* GetLidProcs(void);
 
-int lid_copyunit(int j, TLidGroup _lidgroup);
+int lid_copyunit(int j, TLidUnit* _lidUnit);
 
 #endif
