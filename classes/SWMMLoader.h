@@ -115,6 +115,8 @@ public:
 
 protected:
 
+	int _status;					 // For first pass at clearobjarrays, _status = 0;
+
 	int _Nobjects[MAX_OBJ_TYPES];    // Number of each object type
 	int _Mobjects[MAX_OBJ_TYPES];	 // working array
 	int _Nnodes[MAX_NODE_TYPES];     // Number of each node sub-type 

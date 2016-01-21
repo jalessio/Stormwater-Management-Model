@@ -9,6 +9,8 @@ const int SWMMLoader::MAXERRS = 100;        // Max. input errors reported
 SWMMLoader::SWMMLoader()
 :_inFile(NULL), _gages(NULL), _subcatches(NULL), _nodes(NULL), _tseries(NULL), _hortinfil(NULL)
 {
+	_status = 0;
+
 	ClearErr();
 	ClearCounts();
 
@@ -20,6 +22,8 @@ SWMMLoader::SWMMLoader()
 SWMMLoader::SWMMLoader(const char* path)
 :_gages(NULL), _subcatches(NULL), _nodes(NULL), _tseries(NULL), _hortinfil(NULL)
 {
+	_status = 0;
+
 	ClearErr(); // ClearCounts() called by OpenFile
 	OpenFile(path);
 }
@@ -780,12 +784,14 @@ void SWMMLoader::ClearObjArrays()
 	delete[] _landuse;
 
 
-
-	int j;
-	if (_lidGroups != NULL)
-	{ 
-		for (j = 0; j < _Nobjects[LID]; j++) DeleteLidGroup(j); 
+	if (_status == 1) // destructor is being called
+	{
+		for (int j = 0; j < _Nobjects[SUBCATCH]; j++)
+		{
+			DeleteLidGroup(j);
+		}
 	}
+
 	delete[] _lidGroups;
 	delete[] _lidProcs;
 	_GroupCount = 0;
@@ -810,6 +816,7 @@ void SWMMLoader::AllocObjArrays()
 
 	//make sure any previous values are disposed of 
 	ClearObjArrays();
+	_status = 1;
 
 	//() sets all space to zero
 	_gages = new TGage[_Nobjects[GAGE]]();
@@ -2509,7 +2516,7 @@ void SWMMLoader::SetDefaults()
 //  Purpose: assigns default values to project variables.
 //
 {
-	int i, j;
+	int i;
 
 	// Project title & temp. file path
 	//for (i = 0; i < MAXTITLE; i++) strcpy(Title[i], "");
