@@ -57,7 +57,7 @@ void projectload_readinput(char *path)
 	}
 
 
-	// get all counts needed -- this is handled by input_countObjects() in original SWMM
+	// get all counts needed
 	Nobjects[GAGE] = swmmloader.GetGageCount();
 	Nobjects[SUBCATCH] = swmmloader.GetSubcatchCount();
 	Nobjects[NODE] = swmmloader.GetNodeCount();
@@ -90,7 +90,6 @@ void projectload_readinput(char *path)
 	//Snowmelt = (TSnowmelt *)calloc(Nobjects[SNOWMELT], sizeof(TSnowmelt));
 	//Shape = (TShape *)calloc(Nobjects[SHAPE], sizeof(TShape));
 
-	
 	AnalysisOptions _aoptions;
 	_aoptions = swmmloader.GetAnalysisOptions();
 
@@ -158,16 +157,16 @@ void projectload_readinput(char *path)
 	TRptFlags _rptFlags;
 	_rptFlags = swmmloader.GetRptFlags();
 
-	RptFlags.report = _rptFlags.report;
-	RptFlags.input = _rptFlags.input;
-	RptFlags.subcatchments = _rptFlags.subcatchments;
-	RptFlags.nodes = _rptFlags.nodes;
-	RptFlags.links = _rptFlags.links;
-	RptFlags.continuity = _rptFlags.continuity;
-	RptFlags.flowStats = _rptFlags.flowStats;
-	RptFlags.nodeStats = _rptFlags.nodeStats;
-	RptFlags.controls = _rptFlags.controls;
-	RptFlags.linesPerPage = _rptFlags.linesPerPage;
+	RptFlags.report = _rptFlags.report;				   // TRUE if results report generated
+	RptFlags.input = _rptFlags.input;				   // TRUE if input summary included
+	RptFlags.subcatchments = _rptFlags.subcatchments;  // TRUE if subcatchment results reported
+	RptFlags.nodes = _rptFlags.nodes;				   // TRUE if node results reported
+	RptFlags.links = _rptFlags.links;				   // TRUE if link results reported
+	RptFlags.continuity = _rptFlags.continuity;        // TRUE if continuity errors reported
+	RptFlags.flowStats = _rptFlags.flowStats;		   // TRUE if routing link flow stats. reported
+	RptFlags.nodeStats = _rptFlags.nodeStats;		   // TRUE if routing node depth stats. reported
+	RptFlags.controls = _rptFlags.controls;			   // TRUE if control actions reported
+	RptFlags.linesPerPage = _rptFlags.linesPerPage;    // number of lines printed per page
 
 	// --- create LID objects
 	lid_create(Nobjects[LID], Nobjects[SUBCATCH]);
@@ -184,24 +183,24 @@ void projectload_readinput(char *path)
 	infil_create(Nobjects[SUBCATCH], InfilModel);
 
 	// --- allocate memory for water quality state variables
-	//for (j = 0; j < Nobjects[SUBCATCH]; j++)
-	//{
-	//	Subcatch[j].initBuildup =
-	//		(double *)calloc(Nobjects[POLLUT], sizeof(double));
-	//	Subcatch[j].oldQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
-	//	Subcatch[j].newQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
-	//	Subcatch[j].pondedQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
-	//	Subcatch[j].totalLoad = (double *)calloc(Nobjects[POLLUT], sizeof(double));
-	//}
-	//for (j = 0; j < Nobjects[NODE]; j++)
-	//{
-	//	Node[j].oldQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
-	//	Node[j].newQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
-	//	Node[j].extInflow = NULL;
-	//	Node[j].dwfInflow = NULL;
-	//	Node[j].rdiiInflow = NULL;
-	//	Node[j].treatment = NULL;
-	//}
+	for (int j = 0; j < Nobjects[SUBCATCH]; j++)
+	{
+		Subcatch[j].initBuildup =
+			(double *)calloc(Nobjects[POLLUT], sizeof(double));
+		Subcatch[j].oldQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+		Subcatch[j].newQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+		Subcatch[j].pondedQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+		Subcatch[j].totalLoad = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+	}
+	for (int j = 0; j < Nobjects[NODE]; j++)
+	{
+		Node[j].oldQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+		Node[j].newQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+		Node[j].extInflow = NULL;
+		Node[j].dwfInflow = NULL;
+		Node[j].rdiiInflow = NULL;
+		Node[j].treatment = NULL;
+	}
 	for (int j = 0; j < Nobjects[LINK]; j++)
 	{
 		Link[j].oldQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
@@ -219,16 +218,16 @@ void projectload_readinput(char *path)
 	}
 
 	// --- allocate memory for subcatchment landuse factors
-	//for (j = 0; j < Nobjects[SUBCATCH]; j++)
-	//{
-	//	Subcatch[j].landFactor =
-	//		(TLandFactor *)calloc(Nobjects[LANDUSE], sizeof(TLandFactor));
-	//	for (k = 0; k < Nobjects[LANDUSE]; k++)
-	//	{
-	//		Subcatch[j].landFactor[k].buildup =
-	//			(double *)calloc(Nobjects[POLLUT], sizeof(double));
-	//	}
-	//}
+	for (int j = 0; j < Nobjects[SUBCATCH]; j++)
+	{
+		Subcatch[j].landFactor =
+			(TLandFactor *)calloc(Nobjects[LANDUSE], sizeof(TLandFactor));
+		for (k = 0; k < Nobjects[LANDUSE]; k++)
+		{
+			Subcatch[j].landFactor[k].buildup =
+				(double *)calloc(Nobjects[POLLUT], sizeof(double));
+		}
+	}
 
 	// --- initialize buildup & washoff functions
 	for (int j = 0; j < Nobjects[LANDUSE]; j++)
@@ -306,7 +305,7 @@ void projectload_readinput(char *path)
 	_subcatches = swmmloader.GetSubcatches();
 	memcpy(Subcatch, _subcatches, sizeof(TSubcatch)*Nobjects[SUBCATCH]);
 
-	if(InfilModel == HORTON)
+	if (InfilModel == HORTON)
 	{
 		THorton* _hortinfil;
 		_hortinfil = swmmloader.GetHortInfil();
@@ -319,6 +318,13 @@ void projectload_readinput(char *path)
 		_gainfil = swmmloader.GetGAInfil();
 		extern TGrnAmpt* GAInfil;
 		memcpy(GAInfil, _gainfil, sizeof(TGrnAmpt)*Nobjects[SUBCATCH]);
+	}
+	if (InfilModel == CURVE_NUMBER)
+	{
+		TCurveNum* _cninfil;
+		_cninfil = swmmloader.GetCNInfil();
+		extern TCurveNum* CNInfil;
+		memcpy(CNInfil, _cninfil, sizeof(TCurveNum)*Nobjects[SUBCATCH]);
 	}
 
 	TNode* _nodes;
@@ -336,9 +342,6 @@ void projectload_readinput(char *path)
 	TEvap _evap;
 	_evap = swmmloader.GetEvap();
 	Evap = _evap;
-
-	// have to be careful with LIDs
-	// need to set the next properly in the LidGroups LidList when a given subcatch has multiple associated LIDs
 
 	// set LidCount and GroupCount (now externs in lid.c)
 	LidCount = Nobjects[LID];

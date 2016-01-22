@@ -48,42 +48,39 @@ public:
 
 	bool OpenFile(const char* path);
 
-	//error handling
+	// error handling
 	inline int GetErr() const { return _errCode; }
 	inline char* GetErrString() { return (char*)_errString; }
 	void ClearErr();
 
-	//access gage info
+	// access gage info
 	TGage* GetGages();
 	TGage* GetGage(const int & i);
 	int GetGageCount() const;
 
-	//access subcatch info
+	// access subcatch info
 	TSubcatch* GetSubcatches();
 	TSubcatch* GetSubcatch(const int & i);
 	int GetSubcatchCount() const;
 
-	//access node info -- should this reflect that there are different kind of nodes?
+	// access node info
 	TNode* GetNodes();
 	TNode* GetNode(const int & i);
 	int GetNodeCount() const;
 
 	TOutfall* GetOutfalls();
 	int GetOutfallCount() const;
-
-	void SetGageCount(const int n);
-		
-	//access timeseries info
+	
+	// access timeseries info
 	TTable* GetTSeries();
 	int GetTSeriesCount() const;
 
-	//access infiltration info
-	//only worry about horton for now
+	// access infiltration info
 	THorton* GetHortInfil(); 
 	TGrnAmpt* GetGAInfil();
 	TCurveNum* GetCNInfil();
 
-	//access analysis options info
+	// access analysis options info
 	AnalysisOptions GetAnalysisOptions();
 	
 	// access timelist info
@@ -108,39 +105,38 @@ public:
 	int GetLanduseCount() const;
 	TLanduse* GetLanduse();
 
-	//GetCounts for all types
+	// GetCounts for all types
 	int* GetAllCounts();
 
-	//set subcatch info
+	// setters
+	void SetGageCount(const int n);
 	int SetSubcatch(int index, double fracimperv);  // just impervious fraction for now
 
 protected:
 
-	int _status;					 // For first pass at clearobjarrays, _status = 0;
-
-	int _Nobjects[MAX_OBJ_TYPES];    // Number of each object type
+	int _Nobjects[MAX_OBJ_TYPES];    // number of each object type
 	int _Mobjects[MAX_OBJ_TYPES];	 // working array
-	int _Nnodes[MAX_NODE_TYPES];     // Number of each node sub-type 
+	int _Nnodes[MAX_NODE_TYPES];     // number of each node sub-type 
 	int _Mnodes[MAX_NODE_TYPES];	 // working array
-	int _LidCount;
-	int _GroupCount;
-
 	/* int _Nlinks[MAX_LINK_TYPES]; */
-	int _errCode;
+	int _LidCount;					 
+	int _GroupCount;				 
+
+	int _status;					 // for first pass at clearobjarrays, _status = 0, then status set to 1
+	int _errCode;					 // ultimately transfered to _aoptions.ErrorCode
 	char _errString[512];
 	int _Ntokens;
 	char *_Tok[MAXTOKS];             // String tokens from line of input
 
-	// variables that were defined in project.c
 	HTtable* _Htable[MAX_OBJ_TYPES]; // Hash tables for object ID names
-	char  _MemPoolAllocated;        // TRUE if memory pool allocated
+	char  _MemPoolAllocated;         // TRUE if memory pool allocated
 
 	//-----------------------------------------------------------------------------
 	static const int MAXERRS;        // Max. input errors reported
 
 	FILE* _inFile;
 
-	//containers for objects; add more as needed
+	// containers for objects; add more as needed
 	TGage* _gages;
 	TSubcatch* _subcatches;
 	TNode* _nodes;
@@ -150,23 +146,23 @@ protected:
 	TGrnAmpt* _gainfil;
 	TCurveNum* _cninfil;
 	TLidProc*  _lidProcs;            // array of LID processes
-	TLidGroup* _lidGroups;           // array of LID process groups -- defined in lid.c in original swmm
+	TLidGroup* _lidGroups;           // array of LID process groups (one for each subcatchment)
 	TLanduse* _landuse;
 	
 	TRptFlags _rptFlags;
+	TEvap _evap;
 
-	//structs
+	// structs
 	AnalysisOptions _aoptions; 
 	TimeList _timelist; 
-	TEvap _evap; 
-	
-	//utility functions
+
+	// utility functions
 	void ClearCounts();
 	void SetError(const int & errcode, const char* s);
 	void ClearObjArrays();
 	void AllocObjArrays();
 
-	//utility functions - scraped from input.c
+	// utility functions - scraped from input.c
 	//bool CountObjects();
 	int CountObjects();
 	int ReadOption(char* line);
@@ -176,7 +172,7 @@ protected:
 	int addObject(int objType, char* id);
 	int ReadNode(int type);
 
-	//utility functions - scraped from project.c
+	// utility functions - scraped from project.c
 	void CreateHashTables();
 	int ProjectReadOption(char* s1, char* s2);
 	int ProjectFindObject(int type, char *id);
@@ -184,34 +180,34 @@ protected:
 	char *ProjectFindID(int type, char *id);
 	void SetDefaults();
 
-	//utility functions - scraped from gage.c
+	// utility functions - scraped from gage.c
 	int ReadGageParams(int j, char* tok[], int ntoks);
 	int GageReadSeriesFormat(char* tok[], int ntoks, double x[]);
 
-	//utility functions - scraped from subcatch.c
+	// utility functions - scraped from subcatch.c
 	int ReadSubcatchParams(int j, char* tok[], int ntoks);
 	int ReadSubareaParams(char* tok[], int ntoks);
 	
-	//utility functions - scraped from node.c
+	// utility functions - scraped from node.c
 	int ReadNodeParams(int j, int type, int k, char* tok[], int ntoks);
 	int OutfallReadParams(int j, int k, char* tok[], int ntoks);
 	int JuncReadParams(int j, int k, char* tok[], int ntoks);
 	void NodeSetParams(int j, int type, int k, double x[]);
 
-	//utility functions - scraped from table.c
+	// utility functions - scraped from table.c
 	int TableReadTimeseries(char* tok[], int ntoks);
 
-	//utility functions - scraped from infil.c
+	// utility functions - scraped from infil.c
 	void InfilCreate(int subcatchCount, int model);
 	int InfilReadParams(int m, char* tok[], int ntoks);
 	int HortonSetParams(THorton *infil, double p[]);
 	int GrnamptSetParams(TGrnAmpt *infil, double p[]);
 	int CurvenumSetParams(TCurveNum *infil, double p[]);
 
-	//utility functions - scraped from report.c
+	// utility functions - scraped from report.c
 	int ReportReadOptions(char* tok[], int ntoks);
 
-	//utility functions - scraped from lid.c
+	// utility functions - scraped from lid.c
 	void LidCreate(int lidCount, int subcatchCount);
 	int LidReadProcParams(char* tok[], int ntoks);
 	int AddLidUnit(int j, int k, int n, double x[], char* fname, int drainSubcatch, int drainNode);
@@ -224,10 +220,10 @@ protected:
 	int ReadDrainData(int j, char* toks[], int ntoks);
 	int ReadDrainMatData(int j, char* toks[], int ntoks);
 
-	//utility functions - scraped from climate.c
+	// utility functions - scraped from climate.c
 	int ClimateReadEvapParams(char* tok[], int ntoks);
 
-	//utility functions - scraped from landuse.c
+	// utility functions - scraped from landuse.c
 	int LanduseReadParams(int j, char* tok[], int ntoks);
 };
 

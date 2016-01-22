@@ -2538,7 +2538,7 @@ int  SWMMLoader::GetTokens(char *s)
 	return(n);
 }
 
-void SWMMLoader::SetDefaults()
+void SWMMLoader::SetDefaults() //TODO check this vs setdefaults
 //
 //  Input:   none
 //  Output:  none
