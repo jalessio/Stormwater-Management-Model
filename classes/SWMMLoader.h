@@ -71,7 +71,7 @@ public:
 	TOutfall* GetOutfalls();
 	int GetOutfallCount() const;
 
-	void SetGageCount(int n);
+	void SetGageCount(const int n);
 		
 	//access timeseries info
 	TTable* GetTSeries();
@@ -79,8 +79,9 @@ public:
 
 	//access infiltration info
 	//only worry about horton for now
-	THorton* GetHortInfil(); // probably just overload, but then need an input param
+	THorton* GetHortInfil(); 
 	TGrnAmpt* GetGAInfil();
+	TCurveNum* GetCNInfil();
 
 	//access analysis options info
 	AnalysisOptions GetAnalysisOptions();
@@ -147,6 +148,7 @@ protected:
 	TTable* _tseries;
 	THorton* _hortinfil;
 	TGrnAmpt* _gainfil;
+	TCurveNum* _cninfil;
 	TLidProc*  _lidProcs;            // array of LID processes
 	TLidGroup* _lidGroups;           // array of LID process groups -- defined in lid.c in original swmm
 	TLanduse* _landuse;
@@ -204,6 +206,7 @@ protected:
 	int InfilReadParams(int m, char* tok[], int ntoks);
 	int HortonSetParams(THorton *infil, double p[]);
 	int GrnamptSetParams(TGrnAmpt *infil, double p[]);
+	int CurvenumSetParams(TCurveNum *infil, double p[]);
 
 	//utility functions - scraped from report.c
 	int ReportReadOptions(char* tok[], int ntoks);

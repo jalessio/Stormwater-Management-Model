@@ -1,8 +1,6 @@
 // Functions used to populate the global variables in SWMM using data from the SWMMLoader class
 // Basically will have functionality of project_readinput() and probably project_open()
 
-//TODO check errorcode in aoptions vs. _errCode (class member)
-
 #include "SWMMLoader.h"
 #include <string.h>
 #include <stdlib.h>
@@ -29,7 +27,7 @@ void projectload_readinput(char *path)
 	int  len;
 	char *newID;
 
-	// populate SWMM hashtable
+	// populate SWMM hashtable -- consider making this a function in hash.c 
 	for (int i = 0; i < MAX_OBJ_TYPES; i++)
 	{
 		for (int j = 0; j < HTMAXSIZE; j++)
@@ -42,7 +40,13 @@ void projectload_readinput(char *path)
 
 				struct HTentry *entry;
 				entry = (struct HTentry *) malloc(sizeof(struct HTentry));
-				//if (entry == NULL); // check for null 
+
+				if (entry == NULL)
+				{
+					ErrorCode = ERR_MEMORY;
+					return;
+				}
+
 				entry->key = newID;
 				entry->data = (*classHT[i][j]).data;
 				entry->next = Htable[i][j];
@@ -330,7 +334,7 @@ void projectload_readinput(char *path)
 	memcpy(Tseries, _tseries, sizeof(TTable)*Nobjects[TSERIES]);
 
 	TEvap _evap;
-	_evap = swmmloader.GetEvap(); // TODO what's the default? and need to check if it exists
+	_evap = swmmloader.GetEvap();
 	Evap = _evap;
 
 	// have to be careful with LIDs

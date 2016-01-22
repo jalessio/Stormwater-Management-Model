@@ -26,6 +26,8 @@ SWMMLoader::SWMMLoader(const char* path)
 
 	ClearErr(); // ClearCounts() called by OpenFile
 	OpenFile(path);
+
+	_aoptions.ErrorCode = _errCode;
 }
 
 SWMMLoader::~SWMMLoader()
@@ -56,8 +58,6 @@ bool SWMMLoader::OpenFile(const char* path)
 		return false;
 
 	AllocObjArrays();
-	//SetDefaults();
-
 	ReadData();
 
 	// from project_readInput
@@ -118,7 +118,7 @@ TGage* SWMMLoader::GetGages()
 
 TGage* SWMMLoader::GetGage(const int & i)
 {
-	if (i<0 || i >= _Nobjects[GAGE])
+	if (i < 0 || i >= _Nobjects[GAGE])
 		return NULL;
 
 	return &_gages[i];
@@ -129,7 +129,7 @@ int SWMMLoader::GetGageCount() const
 	return _Nobjects[GAGE];
 }
 
-void SWMMLoader::SetGageCount(int n)
+void SWMMLoader::SetGageCount(const int n)
 {
 	_Nobjects[GAGE] = n;
 }
@@ -141,7 +141,7 @@ TSubcatch* SWMMLoader::GetSubcatches()
 
 TSubcatch* SWMMLoader::GetSubcatch(const int & i)
 {
-	if (i<0 || i >= _Nobjects[SUBCATCH])
+	if (i <0 || i >= _Nobjects[SUBCATCH])
 		return NULL;
 
 	return &_subcatches[i];
@@ -159,7 +159,7 @@ TNode* SWMMLoader::GetNodes()
 
 TNode* SWMMLoader::GetNode(const int & i)
 {
-	if (i<0 || i >= _Nobjects[NODE])
+	if (i < 0 || i >= _Nobjects[NODE])
 		return NULL;
 
 	return &_nodes[i];
@@ -200,6 +200,10 @@ TGrnAmpt* SWMMLoader::GetGAInfil()
 	return _gainfil;
 }
 
+TCurveNum* SWMMLoader::GetCNInfil()
+{
+	return _cninfil;
+}
 
 TEvap SWMMLoader::GetEvap()
 {
@@ -250,29 +254,31 @@ TRptFlags SWMMLoader::GetRptFlags()
 HTtable** SWMMLoader::GetHtable()
 {
 	return _Htable;
-} //
+} 
 
 int* SWMMLoader::GetAllCounts()
 {
 	return _Nobjects;
 }
 
-
 void SWMMLoader::ClearCounts()
 {
-	//set all counts to zero (could also possibly initialize with {})
+	//set all counts to zero
 	int i = 0;
-	for (i = 0; i<MAX_OBJ_TYPES; ++i)
+	for (i = 0; i < MAX_OBJ_TYPES; ++i)
 	{
 		_Nobjects[i] = 0;
 		_Mobjects[i] = 0;
 	}
 
-	for (i = 0; i < 4; ++i)
+	for (i = 0; i < MAX_NODE_TYPES; ++i)
 	{
 		_Nnodes[i] = 0;
 		_Mnodes[i] = 0;
 	}
+
+	LidCount = 0;
+	GroupCount = 0;
 }
 
 void SWMMLoader::SetError(const int & errcode, const char* s)
@@ -281,14 +287,14 @@ void SWMMLoader::SetError(const int & errcode, const char* s)
 	_errCode = errcode;
 }
 
-// from project.c -- might want to modify to use new instead of calling HTcreate(), which uses calloc
+
 void SWMMLoader::CreateHashTables()
 {
 	int j;
 	_MemPoolAllocated = FALSE;
 	for (j = 0; j < MAX_OBJ_TYPES; j++)
 	{
-		_Htable[j] = HTcreate();
+		_Htable[j] = HTcreate(); // uses calloc
 		if (_Htable[j] == NULL) SetError(ERR_MEMORY, "");
 	}
 
@@ -834,11 +840,9 @@ void SWMMLoader::AllocObjArrays()
 	InfilCreate(_Nobjects[SUBCATCH], _aoptions.InfilModel); // uses new
 
 	LidCreate(_Nobjects[LID], _Nobjects[SUBCATCH]); // uses new
-
-
+	
 	//add more as needed
-
-
+	
 	// --- initialize rain gage properties
 	for (j = 0; j < _Nobjects[GAGE]; j++)
 	{
@@ -972,7 +976,6 @@ int  SWMMLoader::ParseLine(int sect, char *line)
 	int j, err;
 	switch (sect)
 	{
-	//presently only subcatch and gage captured;
 	//add more as needed.
 	//see parseLine() in input.c
 
@@ -1239,7 +1242,6 @@ int SWMMLoader::TableReadTimeseries(char* tok[], int ntoks)
 	return 0;
 }
 
-// from input.c
 int SWMMLoader::ReadNode(int type)
 //
 //  Input:   type = type of node
@@ -1255,7 +1257,6 @@ int SWMMLoader::ReadNode(int type)
 	return err;
 }
 
-// from node.c
 int SWMMLoader::ReadNodeParams(int j, int type, int k, char* tok[], int ntoks)
 //
 //  Input:   j = node index
@@ -1276,8 +1277,6 @@ int SWMMLoader::ReadNodeParams(int j, int type, int k, char* tok[], int ntoks)
 	default:       return 0;
 	}
 }
-
-
 
 int SWMMLoader::JuncReadParams(int j, int k, char* tok[], int ntoks)
 //
@@ -1470,7 +1469,6 @@ int SWMMLoader::OutfallReadParams(int j, int k, char* tok[], int ntoks)
 	return 0;
 }
 
-
 int SWMMLoader::ReadGageParams(int j, char* tok[], int ntoks)
 {
 	int      k, err;
@@ -1580,7 +1578,6 @@ int SWMMLoader::GageReadSeriesFormat(char* tok[], int ntoks, double x[])
 	return 0;
 }
 
-
 int  SWMMLoader::ReadSubcatchParams(int j, char* tok[], int ntoks)
 {
 	int    i, k, m;
@@ -1648,7 +1645,6 @@ int  SWMMLoader::ReadSubcatchParams(int j, char* tok[], int ntoks)
 }
 
 int SWMMLoader::ReadSubareaParams(char* tok[], int ntoks)
-// modified from subcatch_readSubareaParams in subcatch.c
 //
 //
 //  Input:   tok[] = array of string tokens
@@ -2372,10 +2368,10 @@ int SWMMLoader::InfilReadParams(int m, char* tok[], int ntoks)
 
 	// --- number of input tokens depends on infiltration model m
 	if (m == HORTON)       n = 5;
-	//else if (m == MOD_HORTON)   n = 5;
+	else if (m == MOD_HORTON)   n = 5;
 	else if (m == GREEN_AMPT)   n = 4;
-	//else if (m == MOD_GREEN_AMPT)   n = 4;                                   //(5.1.010)
-	//else if (m == CURVE_NUMBER) n = 4;
+	else if (m == MOD_GREEN_AMPT)   n = 4;                                   //(5.1.010)
+	else if (m == CURVE_NUMBER) n = 4;
 	else return 0;
 	if (ntoks < n) return error_setInpError(ERR_ITEMS, "");
 
@@ -2405,8 +2401,8 @@ int SWMMLoader::InfilReadParams(int m, char* tok[], int ntoks)
 	case MOD_GREEN_AMPT:                                                     //(5.1.010)
 		status = GrnamptSetParams(&_gainfil[j], x);
 		break;
-	//case CURVE_NUMBER: status = curvenum_setParams(&CNInfil[j], x);
-	//	break;
+	case CURVE_NUMBER: status = CurvenumSetParams(&CNInfil[j], x);
+		break;
 	default:           status = TRUE;
 	}
 	if (!status) return error_setInpError(ERR_NUMBER, "");
@@ -2461,6 +2457,35 @@ int SWMMLoader::GrnamptSetParams(TGrnAmpt *infil, double p[])
 	// --- find depth of upper soil zone (ft) using Mein's eqn.
 	ksat = infil->Ks * 12. * 3600.;
 	infil->Lu = 4.0 * sqrt(ksat) / 12.;
+	return TRUE;
+}
+
+int SWMMLoader::CurvenumSetParams(TCurveNum *infil, double p[])
+//
+//  Input:   infil = ptr. to Curve Number infiltration object
+//           p[] = array of parameter values
+//  Output:  returns TRUE if parameters are valid, FALSE otherwise
+//  Purpose: assigns Curve Number infiltration parameters to a subcatchment.
+//
+{
+
+	// --- convert Curve Number to max. infil. capacity
+	if (p[0] < 10.0) p[0] = 10.0;
+	if (p[0] > 99.0) p[0] = 99.0;
+	infil->Smax = (1000.0 / p[0] - 10.0) / 12.0;
+	if (infil->Smax < 0.0) return FALSE;
+
+	//// ---- linear regeneration constant and inter-event --- ////
+	////      time now computed directly from drying time;     ////
+	////      hydraulic conductivity no longer used.           ////
+
+	// --- convert drying time (days) to a regeneration const. (1/sec)
+	if (p[2] > 0.0)  infil->regen = 1.0 / (p[2] * SECperDAY);
+	else return FALSE;
+
+	// --- compute inter-event time from regeneration const. as in Green-Ampt
+	infil->Tmax = 0.06 / infil->regen;
+
 	return TRUE;
 }
 
@@ -2524,7 +2549,7 @@ void SWMMLoader::SetDefaults()
 
 	// Project title & temp. file path
 	//for (i = 0; i < MAXTITLE; i++) strcpy(Title[i], "");
-	//strcpy(TempDir, ""); //TODO add title
+	//strcpy(TempDir, ""); 
 
 	// Interface files
 	//Frain.mode = SCRATCH_FILE;     // Use scratch rainfall file
