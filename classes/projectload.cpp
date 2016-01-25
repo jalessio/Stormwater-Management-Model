@@ -183,62 +183,62 @@ void projectload_readinput(char *path)
 	infil_create(Nobjects[SUBCATCH], InfilModel);
 
 	// --- allocate memory for water quality state variables
-	for (int j = 0; j < Nobjects[SUBCATCH]; j++)
-	{
-		Subcatch[j].initBuildup =
-			(double *)calloc(Nobjects[POLLUT], sizeof(double));
-		Subcatch[j].oldQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
-		Subcatch[j].newQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
-		Subcatch[j].pondedQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
-		Subcatch[j].totalLoad = (double *)calloc(Nobjects[POLLUT], sizeof(double));
-	}
-	for (int j = 0; j < Nobjects[NODE]; j++)
-	{
-		Node[j].oldQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
-		Node[j].newQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
-		Node[j].extInflow = NULL;
-		Node[j].dwfInflow = NULL;
-		Node[j].rdiiInflow = NULL;
-		Node[j].treatment = NULL;
-	}
-	for (int j = 0; j < Nobjects[LINK]; j++)
-	{
-		Link[j].oldQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
-		Link[j].newQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
-		Link[j].totalLoad = (double *)calloc(Nobjects[POLLUT], sizeof(double));
-	}
+	//for (int j = 0; j < Nobjects[SUBCATCH]; j++)
+	//{
+	//	Subcatch[j].initBuildup =
+	//		(double *)calloc(Nobjects[POLLUT], sizeof(double));
+	//	Subcatch[j].oldQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+	//	Subcatch[j].newQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+	//	Subcatch[j].pondedQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+	//	Subcatch[j].totalLoad = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+	//}
+	//for (int j = 0; j < Nobjects[NODE]; j++)
+	//{
+	//	Node[j].oldQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+	//	Node[j].newQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+	//	Node[j].extInflow = NULL;
+	//	Node[j].dwfInflow = NULL;
+	//	Node[j].rdiiInflow = NULL;
+	//	Node[j].treatment = NULL;
+	//}
+	//for (int j = 0; j < Nobjects[LINK]; j++)
+	//{
+	//	Link[j].oldQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+	//	Link[j].newQual = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+	//	Link[j].totalLoad = (double *)calloc(Nobjects[POLLUT], sizeof(double));
+	//}
 
 	// --- allocate memory for land use buildup/washoff functions
-	for (int j = 0; j < Nobjects[LANDUSE]; j++)
-	{
-		Landuse[j].buildupFunc =
-			(TBuildup *)calloc(Nobjects[POLLUT], sizeof(TBuildup));
-		Landuse[j].washoffFunc =
-			(TWashoff *)calloc(Nobjects[POLLUT], sizeof(TWashoff));
-	}
+	//for (int j = 0; j < Nobjects[LANDUSE]; j++)
+	//{
+	//	Landuse[j].buildupFunc =
+	//		(TBuildup *)calloc(Nobjects[POLLUT], sizeof(TBuildup));
+	//	Landuse[j].washoffFunc =
+	//		(TWashoff *)calloc(Nobjects[POLLUT], sizeof(TWashoff));
+	//}
 
 	// --- allocate memory for subcatchment landuse factors
-	for (int j = 0; j < Nobjects[SUBCATCH]; j++)
-	{
-		Subcatch[j].landFactor =
-			(TLandFactor *)calloc(Nobjects[LANDUSE], sizeof(TLandFactor));
-		for (k = 0; k < Nobjects[LANDUSE]; k++)
-		{
-			Subcatch[j].landFactor[k].buildup =
-				(double *)calloc(Nobjects[POLLUT], sizeof(double));
-		}
-	}
+	//for (int j = 0; j < Nobjects[SUBCATCH]; j++)
+	//{
+	//	Subcatch[j].landFactor =
+	//		(TLandFactor *)calloc(Nobjects[LANDUSE], sizeof(TLandFactor));
+	//	for (k = 0; k < Nobjects[LANDUSE]; k++)
+	//	{
+	//		Subcatch[j].landFactor[k].buildup =
+	//			(double *)calloc(Nobjects[POLLUT], sizeof(double));
+	//	}
+	//}
 
 	// --- initialize buildup & washoff functions
-	for (int j = 0; j < Nobjects[LANDUSE]; j++)
-	{
-		for (k = 0; k < Nobjects[POLLUT]; k++)
-		{
-			Landuse[j].buildupFunc[k].funcType = NO_BUILDUP;
-			Landuse[j].buildupFunc[k].normalizer = PER_AREA;
-			Landuse[j].washoffFunc[k].funcType = NO_WASHOFF;
-		}
-	}
+	//for (int j = 0; j < Nobjects[LANDUSE]; j++)
+	//{
+	//	for (k = 0; k < Nobjects[POLLUT]; k++)
+	//	{
+	//		Landuse[j].buildupFunc[k].funcType = NO_BUILDUP;
+	//		Landuse[j].buildupFunc[k].normalizer = PER_AREA;
+	//		Landuse[j].washoffFunc[k].funcType = NO_WASHOFF;
+	//	}
+	//}
 
 	// --- initialize rain gage properties
 	for (int j = 0; j < Nobjects[GAGE]; j++)

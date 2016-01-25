@@ -169,7 +169,6 @@ protected:
 	int ReadData();
 	int ParseLine(int sect, char *line);
 	int GetTokens(char *s);
-	int addObject(int objType, char* id);
 	int ReadNode(int type);
 
 	// utility functions - scraped from project.c

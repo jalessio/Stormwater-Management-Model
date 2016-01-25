@@ -771,19 +771,20 @@ int SWMMLoader::ProjectReadOption(char* s1, char* s2)
 
 void SWMMLoader::ClearObjArrays()
 {
-	if (_aoptions.InfilModel == HORTON)
+	if (_aoptions.InfilModel == HORTON || _aoptions.InfilModel == MOD_HORTON)
 	{
 		delete[] _hortinfil;
 		_hortinfil = NULL;
 	}
-	else if (_aoptions.InfilModel == GREEN_AMPT)
+	else if (_aoptions.InfilModel == GREEN_AMPT || _aoptions.InfilModel == MOD_GREEN_AMPT)
 	{
 		delete[] _gainfil;
 		_gainfil = NULL;
 	}
-	else
+	else if (_aoptions.InfilModel == CURVE_NUMBER)
 	{
-		// might add more infiltration options later
+		delete[] _cninfil;
+		_cninfil = NULL;
 	}
 
 	delete[] _gages;
@@ -793,6 +794,12 @@ void SWMMLoader::ClearObjArrays()
 	delete[] _tseries;
 	delete[] _landuse;
 
+	_gages = NULL;
+	_subcatches = NULL;
+	_nodes = NULL;
+	_outfalls = NULL;
+	_tseries = NULL;
+	_landuse = NULL;
 
 	if (_status == 1) // destructor is being called
 	{
@@ -807,25 +814,18 @@ void SWMMLoader::ClearObjArrays()
 	_GroupCount = 0;
 	_LidCount = 0;
 
-
-	_gages = NULL;
-	_subcatches = NULL;
-	_nodes = NULL;
-	_outfalls = NULL;
-	_tseries = NULL;
 	_lidGroups = NULL;
 	_lidProcs = NULL;
-	_landuse = NULL;
 
 }
 
-// look at createObjects() in project.c -- some values need to be set
+// similar to createObjects() in SWMM
 void SWMMLoader::AllocObjArrays()
 {
 	int j;
 
-	//make sure any previous values are disposed of 
-	ClearObjArrays();
+	// make sure any previous values are disposed of 
+	ClearObjArrays(); 
 	_status = 1;
 
 	//() sets all space to zero
@@ -872,14 +872,12 @@ void SWMMLoader::AllocObjArrays()
 	for (j = 0; j < _Nobjects[TSERIES]; j++) table_init(&_tseries[j]);
 	//for (j = 0; j < Nobjects[TIMEPATTERN]; j++) inflow_initDwfPattern(j);
 
-
-
 }
 
 int SWMMLoader::ReadData()
 {
-	char  line[MAXLINE + 1];        // line from input data file
-	char  wLine[MAXLINE + 1];       // working copy of input line
+	char  line[MAXLINE + 1];      // line from input data file
+	char  wLine[MAXLINE + 1];     // working copy of input line
 	char* comment;                // ptr. to start of comment in input line
 	int   sect, newsect;          // data sections
 	int   inperr, errsum;         // error code & total error count
@@ -955,7 +953,7 @@ int SWMMLoader::ReadData()
 			inperr = ParseLine(sect, line);
 			if (inperr > 0)
 			{
-				//errsum++;
+				//errsum++; //TODO figure out what to do about this
 				//if ( errsum > MAXERRS ) report_writeLine(FMT19);
 				//else report_writeInputErrorMsg(inperr, sect, line, lineCount);
 			}
@@ -1001,14 +999,14 @@ int  SWMMLoader::ParseLine(int sect, char *line)
 		return InfilReadParams(_aoptions.InfilModel, _Tok, _Ntokens);
 
 	case s_JUNCTION:
-		return ReadNode(JUNCTION);					// _Mobjects in ReadNode
+		return ReadNode(JUNCTION);					
 
 	case s_OUTFALL:
 		return ReadNode(OUTFALL);
 
 	case s_LANDUSE:
 		j = _Mobjects[LANDUSE];
-		err = LanduseReadParams(j, _Tok, _Ntokens);
+		return LanduseReadParams(j, _Tok, _Ntokens);
 		_Mobjects[LANDUSE]++;
 		return err;
 
@@ -2277,7 +2275,7 @@ int SWMMLoader::AddLidUnit(int j, int k, int n, double x[], char* fname,
 	lidUnit->initSat = x[2] / 100.0;
 	lidUnit->fromImperv = x[3] / 100.0;
 	lidUnit->toPerv = (x[4] > 0.0);
-	lidUnit->drainSubcatch = drainSubcatch;                                    //(5.1.008)
+	lidUnit->drainSubcatch = drainSubcatch;                                //(5.1.008)
 	lidUnit->drainNode = drainNode;                                        //(5.1.008)
 
 	//... open report file if it was supplied
@@ -2309,14 +2307,14 @@ void SWMMLoader::DeleteLidGroup(int j)
 		if (lidUnit->rptFile)
 		{
 			if (lidUnit->rptFile->file) fclose(lidUnit->rptFile->file);
-			delete(lidUnit->rptFile);
+			delete[](lidUnit->rptFile);
 		}
 		nextLidUnit = lidList->nextLidUnit;
-		delete(lidUnit);
-		delete(lidList);
+		delete[](lidUnit);
+		delete[](lidList);
 		lidList = nextLidUnit;
 	}
-	delete(lidGroup);
+	delete[](lidGroup);
 	_lidGroups[j] = NULL;
 }
 
