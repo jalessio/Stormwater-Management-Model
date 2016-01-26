@@ -15,6 +15,11 @@ void projectload_readinput(char *path)
 {
 	// mimic project_readinput
 	SWMMLoader swmmloader(path);
+
+	// check for errors
+	ErrorCode = swmmloader.GetErr();
+	if (ErrorCode) return;
+
 	int k;
 
 	HTtable** classHT;
@@ -111,7 +116,7 @@ void projectload_readinput(char *path)
 	IgnoreGwater = _aoptions.IgnoreGwater;					// Ignore groundwater
 	IgnoreRouting = _aoptions.IgnoreRouting;				// Ignore flow routing
 	IgnoreQuality = _aoptions.IgnoreQuality;				// Ignore water quality
-	ErrorCode = _aoptions.ErrorCode;			            // Error code number
+	//ErrorCode = _aoptions.ErrorCode;			            // Error code number -- set above to know to continue
 	WarningCode = _aoptions.WarningCode;			        // Warning code number
 	WetStep = _aoptions.WetStep;							// Runoff wet time step (sec)
 	DryStep = _aoptions.DryStep;						    // Runoff dry time step (sec)
@@ -299,7 +304,7 @@ void projectload_readinput(char *path)
 	// then copy data now that everything has been allocated
 	TGage* _gages;
 	_gages = swmmloader.GetGages();
-	memcpy(Gage, _gages, sizeof(TGage)*Nobjects[GAGE]);
+	memcpy(Gage, _gages, sizeof(TGage)*Nobjects[GAGE]); 
 
 	TSubcatch* _subcatches;
 	_subcatches = swmmloader.GetSubcatches();
