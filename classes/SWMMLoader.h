@@ -123,7 +123,7 @@ protected:
 	int _GroupCount;				 
 
 	int _status;					 // for first pass at clearobjarrays, _status = 0, then status set to 1
-	int _errCode;					 // ultimately transfered to _aoptions.ErrorCode
+	int _errCode;					 
 	char _errString[512];
 	int _Ntokens;
 	char *_Tok[MAXTOKS];             // String tokens from line of input

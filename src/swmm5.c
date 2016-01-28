@@ -29,7 +29,7 @@
 //  Leave only one of the following 3 lines un-commented,
 //  depending on the choice of compilation target
 //**********************************************************
-#define CLE     /* Compile as a command line executable */
+//#define CLE     /* Compile as a command line executable */
 //#define SOL     /* Compile as a shared object library */
 //#define DLL     /* Compile as a Windows DLL */
 
@@ -229,106 +229,65 @@ static int  xfilter(int xc, DateTime elapsedTime, long step);
 
 
 
-// new swmm
 
 
 
-#ifdef CLE
-//int  main(int argc, char *argv[])//
-//
-//  Input:   argc = number of command line arguments
-//           argv = array of command line arguments
-//  Output:  returns error status
-//  Purpose: processes command line arguments.
-//
-//  Command line for stand-alone operation is: swmm5 f1  f2  f3
-//  where f1 = name of input file, f2 = name of report file, and
-//  f3 = name of binary output file if saved (or blank if not saved).
 
-int main(int argc, char *argv[])
+
+
+
+
+
+int inp_swmm_run(char* f1, char* f2, char* f3)
 {
-	// to run modified SWMM
+	long newHour, oldHour = 0;
+	long theDay, theHour;
+	DateTime elapsedTime = 0.0;
 
-	// one subcatchment:
-	//char *inputFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\parkinglot_simple.inp";
-	//char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\parkinglot_simple.rpt";
-	//char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\parkinglot_simple.out";;
-	//
-	// LID:
-	//char *inputFile  = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\LID_bioretentialcell.inp";
-	//char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\LID_bioretentialcell.rpt";
-	//char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\LID_bioretentialcell.out";
+	// --- open the files & read input data
+	ErrorCode = 0;
+	inp_swmm_open(f1, f2, f3);
 
-	// 7 subcatchments:
-	//char *inputFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\Example1-Post.inp";
-	//char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\Example1-Post.rpt";
-	//char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\Example1-Post.out";
-
-	// different types of LIDs:
-	char *inputFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\Example4.inp";
-	char *reportFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\Example4.rpt";
-	char *binaryFile = "C:\\Users\\cbarr02\\Desktop\\GitHub\\swmm\\Stormwater-Management-Model\\examples\\Example4.out";
-
-	char blank[] = "";
-	time_t start;
-	double runTime;
-
-	// --- initialize flags
-	IsOpenFlag = FALSE;
-	IsStartedFlag = FALSE;
-	SaveResultsFlag = TRUE;
-
-	// --- check for proper number of command line arguments
-	start = time(0);
-	//    if (argc < 3) writecon(FMT01);
-	//    else
+	// --- run the simulation if input data OK
+	if (!ErrorCode)
 	{
-		// --- extract file names from command line arguments
-		//        inputFile = argv[1];
-		//        reportFile = argv[2];
-		//        if (argc > 3) binaryFile = argv[3];
-		//        else          binaryFile = blank;
-		//        writecon(FMT02);
+		// --- initialize values
+		swmm_start(TRUE);
 
-		// --- run SWMM
-		inp_swmm_run(inputFile, reportFile, binaryFile);
+		// --- execute each time step until elapsed time is re-set to 0
+		if (!ErrorCode)
+		{
+			writecon("\n o  Simulating day: 0     hour:  0");
+			do
+			{
+				swmm_step(&elapsedTime);
+				newHour = (long)(elapsedTime * 24.0);
+				if (newHour > oldHour)
+				{
+					theDay = (long)elapsedTime;
+					theHour = (long)((elapsedTime - floor(elapsedTime)) * 24.0);
+					writecon("\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+					sprintf(Msg, "%-5d hour: %-2d", theDay, theHour);
+					writecon(Msg);
+					oldHour = newHour;
+				}
+			} while (elapsedTime > 0.0 && !ErrorCode);
+			writecon("\b\b\b\b\b\b\b\b\b\b\b\b\b\b"
+				"\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+			writecon("Simulation complete           ");
+		}
 
-		// Display closing status on console
-		runTime = difftime(time(0), start);
-		sprintf(Msg, "\n\n... EPA-SWMM completed in %.2f seconds.", runTime);
-		writecon(Msg);
-		if (ErrorCode) writecon(FMT03);
-		else if (WarningCode) writecon(FMT04);
-		else                    writecon(FMT05);
+		// --- clean up
+		swmm_end();
 	}
 
-	// --- Use the code below if you need to keep the console window visible
+	// --- report results
+	if (Fout.mode == SCRATCH_FILE) swmm_report();
 
-	writecon("    Press Enter to continue...");
-	getchar();
-
-#ifdef WINDOWS 
-	_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
-	_CrtDumpMemoryLeaks();
-	return 0;
-
-#else
-	return 0;
-
-#endif
-
-}                                      /* End of main */
-#endif
-
-
-
-
-
-
-
-
-
-
+	// --- close the system
+	swmm_close();
+	return ErrorCode;
+}
 
 int inp_swmm_open(char* f1, char* f2, char* f3)
 //
@@ -385,56 +344,58 @@ int inp_swmm_open(char* f1, char* f2, char* f3)
 	return ErrorCode;
 }
 
-int inp_swmm_run(char* f1, char* f2, char* f3)
+int inp_swmm_start(char* f1, char* f2, char* f3)
 {
-	long newHour, oldHour = 0;
-	long theDay, theHour;
-	DateTime elapsedTime = 0.0;
+	char *inputFile;
+	char *reportFile;
+	char *binaryFile;
 
-	// --- open the files & read input data
-	ErrorCode = 0;
-	inp_swmm_open(f1, f2, f3);
+	char blank[] = "";
+	time_t start;
+	double runTime;
 
-	// --- run the simulation if input data OK
-	if (!ErrorCode)
-	{
-		// --- initialize values
-		swmm_start(TRUE);
+	// --- initialize flags
+	IsOpenFlag = FALSE;
+	IsStartedFlag = FALSE;
+	SaveResultsFlag = TRUE;
 
-		// --- execute each time step until elapsed time is re-set to 0
-		if (!ErrorCode)
-		{
-			writecon("\n o  Simulating day: 0     hour:  0");
-			do
-			{
-				swmm_step(&elapsedTime);
-				newHour = (long)(elapsedTime * 24.0);
-				if (newHour > oldHour)
-				{
-					theDay = (long)elapsedTime;
-					theHour = (long)((elapsedTime - floor(elapsedTime)) * 24.0);
-					writecon("\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-					sprintf(Msg, "%-5d hour: %-2d", theDay, theHour);
-					writecon(Msg);
-					oldHour = newHour;
-				}
-			} while (elapsedTime > 0.0 && !ErrorCode);
-			writecon("\b\b\b\b\b\b\b\b\b\b\b\b\b\b"
-				"\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-			writecon("Simulation complete           ");
-		}
+	// --- check for proper number of command line arguments
+	start = time(0);
+	//if (argc < 3) writecon(FMT01);
+	//else
+	//{
+	// --- extract file names from command line arguments
+	//inputFile = argv[1];
+	//reportFile = argv[2];
+	//if (argc > 3) binaryFile = argv[3];
+	//else          binaryFile = blank;
+	//writecon(FMT02);
 
-		// --- clean up
-		swmm_end();
-	}
+	inputFile = f1;
+	reportFile = f2;
+	binaryFile = f3;
 
-	// --- report results
-	if (Fout.mode == SCRATCH_FILE) swmm_report();
+	// --- run SWMM
+	inp_swmm_run(inputFile, reportFile, binaryFile);
 
-	// --- close the system
-	swmm_close();
-	return ErrorCode;
+	// Display closing status on console
+	runTime = difftime(time(0), start);
+	sprintf(Msg, "\n\n... EPA-SWMM completed in %.2f seconds.", runTime);
+	writecon(Msg);
+	if (ErrorCode) writecon(FMT03);
+	else if (WarningCode) writecon(FMT04);
+	else                    writecon(FMT05);
+	//}
+
+	//// --- Use the code below if you need to keep the console window visible
+
+	writecon("    Press Enter to continue...");
+	getchar();
+
+	return 0;
 }
+
+
 
 
 //=============================================================================
