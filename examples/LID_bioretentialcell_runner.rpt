@@ -20,11 +20,11 @@
     Groundwater ............ NO
     Flow Routing ........... NO
     Water Quality .......... NO
-  Infiltration Method ...... HORTON
-  Starting Date ............ MAY-10-2013 00:00:00
-  Ending Date .............. JUN-24-2013 12:00:00
+  Infiltration Method ...... GREEN_AMPT
+  Starting Date ............ AUG-24-2015 00:00:00
+  Ending Date .............. AUG-24-2015 06:00:00
   Antecedent Dry Days ...... 0.0
-  Report Time Step ......... 00:00:30
+  Report Time Step ......... 00:15:00
   Wet Time Step ............ 00:05:00
   Dry Time Step ............ 01:00:00
   
@@ -38,9 +38,20 @@
                            Precip      Runon       Evap      Infil     Runoff      Runoff   Runoff   Coeff
   Subcatchment                 in         in         in         in         in    10^6 gal      CFS
   --------------------------------------------------------------------------------------------------------
-  S1                         1.17       0.00       0.02       0.00       1.16        0.26    16.36   0.991
+  S1                         3.00       0.00       0.00       0.28       2.64        0.07     0.93   0.880
   
 
-  Analysis begun on:  Thu Jan 28 09:59:58 2016
-  Analysis ended on:  Thu Jan 28 09:59:59 2016
-  Total elapsed time: 00:00:01
+  ***********************
+  LID Performance Summary
+  ***********************
+
+  --------------------------------------------------------------------------------------------------------------------
+                                         Total      Evap     Infil   Surface    Drain    Initial     Final  Continuity
+                                        Inflow      Loss      Loss   Outflow   Outflow   Storage   Storage       Error
+  Subcatchment      LID Control             in        in        in        in        in        in        in           %
+  --------------------------------------------------------------------------------------------------------------------
+  S1                Planter               3.00      0.00      0.09      0.00      0.00      2.40      5.30        0.29
+
+  Analysis begun on:  Thu Jan 28 10:00:00 2016
+  Analysis ended on:  Thu Jan 28 10:00:00 2016
+  Total elapsed time: < 1 sec

@@ -49,4 +49,5 @@ void SWMMRunner::setBinaryFile(char *binaryFile)
 void SWMMRunner::Run()
 {
 	int err = inp_swmm_start(_inputFile, _reportFile, _binaryFile);
+	// handle error
 }
