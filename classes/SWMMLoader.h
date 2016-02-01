@@ -94,7 +94,7 @@ public:
 	TEvap GetEvap();
 
 	// access report flags
-	TRptFlags GetRptFlags();
+	TRptFlags GetRptFlags() const;
 
 	// access lid info
 	int GetLidCount() const;

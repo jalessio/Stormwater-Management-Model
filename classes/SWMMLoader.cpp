@@ -98,6 +98,9 @@ bool SWMMLoader::OpenFile(const char* path)
 		_timelist.TotalDuration *= 1000.0;
 	}
 
+	fclose(_inFile);
+	_inFile = NULL;
+
 	return _errCode == ERR_NONE;
 }
 
@@ -244,7 +247,7 @@ TimeList SWMMLoader::GetTimeList()
 	return _timelist;
 }
 
-TRptFlags SWMMLoader::GetRptFlags()
+TRptFlags SWMMLoader::GetRptFlags() const
 {
 	return _rptFlags;
 }

@@ -16,6 +16,7 @@ void projectload_readinput(char *path)
 	// mimic project_readinput
 	SWMMLoader swmmloader(path);
 
+
 	// check for errors
 	ErrorCode = swmmloader.GetErr();
 	if (ErrorCode) return;

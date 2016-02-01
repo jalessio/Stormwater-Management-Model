@@ -45,9 +45,8 @@ void SWMMRunner::setBinaryFile(char *binaryFile)
 	strncpy(_binaryFile, binaryFile, MAXFNAME);
 }
 
-
-void SWMMRunner::Run()
+int SWMMRunner::Run()
 {
 	int err = inp_swmm_start(_inputFile, _reportFile, _binaryFile);
-	// handle error
+	return err;
 }

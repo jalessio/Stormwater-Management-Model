@@ -16,18 +16,17 @@ public:
 
 	//~SWMMRunner();
 
-	void Run();
+	int Run();
 
 	void setInputFile(char *inputFile);
 	void setReportFile(char *reportFile);
 	void setBinaryFile(char *binaryFile);
 
 private:
-	char _inputFile[MAXFNAME+1];
+	char _inputFile[MAXFNAME + 1];
 	char _reportFile[MAXFNAME + 1];
 	char _binaryFile[MAXFNAME + 1];
 
 };
-
 
 #endif
