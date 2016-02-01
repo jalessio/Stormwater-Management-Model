@@ -98,7 +98,7 @@ bool SWMMLoader::OpenFile(const char* path)
 		_timelist.TotalDuration *= 1000.0;
 	}
 
-	fclose(_inFile);
+	if (_inFile != NULL) fclose(_inFile);
 	_inFile = NULL;
 
 	return _errCode == ERR_NONE;

@@ -16,10 +16,15 @@ void projectload_readinput(char *path)
 	// mimic project_readinput
 	SWMMLoader swmmloader(path);
 
-
 	// check for errors
 	ErrorCode = swmmloader.GetErr();
-	if (ErrorCode) return;
+	if (ErrorCode == ERR_INP_FILE)
+	{
+		writecon(FMT12); 
+		return;
+	}
+	else if (ErrorCode) return;
+
 
 	int k;
 
