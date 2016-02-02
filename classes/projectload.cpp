@@ -9,7 +9,9 @@
 
 extern void InitPointers(); // might need to modify this
 extern void SetDefaults();
-
+extern void ProjectCreateHashTables();
+extern HTtable** ProjectGetHTable();
+extern TLidGroup* GetLidGroups();
 
 void projectload_readinput(char *path) 
 {

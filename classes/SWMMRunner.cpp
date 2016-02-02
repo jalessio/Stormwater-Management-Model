@@ -7,6 +7,7 @@ SWMMRunner::SWMMRunner()
 
 }
 
+// consider setting a default rpt / out filename here
 SWMMRunner::SWMMRunner(char* inputFile)
 : _inputFile()
 {

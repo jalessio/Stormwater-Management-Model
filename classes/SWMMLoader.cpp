@@ -955,7 +955,7 @@ int SWMMLoader::ReadData()
 			inperr = ParseLine(sect, line);
 			if (inperr > 0)
 			{
-				//errsum++; //TODO figure out what to do about this
+				errsum++; 
 				//if ( errsum > MAXERRS ) report_writeLine(FMT19);
 				//else report_writeInputErrorMsg(inperr, sect, line, lineCount);
 			}

@@ -1,17 +1,9 @@
-/*
-Working input API -- loads data from input file
 
-*/
 
 #ifndef SWMMLOADER_H
 #define SWMMLOADER_H
 
-
 #include <cstdio>
-
-//extern int gage_readSeriesFormat(char* tok[], int ntoks, double x[]);
-//extern int gage_readFileFormat(char* tok[], int ntoks, double x[]);
-
 #include <stdio.h>
 #include "consts.h"
 #include "macros.h"
@@ -28,16 +20,10 @@ Working input API -- loads data from input file
 #include <math.h>
 
 extern int findmatch(char *s, char *keyword[]);
-
 extern double UCF(int u);
 
-
-extern void ProjectCreateHashTables();
-extern HTtable** ProjectGetHTable();
-
-extern TLidGroup* GetLidGroups();
-
 extern char** SubcatchGetRunoffRoutingWords();
+
 
 class SWMMLoader
 {
