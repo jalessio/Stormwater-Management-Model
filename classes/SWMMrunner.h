@@ -12,6 +12,7 @@ class SWMMRunner
 public:
 	SWMMRunner();
 	SWMMRunner(char *inputFile);
+	SWMMRunner(char* inputFile, char* reportFile, char* binaryFile);
 	SWMMRunner(char *inputFile, char *reportFile, char *binaryFile, char *rainFile);
 
 	//~SWMMRunner();

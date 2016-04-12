@@ -13,7 +13,7 @@ extern void ProjectCreateHashTables();
 extern HTtable** ProjectGetHTable();
 extern TLidGroup* GetLidGroups();
 
-void projectload_readinput(char *f1, char *f2)
+void projectload_readinput(char *f1, char *f2) 
 {
 	// mimic project_readinput
 	SWMMLoader swmmloader(f1, f2);

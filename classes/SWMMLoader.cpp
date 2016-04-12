@@ -19,7 +19,7 @@ _gainfil(NULL), _cninfil(NULL), _lidProcs(NULL), _lidGroups(NULL), _landuse(NULL
 
 SWMMLoader::SWMMLoader(const char* inpFile)
 :_gages(NULL), _subcatches(NULL), _nodes(NULL), _tseries(NULL), _hortinfil(NULL), 
-_gainfil(NULL), _cninfil(NULL), _lidProcs(NULL), _lidGroups(NULL), _landuse(NULL) //TODO check other variables and _lidGroups
+_gainfil(NULL), _cninfil(NULL), _lidProcs(NULL), _lidGroups(NULL), _landuse(NULL)
 {
 	_status = 0;
 
@@ -31,12 +31,19 @@ _gainfil(NULL), _cninfil(NULL), _lidProcs(NULL), _lidGroups(NULL), _landuse(NULL
 
 SWMMLoader::SWMMLoader(const char* inpFile, const char* rainFile)
 :_gages(NULL), _subcatches(NULL), _nodes(NULL), _tseries(NULL), _hortinfil(NULL),
-_gainfil(NULL), _cninfil(NULL), _lidProcs(NULL), _lidGroups(NULL), _landuse(NULL) //TODO check other variables and _lidGroups
+_gainfil(NULL), _cninfil(NULL), _lidProcs(NULL), _lidGroups(NULL), _landuse(NULL)
 {
 	_status = 0;
 
 	ClearErr(); // ClearCounts() called by OpenFile
-	OpenFile(inpFile, rainFile);
+	if (rainFile[0] == NULL)
+	{
+		OpenFile(inpFile);
+	}
+	else
+	{
+		OpenFile(inpFile, rainFile);
+	}
 
 	_aoptions.ErrorCode = _errCode;
 }
@@ -1714,10 +1721,10 @@ bool SWMMLoader::GageToTseries(const char* rainFile)
 	}
 
 	// Read first line to get name
-	if (fgets(line, MAXLINE, _rainFile) != NULL)
-		puts(line);
-	else
+	if (fgets(line, MAXLINE, _rainFile) == NULL)
+	{
 		_errCode = ERR_RAIN_FILE_OPEN;
+	}
 
 	// Get tseries ID
 	strcpy(wLine, line);
