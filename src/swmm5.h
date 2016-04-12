@@ -36,9 +36,9 @@
 extern "C" { 
 #endif 
 
-int inp_swmm_run(char* f1, char* f2, char* f3);
-int inp_swmm_open(char* f1, char* f2, char* f3);
-int inp_swmm_start(char* f1, char* f2, char* f3);
+int inp_swmm_run(char* f1, char* f2, char* f3, char* f4);
+int inp_swmm_open(char* f1, char* f2, char* f3, char* f4);
+int inp_swmm_start(char* f1, char* f2, char* f3, char* f4);
 
 int  DLLEXPORT   swmm_run(char* f1, char* f2, char* f3);
 int  DLLEXPORT   swmm_open(char* f1, char* f2, char* f3);

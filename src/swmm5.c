@@ -238,7 +238,7 @@ static int  xfilter(int xc, DateTime elapsedTime, long step);
 
 
 
-int inp_swmm_run(char* f1, char* f2, char* f3)
+int inp_swmm_run(char* f1, char* f2, char* f3, char* f4)
 {
 	long newHour, oldHour = 0;
 	long theDay, theHour;
@@ -246,7 +246,7 @@ int inp_swmm_run(char* f1, char* f2, char* f3)
 
 	// --- open the files & read input data
 	ErrorCode = 0;
-	inp_swmm_open(f1, f2, f3);
+	inp_swmm_open(f1, f2, f3, f4);
 
 	// --- run the simulation if input data OK
 	if (!ErrorCode)
@@ -289,7 +289,7 @@ int inp_swmm_run(char* f1, char* f2, char* f3)
 	return ErrorCode;
 }
 
-int inp_swmm_open(char* f1, char* f2, char* f3)
+int inp_swmm_open(char* f1, char* f2, char* f3, char* f4)
 //
 //  Input:   f1 = name of input file
 //           f2 = name of report file
@@ -323,7 +323,7 @@ int inp_swmm_open(char* f1, char* f2, char* f3)
 		writecon(FMT06);
 
 		// --- retrieve project data from input file
-		projectload_readinput(f1);
+		projectload_readinput(f1, f4);
 		if (ErrorCode) return ErrorCode;
 
 		// --- write project title to report file & validate data
@@ -344,11 +344,12 @@ int inp_swmm_open(char* f1, char* f2, char* f3)
 	return ErrorCode;
 }
 
-int inp_swmm_start(char* f1, char* f2, char* f3)
+int inp_swmm_start(char* f1, char* f2, char* f3, char* f4)
 {
 	char *inputFile;
 	char *reportFile;
 	char *binaryFile;
+	char *rainFile;
 
 	char blank[] = "";
 	time_t start;
@@ -374,9 +375,10 @@ int inp_swmm_start(char* f1, char* f2, char* f3)
 	inputFile = f1;
 	reportFile = f2;
 	binaryFile = f3;
+	rainFile = f4;
 
 	// --- run SWMM
-	inp_swmm_run(inputFile, reportFile, binaryFile);
+	inp_swmm_run(inputFile, reportFile, binaryFile, rainFile);
 
 	// Display closing status on console
 	runTime = difftime(time(0), start);

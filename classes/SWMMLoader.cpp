@@ -17,14 +17,26 @@ _gainfil(NULL), _cninfil(NULL), _lidProcs(NULL), _lidGroups(NULL), _landuse(NULL
 
 }
 
-SWMMLoader::SWMMLoader(const char* path)
+SWMMLoader::SWMMLoader(const char* inpFile)
 :_gages(NULL), _subcatches(NULL), _nodes(NULL), _tseries(NULL), _hortinfil(NULL), 
 _gainfil(NULL), _cninfil(NULL), _lidProcs(NULL), _lidGroups(NULL), _landuse(NULL) //TODO check other variables and _lidGroups
 {
 	_status = 0;
 
 	ClearErr(); // ClearCounts() called by OpenFile
-	OpenFile(path);
+	OpenFile(inpFile);
+
+	_aoptions.ErrorCode = _errCode;
+}
+
+SWMMLoader::SWMMLoader(const char* inpFile, const char* rainFile)
+:_gages(NULL), _subcatches(NULL), _nodes(NULL), _tseries(NULL), _hortinfil(NULL),
+_gainfil(NULL), _cninfil(NULL), _lidProcs(NULL), _lidGroups(NULL), _landuse(NULL) //TODO check other variables and _lidGroups
+{
+	_status = 0;
+
+	ClearErr(); // ClearCounts() called by OpenFile
+	OpenFile(inpFile, rainFile);
 
 	_aoptions.ErrorCode = _errCode;
 }
@@ -39,9 +51,9 @@ SWMMLoader::~SWMMLoader()
 	}
 }
 
-bool SWMMLoader::OpenFile(const char* path)
+bool SWMMLoader::OpenFile(const char* inpFile)
 {
-	_inFile = fopen(path, "rt");
+	_inFile = fopen(inpFile, "rt");
 	if (!_inFile)
 	{
 		_errCode = ERR_INP_FILE;
@@ -104,6 +116,73 @@ bool SWMMLoader::OpenFile(const char* path)
 	return _errCode == ERR_NONE;
 }
 
+bool SWMMLoader::OpenFile(const char* inpFile, const char* rainFile)
+{
+	_inFile = fopen(inpFile, "rt");
+	if (!_inFile)
+	{
+		_errCode = ERR_INP_FILE;
+		return false;
+	}
+
+	// usually handled by swmm_open but here for now
+	datetime_setDateFormat(M_D_Y);
+
+	CreateHashTables();
+
+	if (CountObjects() != ERR_NONE)
+		return false;
+
+	AllocObjArrays();
+	ReadData();
+
+	// from project_readInput
+	// --- establish starting & ending date/time
+	_timelist.StartDateTime = _timelist.StartDate + _timelist.StartTime;
+	_timelist.EndDateTime = _timelist.EndDate + _timelist.EndTime;
+	_timelist.ReportStart = _timelist.ReportStartDate + _timelist.ReportStartTime;
+	_timelist.ReportStart = MAX(_timelist.ReportStart, _timelist.StartDateTime);
+
+	// --- check for valid starting & ending date/times
+	if (_timelist.EndDateTime <= _timelist.StartDateTime)
+	{
+		SetError(ERR_START_DATE, "");
+	}
+	else if (_timelist.EndDateTime <= _timelist.ReportStart)
+	{
+		SetError(ERR_REPORT_DATE, "");
+	}
+	else
+	{
+		////  Following code segment was modified for release 5.1.009.  ////           //(5.1.009)
+		////
+		// --- compute total duration of simulation in seconds
+		_timelist.TotalDuration = floor((_timelist.EndDateTime - _timelist.StartDateTime) * SECperDAY);
+
+		// --- reporting step must be <= total duration
+		if ((double)_aoptions.ReportStep > _timelist.TotalDuration)
+		{
+			_aoptions.ReportStep = (int)(_timelist.TotalDuration);
+		}
+
+		// --- reporting step can't be < routing step
+		if ((double)_aoptions.ReportStep < _aoptions.RouteStep)
+		{
+			SetError(ERR_REPORT_STEP, "");
+		}
+
+		// --- convert total duration to milliseconds
+		_timelist.TotalDuration *= 1000.0;
+	}
+
+	if (_inFile != NULL) fclose(_inFile);
+	_inFile = NULL;
+
+	GageToTseries(rainFile);
+
+	return _errCode == ERR_NONE;
+}
+
 void SWMMLoader::ClearErr()
 {
 	_errCode = 0;
@@ -113,7 +192,7 @@ void SWMMLoader::ClearErr()
 		_errString[i] = '\0';
 }
 
-TGage* SWMMLoader::GetGages()
+TGage* SWMMLoader::GetGages() const
 {
 	return _gages;
 }
@@ -131,12 +210,12 @@ int SWMMLoader::GetGageCount() const
 	return _Nobjects[GAGE];
 }
 
-void SWMMLoader::SetGageCount(const int n)
+void SWMMLoader::SetGageCount(int n)
 {
 	_Nobjects[GAGE] = n;
 }
 
-TSubcatch* SWMMLoader::GetSubcatches()
+TSubcatch* SWMMLoader::GetSubcatches() const
 {
 	return _subcatches;
 }
@@ -154,7 +233,7 @@ int SWMMLoader::GetSubcatchCount() const
 	return _Nobjects[SUBCATCH];
 }
 
-TNode* SWMMLoader::GetNodes()
+TNode* SWMMLoader::GetNodes() const
 {
 	return _nodes;
 }
@@ -172,7 +251,7 @@ int SWMMLoader::GetNodeCount() const
 	return _Nobjects[NODE];
 }
 
-TOutfall* SWMMLoader::GetOutfalls()
+TOutfall* SWMMLoader::GetOutfalls() const
 {
 	return _outfalls;
 }
@@ -182,7 +261,7 @@ int SWMMLoader::GetOutfallCount() const
 	return _Nnodes[OUTFALL];
 }
 
-TTable* SWMMLoader::GetTSeries()
+TTable* SWMMLoader::GetTSeries() const
 {
 	return _tseries;
 }
@@ -192,22 +271,22 @@ int SWMMLoader::GetTSeriesCount() const
 	return _Nobjects[TSERIES];
 }
 
-THorton* SWMMLoader::GetHortInfil()
+THorton* SWMMLoader::GetHortInfil() const
 {
 	return _hortinfil;
 }
 
-TGrnAmpt* SWMMLoader::GetGAInfil()
+TGrnAmpt* SWMMLoader::GetGAInfil() const
 {
 	return _gainfil;
 }
 
-TCurveNum* SWMMLoader::GetCNInfil()
+TCurveNum* SWMMLoader::GetCNInfil() const
 {
 	return _cninfil;
 }
 
-TEvap SWMMLoader::GetEvap()
+TEvap SWMMLoader::GetEvap() const
 {
 	return _evap;
 }
@@ -217,12 +296,12 @@ int SWMMLoader::GetLidCount() const
 	return _Nobjects[LID];
 }
 
-TLidGroup* SWMMLoader::GetLidGroups()
+TLidGroup* SWMMLoader::GetLidGroups() const
 {
 	return _lidGroups;
 }
 
-TLidProc* SWMMLoader::GetLidProcs()
+TLidProc* SWMMLoader::GetLidProcs() const
 {
 	return _lidProcs;
 }
@@ -232,17 +311,17 @@ int SWMMLoader::GetLanduseCount() const
 	return _Nobjects[LANDUSE];
 }
 
-TLanduse* SWMMLoader::GetLanduse()
+TLanduse* SWMMLoader::GetLanduse() const
 {
 	return _landuse;
 }
 
-AnalysisOptions SWMMLoader::GetAnalysisOptions()
+AnalysisOptions SWMMLoader::GetAnalysisOptions() const
 {
 	return _aoptions;
 }
 
-TimeList SWMMLoader::GetTimeList()
+TimeList SWMMLoader::GetTimeList() const
 {
 	return _timelist;
 }
@@ -1514,7 +1593,7 @@ int SWMMLoader::ReadGageParams(int j, char* tok[], int ntoks)
 		strncpy(fname, tok[5], MAXFNAME);
 		strncpy(staID, tok[6], MAXMSG);
 		// if you want to read from a file, scrape from gage.c and change to use correct hash table
-		//  err = gage_readFileFormat(tok, ntoks, x);
+		err = GageReadFileFormat(tok, ntoks, x);
 	}
 	else
 	{
@@ -1577,6 +1656,105 @@ int SWMMLoader::GageReadSeriesFormat(char* tok[], int ntoks, double x[])
 	strcpy(tok[2], "");
 	return 0;
 }
+
+// Modified because we will store gage data in tseries structure
+int SWMMLoader::GageReadFileFormat(char* tok[], int ntoks, double x[])
+{
+	int   m, u;
+	DateTime aDate;
+	DateTime aTime;
+
+	// --- determine type of rain data
+	m = findmatch(tok[1], RainTypeWords);
+	if (m < 0) return error_setInpError(ERR_KEYWORD, tok[1]);
+	x[1] = (double)m;
+
+	// --- get data time interval & convert to seconds
+	if (getDouble(tok[2], &x[2])) x[2] *= 3600;
+	else if (datetime_strToTime(tok[2], &aTime))
+	{
+		x[2] = floor(aTime*SECperDAY + 0.5);
+	}
+	else return error_setInpError(ERR_DATETIME, tok[2]);
+	if (x[2] <= 0.0) return error_setInpError(ERR_DATETIME, tok[2]);
+
+	// --- get snow catch deficiency factor
+	if (!getDouble(tok[3], &x[3]))
+		return error_setInpError(ERR_NUMBER, tok[3]);
+
+	// --- get rain depth units
+	u = findmatch(tok[7], RainUnitsWords);
+	if (u < 0) return error_setInpError(ERR_KEYWORD, tok[7]);
+	x[6] = (double)u;
+
+	// --- get start date (if present)
+	if (ntoks > 8 && *tok[8] != '*')
+	{
+		if (!datetime_strToDate(tok[8], &aDate))
+			return error_setInpError(ERR_DATETIME, tok[8]);
+		x[4] = (float)aDate;
+	}
+	return 0;
+}
+
+bool SWMMLoader::GageToTseries(const char* rainFile)
+{
+
+	char  wLine[MAXLINE + 1];          // working copy of input line   
+	char  line[MAXLINE + 1];           // line from input data file     
+	char  *tok;						   // first string token of line
+	char  *tseriesID;				   // tseries ID -- for checking with raingage ID
+
+	// Open file
+	_rainFile = fopen(rainFile, "rt");
+	if (!_rainFile)
+	{
+		_errCode = ERR_RAIN_FILE_OPEN;
+		return false;
+	}
+
+	// Read first line to get name
+	if (fgets(line, MAXLINE, _rainFile) != NULL)
+		puts(line);
+	else
+		_errCode = ERR_RAIN_FILE_OPEN;
+
+	// Get tseries ID
+	strcpy(wLine, line);
+	_Ntokens = GetTokens(wLine);
+	tseriesID = _Tok[0];
+
+	// Add tseries to hashtable (like ProjectAddObject)
+	if (ProjectFindObject(TSERIES, tseriesID) < 0)
+	{
+		ProjectAddObject(TSERIES, tseriesID, _Nobjects[TSERIES]);
+		_Nobjects[TSERIES]++;
+	}
+
+	// Rewind file
+	rewind(_rainFile);
+
+	// Allocate memory for timeseries
+	_tseries = new TTable[_Nobjects[TSERIES]]();
+
+	// Read table
+	while (fgets(line, MAXLINE, _rainFile) != NULL)
+	{
+		strcpy(wLine, line);
+		_Ntokens = GetTokens(wLine);
+		ParseLine(s_TIMESERIES, wLine);
+	}
+
+	// Reset gage parameters so that it thinks it was a timeseries
+	_gages[0].dataSource = 0; // data from time series or file 
+	_gages[0].tSeries = 0; 
+
+	_tseries[0].refersTo = -1;
+
+	return true;
+}
+
+
 
 int  SWMMLoader::ReadSubcatchParams(int j, char* tok[], int ntoks)
 {

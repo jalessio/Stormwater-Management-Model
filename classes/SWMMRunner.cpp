@@ -14,12 +14,13 @@ SWMMRunner::SWMMRunner(char* inputFile)
 	setInputFile(inputFile);
 }
 
-SWMMRunner::SWMMRunner(char* inputFile, char* reportFile, char* binaryFile)
-: _inputFile(), _reportFile(), _binaryFile()
+SWMMRunner::SWMMRunner(char* inputFile, char* reportFile, char* binaryFile, char* rainFile)
+: _inputFile(), _reportFile(), _binaryFile(), _rainFile()
 {
 	setInputFile(inputFile);
 	setReportFile(reportFile);
 	setBinaryFile(binaryFile);
+	setRainFile(rainFile);
 }
 
 void SWMMRunner::setInputFile(char *inputFile)
@@ -46,8 +47,16 @@ void SWMMRunner::setBinaryFile(char *binaryFile)
 	strncpy(_binaryFile, binaryFile, MAXFNAME);
 }
 
+void SWMMRunner::setRainFile(char *rainFile)
+{
+	for (int i = 0; i < MAXFNAME + 1; ++i)
+		_rainFile[i] = '\0';
+
+	strncpy(_rainFile, rainFile, MAXFNAME);
+}
+
 int SWMMRunner::Run()
 {
-	int err = inp_swmm_start(_inputFile, _reportFile, _binaryFile);
+	int err = inp_swmm_start(_inputFile, _reportFile, _binaryFile, _rainFile);
 	return err;
 }

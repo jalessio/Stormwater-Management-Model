@@ -13,10 +13,10 @@ extern void ProjectCreateHashTables();
 extern HTtable** ProjectGetHTable();
 extern TLidGroup* GetLidGroups();
 
-void projectload_readinput(char *path) 
+void projectload_readinput(char *f1, char *f2)
 {
 	// mimic project_readinput
-	SWMMLoader swmmloader(path);
+	SWMMLoader swmmloader(f1, f2);
 
 	// check for errors
 	ErrorCode = swmmloader.GetErr();

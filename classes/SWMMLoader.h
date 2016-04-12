@@ -29,73 +29,75 @@ class SWMMLoader
 {
 public:
 	SWMMLoader();
-	SWMMLoader(const char* path);
+	SWMMLoader(const char* inpFile);
+	SWMMLoader(const char* inpFile, const char* rainFile);
 	~SWMMLoader();
 
-	bool OpenFile(const char* path);
+	bool OpenFile(const char* inpFile);
+	bool OpenFile(const char* inpFile, const char* rainFile);
 
 	// error handling
 	inline int GetErr() const { return _errCode; }
-	inline char* GetErrString() { return (char*)_errString; }
+	inline char* GetErrString() { return (char*)_errString; } // not called anywhere right now
 	void ClearErr();
 
 	// access gage info
-	TGage* GetGages();
+	TGage* GetGages() const;
 	TGage* GetGage(const int & i);
 	int GetGageCount() const;
 
 	// access subcatch info
-	TSubcatch* GetSubcatches();
+	TSubcatch* GetSubcatches() const;
 	TSubcatch* GetSubcatch(const int & i);
 	int GetSubcatchCount() const;
 
 	// access node info
-	TNode* GetNodes();
+	TNode* GetNodes() const;
 	TNode* GetNode(const int & i);
 	int GetNodeCount() const;
 
-	TOutfall* GetOutfalls();
+	TOutfall* GetOutfalls() const;
 	int GetOutfallCount() const;
 	
 	// access timeseries info
-	TTable* GetTSeries();
+	TTable* GetTSeries() const;
 	int GetTSeriesCount() const;
 
 	// access infiltration info
-	THorton* GetHortInfil(); 
-	TGrnAmpt* GetGAInfil();
-	TCurveNum* GetCNInfil();
+	THorton* GetHortInfil() const; 
+	TGrnAmpt* GetGAInfil() const;
+	TCurveNum* GetCNInfil() const;
 
 	// access analysis options info
-	AnalysisOptions GetAnalysisOptions();
+	AnalysisOptions GetAnalysisOptions() const;
 	
 	// access timelist info
-	TimeList GetTimeList();
+	TimeList GetTimeList() const;
 
 	// access hashtable info
 	HTtable** GetHtable(); // Hash tables for object ID names
 	//char  _MemPoolAllocated;        // TRUE if memory pool allocated
 
 	// access evap info
-	TEvap GetEvap();
+	TEvap GetEvap() const;
 
 	// access report flags
 	TRptFlags GetRptFlags() const;
 
 	// access lid info
 	int GetLidCount() const;
-	TLidGroup* GetLidGroups();
-	TLidProc* GetLidProcs();
+	TLidGroup* GetLidGroups() const;
+	TLidProc* GetLidProcs() const;
 
 	// access landuse info
 	int GetLanduseCount() const;
-	TLanduse* GetLanduse();
+	TLanduse* GetLanduse() const;
 
 	// GetCounts for all types
-	int* GetAllCounts();
+	int* GetAllCounts(); // not used 
 
 	// setters
-	void SetGageCount(const int n);
+	void SetGageCount(int n);
 	int SetSubcatch(int index, double fracimperv);  // just impervious fraction for now
 
 protected:
@@ -121,6 +123,7 @@ protected:
 	static const int MAXERRS;        // Max. input errors reported
 
 	FILE* _inFile;
+	FILE* _rainFile;
 
 	// containers for objects; add more as needed
 	TGage* _gages;
@@ -168,6 +171,8 @@ protected:
 	// utility functions - scraped from gage.c
 	int ReadGageParams(int j, char* tok[], int ntoks);
 	int GageReadSeriesFormat(char* tok[], int ntoks, double x[]);
+	int GageReadFileFormat(char* tok[], int ntoks, double x[]);
+	bool GageToTseries(const char* rainFile);
 
 	// utility functions - scraped from subcatch.c
 	int ReadSubcatchParams(int j, char* tok[], int ntoks);

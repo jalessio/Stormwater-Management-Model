@@ -26,7 +26,7 @@
 //-----------------------------------------------------------------------------
 
 void projectload_open(char *f2, char *f3);
-void projectload_readinput(char *path);
+void projectload_readinput(char *inpFile, char *rainFile);
 
 //-----------------------------------------------------------------------------
 //   Project Manager Methods
