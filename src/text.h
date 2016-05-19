@@ -18,7 +18,7 @@
 //-----------------------------------------------------------------------------
 
 #define FMT01 \
- "\n Correct syntax is:\n swmm5 <input file> <report file> <output file>\n"
+	"\n Correct syntax is:\n swmm5 <input file> <report file> <output file> <rain file>\n"
 #define FMT02 "\n... EPA-SWMM 5.1 (Build 5.1.010)\n"                           //(5.1.010)
 
 #define FMT03 " There are errors.\n"
