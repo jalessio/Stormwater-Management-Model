@@ -377,7 +377,7 @@ void projectload_readinput(char *f1, char *f2)
 			TLidList* testLidUnit = _lidgroups[j]->lidList->nextLidUnit; 
 			while (testLidUnit != NULL)				// check linked list for more lidUnits for this subcatch
 			{
-				lid_copyunit(j, _lidgroups[j]->lidList->nextLidUnit->lidUnit);
+				lid_copyunit(j, testLidUnit->lidUnit);
 				testLidUnit = testLidUnit->nextLidUnit;		
 			}
 		}

@@ -517,7 +517,6 @@ int SWMMLoader::CountObjects()
 				}
 				break;
 				
-
 			case s_LID_CONTROL:
 				// --- an LID object can span several lines
 				if (ProjectFindObject(LID, tok) < 0)
@@ -526,6 +525,7 @@ int SWMMLoader::CountObjects()
 					_Nobjects[LID]++;
 				}
 				break;
+
 				//add more cases as needed
 			}
 		}
