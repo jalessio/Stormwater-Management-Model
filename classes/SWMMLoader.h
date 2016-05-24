@@ -186,6 +186,7 @@ protected:
 
 	// utility functions - scraped from table.c
 	int TableReadTimeseries(char* tok[], int ntoks);
+	void TableDeleteEntries(TTable *table);
 
 	// utility functions - scraped from infil.c
 	void InfilCreate(int subcatchCount, int model);

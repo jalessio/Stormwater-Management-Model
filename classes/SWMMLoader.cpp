@@ -875,18 +875,18 @@ void SWMMLoader::ClearObjArrays()
 		_cninfil = NULL;
 	}
 
+
+
 	delete[] _gages;
 	delete[] _subcatches;
 	delete[] _nodes;
 	delete[] _outfalls;
-	delete[] _tseries;
 	delete[] _landuse;
 
 	_gages = NULL;
 	_subcatches = NULL;
 	_nodes = NULL;
 	_outfalls = NULL;
-	_tseries = NULL;
 	_landuse = NULL;
 
 	if (_status == 1) // destructor is being called
@@ -897,6 +897,24 @@ void SWMMLoader::ClearObjArrays()
 		}
 	}
 
+	if (_status == 1) {
+		TTableEntry *entry;
+		TTableEntry *nextEntry;
+		entry = _tseries->firstEntry;
+		while (entry)
+		{
+			nextEntry = entry->next;
+			delete(entry);
+			entry = nextEntry;
+		}
+		_tseries->firstEntry = NULL;
+		_tseries->lastEntry = NULL;
+		_tseries->thisEntry = NULL;
+	}
+
+	delete[] _tseries;
+	_tseries = NULL;
+
 	delete[] _lidGroups;
 	delete[] _lidProcs;
 	//_GroupCount = 0;
@@ -905,6 +923,33 @@ void SWMMLoader::ClearObjArrays()
 	_lidGroups = NULL;
 	_lidProcs = NULL;
 
+}
+
+void SWMMLoader::TableDeleteEntries(TTable *table)
+//
+//  Input:   table = pointer to a TTable structure
+//  Output:  none
+//  Purpose: deletes all x/y entries in a table.
+//
+{
+	TTableEntry *entry;
+	TTableEntry *nextEntry;
+	entry = table->firstEntry;
+	while (entry)
+	{
+		nextEntry = entry->next;
+		delete(entry);
+		entry = nextEntry;
+	}
+	table->firstEntry = NULL;
+	table->lastEntry = NULL;
+	table->thisEntry = NULL;
+
+	if (table->file.file)
+	{
+		fclose(table->file.file);
+		table->file.file = NULL;
+	}
 }
 
 // similar to createObjects() in SWMM
@@ -922,7 +967,7 @@ void SWMMLoader::AllocObjArrays()
 	_nodes = new TNode[_Nobjects[NODE]]();
 	_outfalls = new TOutfall[_Nobjects[OUTFALL]]();
 	_landuse = new TLanduse[_Nobjects[LANDUSE]]();
-	_tseries = new TTable[_Nobjects[TSERIES]]();
+	//_tseries = new TTable[_Nobjects[TSERIES]]();
 	
 	// --- allocate memory for infiltration data
 	InfilCreate(_Nobjects[SUBCATCH], _aoptions.InfilModel); // uses new
@@ -957,7 +1002,7 @@ void SWMMLoader::AllocObjArrays()
 
 	//  --- initialize curves, time series, and time patterns
 	//for (j = 0; j < Nobjects[CURVE]; j++)   table_init(&Curve[j]);
-	for (j = 0; j < _Nobjects[TSERIES]; j++) table_init(&_tseries[j]);
+	//for (j = 0; j < _Nobjects[TSERIES]; j++) table_init(&_tseries[j]);
 	//for (j = 0; j < Nobjects[TIMEPATTERN]; j++) inflow_initDwfPattern(j);
 
 }
@@ -1709,7 +1754,6 @@ bool SWMMLoader::GageToTseries(const char* rainFile)
 
 	char  wLine[MAXLINE + 1];          // working copy of input line   
 	char  line[MAXLINE + 1];           // line from input data file     
-	char  *tok;						   // first string token of line
 	char  *tseriesID;				   // tseries ID -- for checking with raingage ID
 
 	// Open file
@@ -1743,6 +1787,7 @@ bool SWMMLoader::GageToTseries(const char* rainFile)
 
 	// Allocate memory for timeseries
 	_tseries = new TTable[_Nobjects[TSERIES]]();
+	table_init(_tseries);
 
 	// Read table
 	while (fgets(line, MAXLINE, _rainFile) != NULL)
@@ -1757,6 +1802,9 @@ bool SWMMLoader::GageToTseries(const char* rainFile)
 	_gages[0].tSeries = 0; 
 
 	_tseries[0].refersTo = -1;
+
+	if (_rainFile != NULL) fclose(_rainFile);
+	_rainFile = NULL;
 
 	return true;
 }

@@ -1879,19 +1879,21 @@ int lid_copyunit(int j, TLidUnit* _lidUnit)
 	lidGroup = LidGroups[j];
 	if (!lidGroup)
 	{
-		lidGroup = (struct LidGroup *) malloc(sizeof(struct LidGroup));
+		//lidGroup = (struct LidGroup *) malloc(sizeof(struct LidGroup));
+		lidGroup = (struct LidGroup *)calloc(GroupCount, sizeof(LidGroup));
 		if (!lidGroup) return error_setInpError(ERR_MEMORY, "");
 		lidGroup->lidList = NULL;
 		LidGroups[j] = lidGroup;
 	}
 
 	//... create a new LID unit to add to the group
-	lidUnit = (TLidUnit *)malloc(sizeof(TLidUnit));
+	lidUnit = (TLidUnit *)calloc(1, sizeof(TLidUnit));
+	//lidUnit = (struct LidUnit *)calloc(1, sizeof(TLidUnit));
 	if (!lidUnit) return error_setInpError(ERR_MEMORY, "");
 	lidUnit->rptFile = NULL;
 
 	//... add the LID unit to the group
-	lidList = (TLidList *)malloc(sizeof(TLidList));
+	lidList = (TLidList *)calloc(1, sizeof(TLidList));
 	if (!lidList)
 	{
 		free(lidUnit);
