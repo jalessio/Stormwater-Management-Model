@@ -61,21 +61,8 @@
 #ifdef EXH
   #include <excpt.h>
 #endif
-////
-
-#define _CRTDBG_MAP_ALLOC
-//#define _DEBUG
-//
-//#ifdef _DEBUG
-//#ifndef DBG_NEW
-//#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-//#define new DBG_NEW
-//#endif
-//#endif  // _DEBUG
 
 #include <stdlib.h> // order changed for debugging purposes
-#include <crtdbg.h>
-
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
@@ -798,7 +785,7 @@ int DLLEXPORT swmm_close()
 {
     if ( Fout.file ) output_close();
     if ( IsOpenFlag ) project_close();
-	    report_writeSysTime();
+	    //report_writeSysTime();
     if ( Finp.file != NULL ) fclose(Finp.file);
     if ( Frpt.file != NULL ) fclose(Frpt.file);
     if ( Fout.file != NULL )
