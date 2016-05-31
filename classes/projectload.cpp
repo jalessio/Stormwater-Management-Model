@@ -13,7 +13,7 @@ extern void ProjectCreateHashTables();
 extern HTtable** ProjectGetHTable();
 extern TLidGroup* GetLidGroups();
 
-void projectload_readinput(char *f1, char *f2) 
+void projectload_readinput(char *f1, char *f2)
 {
 	// mimic project_readinput
 	SWMMLoader swmmloader(f1, f2);
@@ -22,7 +22,7 @@ void projectload_readinput(char *f1, char *f2)
 	ErrorCode = swmmloader.GetErr();
 	if (ErrorCode == ERR_INP_FILE)
 	{
-		writecon(FMT12); 
+		writecon(FMT12);
 		return;
 	}
 	else if (ErrorCode) return;
@@ -32,8 +32,8 @@ void projectload_readinput(char *f1, char *f2)
 
 	HTtable** classHT;
 	HTtable** Htable;
-	ProjectCreateHashTables(); 
-	
+	ProjectCreateHashTables();
+
 	classHT = swmmloader.GetHtable();  		// get class hashtable
 	Htable = ProjectGetHTable();			// get empty SWMM hashtable from project.c
 
@@ -45,7 +45,7 @@ void projectload_readinput(char *f1, char *f2)
 	{
 		for (int j = 0; j < HTMAXSIZE; j++)
 		{
-			if (classHT[i][j] != NULL) 
+			if (classHT[i][j] != NULL)
 			{
 				len = strlen((*classHT[i][j]).key) + 1;
 				newID = (char *)Alloc(len*sizeof(char));
@@ -312,7 +312,7 @@ void projectload_readinput(char *f1, char *f2)
 	// then copy data now that everything has been allocated
 	TGage* _gages;
 	_gages = swmmloader.GetGages();
-	memcpy(Gage, _gages, sizeof(TGage)*Nobjects[GAGE]); 
+	memcpy(Gage, _gages, sizeof(TGage)*Nobjects[GAGE]);
 
 	TSubcatch* _subcatches;
 	_subcatches = swmmloader.GetSubcatches();
@@ -350,7 +350,24 @@ void projectload_readinput(char *f1, char *f2)
 
 	TTable* _tseries;
 	_tseries = swmmloader.GetTSeries();
-	memcpy(Tseries, _tseries, sizeof(TTable)*Nobjects[TSERIES]);
+	int Tseriescount = Nobjects[TSERIES];
+	for (int i = 0; i < Nobjects[TSERIES]; i++)
+	{
+		memcpy(&Tseries[i].ID, &_tseries[i].ID, sizeof(_tseries[i].ID));
+		memcpy(&Tseries[i].curveType, &_tseries[i].curveType, sizeof(_tseries[i].curveType));
+		memcpy(&Tseries[i].refersTo, &_tseries[i].refersTo, sizeof(_tseries[i].refersTo));
+		memcpy(&Tseries[i].dxMin, &_tseries[i].dxMin, sizeof(_tseries[i].dxMin));
+		memcpy(&Tseries[i].x1, &_tseries[i].x1, sizeof(_tseries[i].x1));
+		memcpy(&Tseries[i].x2, &_tseries[i].x2, sizeof(_tseries[i].x2));
+		memcpy(&Tseries[i].y1, &_tseries[i].y1, sizeof(_tseries[i].y1));
+		memcpy(&Tseries[i].y2, &_tseries[i].y2, sizeof(_tseries[i].y2));
+
+		TableEntry* testtableentry = _tseries[i].firstEntry;
+		do {
+			table_addEntry(&Tseries[i], testtableentry->x, testtableentry->y);
+			testtableentry = testtableentry->next;
+		} while (testtableentry != NULL);
+	}
 
 	TEvap _evap;
 	_evap = swmmloader.GetEvap();
@@ -371,15 +388,14 @@ void projectload_readinput(char *f1, char *f2)
 
 	for (int j = 0; j < Nobjects[SUBCATCH]; j++)
 	{
-		if (_lidgroups[j] != NULL)	
-		{ 
-			lid_copyunit(j, _lidgroups[j]->lidList->lidUnit); 	// TLidUnit* lidUnit is a pointer so we have to copy it deeply
-			TLidList* testLidUnit = _lidgroups[j]->lidList->nextLidUnit; 
-			while (testLidUnit != NULL)				// check linked list for more lidUnits for this subcatch
+		if (_lidgroups[j] != NULL)
+		{
+			TLidList* testLidUnit = _lidgroups[j]->lidList;
+			do 	// check linked list for more lidUnits for this subcatch
 			{
 				lid_copyunit(j, testLidUnit->lidUnit);
-				testLidUnit = testLidUnit->nextLidUnit;		
-			}
+				testLidUnit = testLidUnit->nextLidUnit;
+			} while (testLidUnit != NULL);
 		}
 	}
 
@@ -387,6 +403,7 @@ void projectload_readinput(char *f1, char *f2)
 	_landuse = swmmloader.GetLanduse();
 	memcpy(Landuse, _landuse, sizeof(TLanduse)*Nobjects[LANDUSE]);
 }
+
 
 void projectload_open(char *f2, char* f3)
 {
