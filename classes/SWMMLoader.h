@@ -1,5 +1,3 @@
-
-
 #ifndef SWMMLOADER_H
 #define SWMMLOADER_H
 

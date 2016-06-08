@@ -378,8 +378,8 @@ int inp_swmm_start(char* f1, char* f2, char* f3, char* f4)
 
 	//// --- Use the code below if you need to keep the console window visible
 
-	writecon("    Press Enter to continue...");
-	getchar();
+	//writecon("    Press Enter to continue...");
+	//getchar();
 
 	return 0;
 }

@@ -1,5 +1,5 @@
 // Functions used to populate the global variables in SWMM using data from the SWMMLoader class
-// Basically will have functionality of project_readinput() and probably project_open()
+// Replaces project_readinput() and project_open()
 
 #include "SWMMLoader.h"
 #include <string.h>

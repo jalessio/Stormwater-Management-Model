@@ -229,7 +229,7 @@ TSubcatch* SWMMLoader::GetSubcatches() const
 
 TSubcatch* SWMMLoader::GetSubcatch(const int & i)
 {
-	if (i <0 || i >= _Nobjects[SUBCATCH])
+	if (i < 0 || i >= _Nobjects[SUBCATCH])
 		return NULL;
 
 	return &_subcatches[i];
