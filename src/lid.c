@@ -1789,7 +1789,7 @@ void lid_writeWaterBalance()
             k = lidUnit->lidIndex;
             fprintf(Frpt.file, "\n  %-16s  %-16s", Subcatch[j].ID,
                                                    LidProcs[k].ID);
-            fprintf(Frpt.file, "%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f",
+            fprintf(Frpt.file, "%10.2f %10.2f %10.2f %10.2f %10.2f %10.2f %10.2f",
                     lidUnit->waterBalance.inflow*ucf,
                     lidUnit->waterBalance.evap*ucf,
                     lidUnit->waterBalance.infil*ucf,
